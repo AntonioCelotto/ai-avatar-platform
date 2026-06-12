@@ -27,6 +27,69 @@
   object-position: center top;
   opacity: 1;
   filter: none;
+  transform-origin: 50% 44%;
+  animation: miaPortraitBreath 5.8s ease-in-out infinite;
+}
+
+.avatar-motion-layer {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  pointer-events: none;
+  transform-origin: 50% 40%;
+  animation: miaFacePresence 5.8s ease-in-out infinite;
+}
+
+.avatar-eye {
+  position: absolute;
+  top: 33.5%;
+  width: 17px;
+  height: 7px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.92), rgba(118, 236, 255, 0.74) 34%, rgba(25, 44, 60, 0.05) 68%);
+  box-shadow: 0 0 12px rgba(100, 233, 247, 0.46);
+  opacity: 0.34;
+  transform: translateX(-50%) scaleY(0.72);
+  animation: miaEyeBlink 5.2s ease-in-out infinite, miaEyeFocus 7.2s ease-in-out infinite;
+  mix-blend-mode: screen;
+}
+
+.avatar-eye--left {
+  left: 42.7%;
+}
+
+.avatar-eye--right {
+  left: 57.6%;
+  animation-delay: 0.04s, 0.18s;
+}
+
+.avatar-mouth {
+  position: absolute;
+  left: 50.1%;
+  top: 48.6%;
+  width: 28px;
+  height: 8px;
+  border-radius: 999px;
+  background: radial-gradient(ellipse at center, rgba(255, 117, 112, 0.58), rgba(255, 117, 112, 0.16) 52%, rgba(255, 117, 112, 0) 72%);
+  box-shadow: 0 0 16px rgba(255, 103, 95, 0.34);
+  opacity: 0.44;
+  transform: translate(-50%, -50%) scaleX(0.82) scaleY(0.5);
+  animation: miaMouthTalk 1.25s ease-in-out infinite;
+  mix-blend-mode: screen;
+}
+
+.avatar-breath {
+  position: absolute;
+  left: 50%;
+  top: 39%;
+  width: 58%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(100, 233, 247, 0.14), rgba(255, 103, 95, 0.08) 48%, transparent 70%);
+  opacity: 0.36;
+  transform: translate(-50%, -50%) scale(0.92);
+  animation: miaBreathGlow 4.8s ease-in-out infinite;
+  mix-blend-mode: screen;
 }
 
 .hero-avatar::before,
@@ -37,7 +100,7 @@
 
 .voice-badge,
 .hero-avatar__caption {
-  z-index: 2;
+  z-index: 3;
 }
 
 .action-dock {
@@ -118,7 +181,116 @@
   display: none;
 }
 
+@keyframes miaPortraitBreath {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  45% {
+    transform: translate3d(0, 1px, 0) scale(1.012);
+  }
+  70% {
+    transform: translate3d(0, -1px, 0) scale(1.006);
+  }
+}
+
+@keyframes miaFacePresence {
+  0%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  45% {
+    transform: translate3d(0, 1px, 0);
+  }
+  70% {
+    transform: translate3d(1px, -1px, 0);
+  }
+}
+
+@keyframes miaEyeBlink {
+  0%, 7%, 100% {
+    opacity: 0.36;
+    transform: translateX(-50%) scaleY(0.72);
+  }
+  8.2%, 9.2% {
+    opacity: 0.08;
+    transform: translateX(-50%) scaleY(0.08);
+  }
+  10.5%, 57% {
+    opacity: 0.34;
+    transform: translateX(-50%) scaleY(0.72);
+  }
+  58.4%, 59.2% {
+    opacity: 0.1;
+    transform: translateX(-50%) scaleY(0.1);
+  }
+  61% {
+    opacity: 0.35;
+    transform: translateX(-50%) scaleY(0.72);
+  }
+}
+
+@keyframes miaEyeFocus {
+  0%, 100% {
+    translate: 0 0;
+  }
+  36% {
+    translate: 1px 0;
+  }
+  62% {
+    translate: -1px 1px;
+  }
+}
+
+@keyframes miaMouthTalk {
+  0%, 100% {
+    opacity: 0.22;
+    transform: translate(-50%, -50%) scaleX(0.72) scaleY(0.34);
+  }
+  28% {
+    opacity: 0.52;
+    transform: translate(-50%, -50%) scaleX(0.96) scaleY(0.86);
+  }
+  48% {
+    opacity: 0.32;
+    transform: translate(-50%, -50%) scaleX(0.78) scaleY(0.42);
+  }
+  72% {
+    opacity: 0.58;
+    transform: translate(-50%, -50%) scaleX(1.04) scaleY(0.72);
+  }
+}
+
+@keyframes miaBreathGlow {
+  0%, 100% {
+    opacity: 0.25;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  50% {
+    opacity: 0.46;
+    transform: translate(-50%, -50%) scale(1.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-avatar img,
+  .avatar-motion-layer,
+  .avatar-eye,
+  .avatar-mouth,
+  .avatar-breath {
+    animation: none;
+  }
+}
+
 @media (max-width: 390px) {
+  .avatar-eye {
+    width: 15px;
+    height: 6px;
+  }
+
+  .avatar-mouth {
+    width: 25px;
+    height: 7px;
+  }
+
   .action-dock {
     grid-template-columns: minmax(0, 1fr) 52px;
   }
