@@ -3,6 +3,7 @@ const tenants = [
     slug: "new-digital-app",
     name: "New Digital App",
     assistantName: "Mia",
+    website: "https://www.newdigitalapp.com",
     knowledge: [
       {
         title: "Prodotto",
@@ -18,6 +19,11 @@ const tenants = [
         title: "Configurazione avatar",
         text:
           "Ogni cliente potra' configurare nome, genere visivo, carattere e tono dell'assistente. Esempi di tono: educato, professionale, diretto, empatico."
+      },
+      {
+        title: "Sito collegato",
+        text:
+          "Il sito ufficiale collegato al primo avatar e' www.newdigitalapp.com."
       },
       {
         title: "Canali",
@@ -36,6 +42,7 @@ function buildContext(tenant) {
   return [
     `Azienda: ${tenant.name}`,
     `Assistente: ${tenant.assistantName}`,
+    `Sito ufficiale collegato: ${tenant.website}`,
     "Informazioni confermate:",
     knowledge,
     "Regole: rispondi in modo breve, concreto e utile. Quando mancano dati specifici, dillo chiaramente e proponi il prossimo passo."
