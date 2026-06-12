@@ -6,15 +6,15 @@ import { avatarSrc } from "./avatar-data";
 const tenant = {
   slug: "new-digital-app",
   name: "New Digital App",
-  assistantName: "Mia",
+  assistantName: "Mia.Ai",
   whatsappPhone: "393457980259"
 };
 
 const welcomeMessage =
-  "Ciao, sono Mia cosa desideri oggi?";
+  "Ciao, sono Mia.Ai cosa desideri?";
 
 const suggestions = [
-  "Immagina Mia sul mio sito",
+  "Immagina Mia.Ai sul mio sito",
   "Come emozioni un cliente?",
   "Vorrei vedere cosa sai fare"
 ];
@@ -302,7 +302,7 @@ export function Assistant() {
         <img alt="" className="avatar-photo" src={avatarSrc} />
         <div className="assistant-title">
           <strong>{tenant.assistantName}</strong>
-          <span>{continuousVoice ? "Voce attiva" : `Avatar AI di ${tenant.name}`}</span>
+          {continuousVoice ? <span>Voce attiva</span> : null}
         </div>
         <span className="assistant-status">{speaking ? "Parlo" : listening ? "Ascolto" : "Online"}</span>
       </header>
@@ -355,7 +355,7 @@ export function Assistant() {
           <input
             aria-label="Messaggio"
             onChange={(event) => setInput(event.target.value)}
-            placeholder="Scrivi qui o parla con Mia..."
+            placeholder="Scrivi qui o parla con Mia.Ai..."
             value={input}
           />
         </form>
