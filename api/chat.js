@@ -107,40 +107,65 @@ module.exports = async function handler(req, res) {
     .map((message) => `${message.role === "user" ? "Cliente" : "Assistente"}: ${message.content}`)
     .join("\n");
 
-  const openAIResponse = await fetch("https://api.openai.com/v1/responses", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      model: process.env.OPENAI_MODEL || "gpt-5.2",
-      instructions: [
-        "Sei un assistente AI per un ristorante.",
-        "Rispondi in italiano, in modo naturale, breve e utile.",
-        "Usa prima il contesto del ristorante. Se una informazione non e' presente, dillo chiaramente.",
-        "Quando il cliente vuole ordinare, proponi un riepilogo ordinato e chiedi conferma.",
-        "Segnala sempre allergeni rilevanti quando parli di piatti.",
-        "Non inventare disponibilita', prezzi o ingredienti non presenti nel contesto."
-      ].join("\n"),
-      input: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "input_text",
-              text: `${buildContext(tenant)}\n\nConversazione recente:\n${transcript}\n\nRispondi al cliente. Se dalla conversazione emerge un ordine, alla fine aggiungi una sezione chiamata RIEPILOGO_ORDINE con testo pronto per WhatsApp.`
-            }
-          ]
-        }
-      ]
-    })
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 18000);
+  let openAIResponse;
+
+  try {
+    openAIResponse = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      signal: controller.signal,
+      headers: {
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: process.env.OPENAI_MODEL || "gpt-5.2",
+        instructions: [
+          "Sei un assistente AI per un ristorante.",
+          "Rispondi in italiano, in modo naturale, breve e utile.",
+          "Usa prima il contesto del ristorante. Se una informazione non e' presente, dillo chiaramente.",
+          "Quando il cliente vuole ordinare, proponi un riepilogo ordinato e chiedi conferma.",
+          "Segnala sempre allergeni rilevanti quando parli di piatti.",
+          "Non inventare disponibilita', prezzi o ingredienti non presenti nel contesto."
+        ].join("\n"),
+        input: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "input_text",
+                text: `${buildContext(tenant)}\n\nConversazione recente:\n${transcript}\n\nRispondi al cliente. Se dalla conversazione emerge un ordine, alla fine aggiungi una sezione chiamata RIEPILOGO_ORDINE con testo pronto per WhatsApp.`
+              }
+            ]
+          }
+        ]
+      })
+    });
+  } catch {
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/json");
+    res.end(
+      JSON.stringify({
+        ...fallbackReply(messages, tenant),
+        source: "fallback_timeout"
+      })
+    );
+    return;
+  } finally {
+    clearTimeout(timeout);
+  }
 
   if (!openAIResponse.ok) {
-    res.statusCode = 502;
+    res.statusCode = 200;
     res.setHeader("Content-Type", "application/json");
-    res.end(JSON.stringify(fallbackReply(messages, tenant)));
+    res.end(
+      JSON.stringify({
+        ...fallbackReply(messages, tenant),
+        source: "fallback_openai_error",
+        openaiStatus: openAIResponse.status
+      })
+    );
     return;
   }
 
@@ -157,7 +182,8 @@ module.exports = async function handler(req, res) {
   res.end(
     JSON.stringify({
       reply: replyPart.trim() || outputText,
-      orderDraft: orderPart?.replace(/^[:\s-]+/, "").trim()
+      orderDraft: orderPart?.replace(/^[:\s-]+/, "").trim(),
+      source: "openai"
     })
   );
 };
