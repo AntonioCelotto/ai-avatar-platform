@@ -399,3 +399,22 @@ html[data-mia-avatar-state="speaking"] .avatar-breath {
     font-size: 24px;
   }
 }
+
+/* Surgical avatar stabilization: keep the real portrait visible and remove fragile face overlays. */
+.avatar-motion-layer,
+.avatar-eye,
+.avatar-mouth,
+.avatar-breath {
+  display: none !important;
+}
+
+.hero-avatar img {
+  transform: none;
+  animation: none;
+  object-position: center 8%;
+}
+
+.hero-avatar::after {
+  height: 28%;
+  background: linear-gradient(180deg, rgba(5, 7, 13, 0) 0%, rgba(5, 7, 13, 0.72) 64%, rgba(5, 7, 13, 0.94) 100%);
+}
