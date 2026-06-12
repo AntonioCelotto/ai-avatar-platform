@@ -6,15 +6,15 @@ export default function Home() {
     <main className="mobile-chat-shell">
       <div className="aurora aurora--coral" />
       <div className="aurora aurora--cyan" />
-      <section className="avatar-stage" aria-label="Avatar AI Mia">
+      <section className="avatar-stage" aria-label="Mia.Ai">
         <header className="topbar">
           <span className="brand-mark">M</span>
-          <span className="eyebrow">Mia</span>
+          <span className="eyebrow">Mia.Ai</span>
           <span className="profile-dot" aria-hidden="true" />
         </header>
 
         <div className="hero-avatar">
-          <img alt="Avatar AI Mia" src={avatarSrc} />
+          <img alt="" src={avatarSrc} />
           <div className="avatar-motion-layer" aria-hidden="true">
             <span className="avatar-eye avatar-eye--left" />
             <span className="avatar-eye avatar-eye--right" />
@@ -34,7 +34,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="assistant-workspace" aria-label="Chat con avatar AI">
+      <section className="assistant-workspace" aria-label="Chat con Mia.Ai">
         <Assistant />
       </section>
     </main>
