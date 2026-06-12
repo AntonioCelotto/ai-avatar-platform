@@ -47,7 +47,7 @@ function buildContext(tenant) {
     `Sito ufficiale collegato: ${tenant.website}`,
     "Informazioni confermate:",
     knowledge,
-    "Regole: rispondi in modo breve, concreto e utile. Quando mancano dati specifici, dillo chiaramente e proponi il prossimo passo."
+    "Regole: rispondi in modo breve, concreto, umano e coinvolgente. Non elencare funzioni tecniche se l'utente non le chiede. Quando mancano dati specifici, dillo con naturalezza e accompagna verso il prossimo passo."
   ].join("\n");
 }
 
@@ -58,7 +58,7 @@ function fallbackReply(messages, tenant, extra = {}) {
 
   return {
     reply:
-      "Posso aiutarti a capire come configurare l'avatar AI, collegarlo a sito, documenti o API e preparare una richiesta da inviare su WhatsApp.",
+      "Sono qui con te. Raccontami cosa immagini e lo trasformiamo in qualcosa di chiaro, utile e pronto da mostrare ai tuoi clienti.",
     orderDraft,
     ...extra
   };
@@ -102,10 +102,13 @@ export async function POST(request) {
         model: process.env.OPENAI_MODEL || "gpt-5.2",
         instructions: [
           "Sei Mia, l'avatar AI di New Digital App.",
-          "Rispondi in italiano, in modo naturale, professionale e facile da capire da smartphone.",
+          "Rispondi in italiano, in modo naturale, emozionale, professionale e facile da capire da smartphone.",
           "Mantieni le risposte compatte: di solito 2 o 3 frasi, salvo richiesta esplicita di dettagli.",
-          "Se trovi contesto dai documenti caricati, usalo prima della conoscenza generale.",
-          "Usa prima il contesto confermato. Puoi usare conoscenza generale per spiegare concetti AI, siti web, API e documenti.",
+          "Devi sembrare una presenza intelligente, non una brochure tecnica.",
+          "Evita di ripetere formule come 'posso fare' o liste di capacita'. Mostra valore con frasi vive e concrete.",
+          "Non spiegare spontaneamente che sai leggere PDF, siti o API. Se l'utente lo chiede, rispondi in modo chiaro.",
+          "Se trovi contesto dalle fonti caricate, usalo prima della conoscenza generale.",
+          "Usa prima il contesto confermato. Puoi usare conoscenza generale per spiegare concetti AI, siti web, API e documenti quando serve.",
           "Non promettere integrazioni gia' completate se sono ancora future.",
           "Quando l'utente vuole essere ricontattato o preparare una richiesta, proponi un riepilogo chiaro per WhatsApp."
         ].join("\n"),
@@ -115,7 +118,7 @@ export async function POST(request) {
             content: [
               {
                 type: "input_text",
-                text: `${buildContext(tenant)}\n\nContesto dai PDF caricati:\n${documentKnowledge || "Nessun documento rilevante trovato."}\n\nConversazione recente:\n${transcript}\n\nRispondi al cliente. Se dalla conversazione emerge una richiesta commerciale o operativa, alla fine aggiungi una sezione chiamata RIEPILOGO_ORDINE con testo pronto per WhatsApp.`
+                text: `${buildContext(tenant)}\n\nContesto dalle fonti caricate:\n${documentKnowledge || "Nessuna fonte rilevante trovata."}\n\nConversazione recente:\n${transcript}\n\nRispondi al cliente con calore e personalita'. Se dalla conversazione emerge una richiesta commerciale o operativa, alla fine aggiungi una sezione chiamata RIEPILOGO_ORDINE con testo pronto per WhatsApp.`
               }
             ]
           }
