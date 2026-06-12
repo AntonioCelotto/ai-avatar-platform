@@ -1,13 +1,13 @@
 # ai-avatar-platform
 
-Piattaforma multi-cliente per assistenti AI con avatar, voce e knowledge base dedicata. Il primo MVP e' orientato ai ristoranti: menu, allergeni, consigli, raccolta ordine e invio riepilogo via WhatsApp.
+Piattaforma multi-cliente per assistenti AI con avatar, voce e knowledge base dedicata. Il primo caso reale e' l'avatar AI di New Digital App, pensato per essere poi replicato su clienti diversi.
 
 ## Stack
 
 - Next.js su Vercel
-- Supabase per clienti, ristoranti, menu, documenti e conversazioni
+- Supabase per clienti, avatar, documenti, fonti, conversazioni e richieste
 - OpenAI Responses API via REST per generazione risposte
-- WhatsApp link precompilato per MVP ordini
+- WhatsApp link precompilato per richieste e contatti
 
 ## Setup locale
 
@@ -17,10 +17,10 @@ Piattaforma multi-cliente per assistenti AI con avatar, voce e knowledge base de
 npm run dev
 ```
 
-Demo locale:
+App locale:
 
 ```text
-http://localhost:3000/demo/trattoria-demo/
+http://localhost:3000/
 ```
 
 ## Variabili ambiente
@@ -56,4 +56,4 @@ La migrazione iniziale si trova in:
 supabase/migrations/001_initial_multi_tenant_schema.sql
 ```
 
-Il modello dati e' multi-tenant: ogni ristorante/cliente ha configurazione, fonti, voci menu, conversazioni e ordini separati.
+Il modello dati e' multi-tenant: ogni cliente ha configurazione avatar, fonti di apprendimento, conversazioni e richieste separate.
