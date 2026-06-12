@@ -38,6 +38,7 @@ export function Assistant() {
   const [canUseSpeech, setCanUseSpeech] = useState(false);
   const [continuousVoice, setContinuousVoice] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
 
   const whatsappText =
     orderDraft ||
@@ -51,6 +52,7 @@ export function Assistant() {
 
     return () => {
       continuousVoiceRef.current = false;
+      delete document.documentElement.dataset.miaAvatarState;
       if (recognitionRef.current) {
         recognitionRef.current.onend = null;
         recognitionRef.current.onerror = null;
@@ -68,6 +70,20 @@ export function Assistant() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    const avatarState = speaking
+      ? "speaking"
+      : listening
+        ? "listening"
+        : loading
+          ? "thinking"
+          : continuousVoice
+            ? "ready"
+            : "idle";
+
+    document.documentElement.dataset.miaAvatarState = avatarState;
+  }, [continuousVoice, listening, loading, speaking]);
 
   useEffect(() => {
     const cleanInput = input.trim();
@@ -106,6 +122,11 @@ export function Assistant() {
     return (preview || cleanText).slice(0, 360).trim();
   }
 
+  function finishSpeaking() {
+    setSpeaking(false);
+    restartVoiceIfNeeded();
+  }
+
   function speakWithBrowser(text, forceSpeak = false) {
     if ((!voiceEnabled && !forceSpeak) || !("speechSynthesis" in window)) return;
 
@@ -117,7 +138,9 @@ export function Assistant() {
     utterance.lang = "it-IT";
     utterance.rate = 1;
     utterance.pitch = 1;
-    utterance.onend = restartVoiceIfNeeded;
+    utterance.onend = finishSpeaking;
+    utterance.onerror = finishSpeaking;
+    setSpeaking(true);
     window.speechSynthesis.speak(utterance);
   }
 
@@ -136,10 +159,12 @@ export function Assistant() {
       const audioUrl = `/api/speech?text=${encodeURIComponent(cleanText)}`;
       const audio = new Audio(audioUrl);
       audioRef.current = audio;
-      audio.onended = restartVoiceIfNeeded;
-      audio.onerror = restartVoiceIfNeeded;
+      audio.onended = finishSpeaking;
+      audio.onerror = finishSpeaking;
+      setSpeaking(true);
       await audio.play();
     } catch {
+      setSpeaking(false);
       speakWithBrowser(cleanText, true);
     }
   }
@@ -279,7 +304,7 @@ export function Assistant() {
           <strong>{tenant.assistantName}</strong>
           <span>{continuousVoice ? "Voce attiva" : `Avatar AI di ${tenant.name}`}</span>
         </div>
-        <span className="assistant-status">{listening ? "Ascolto" : "Online"}</span>
+        <span className="assistant-status">{speaking ? "Parlo" : listening ? "Ascolto" : "Online"}</span>
       </header>
 
       <div className="messages" aria-live="polite">
