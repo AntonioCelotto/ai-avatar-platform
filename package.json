@@ -1,0 +1,11 @@
+{
+  "name": "ai-avatar-platform",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "node server.mjs",
+    "check": "node --check server.mjs && node --check api/chat.js"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
