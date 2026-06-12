@@ -40,6 +40,8 @@ Non inserire mai `SUPABASE_SERVICE_ROLE_KEY` o `OPENAI_API_KEY` nel frontend.
 
 La prima base e' zero dependency per evitare blocchi di installazione npm e rendere il deploy Vercel immediato. Quando il repository sara' collegato e il registry sara' disponibile, potremo migrare a Next.js mantenendo schema dati e flusso prodotto.
 
+Su Vercel il progetto viene pubblicato come file statici + funzione serverless `/api/chat`. Non serve configurare un comando di build.
+
 ## Supabase
 
 La migrazione iniziale si trova in:
