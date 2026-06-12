@@ -1,3 +1,5 @@
+import { findRelevantKnowledge } from "../../lib/supabase-server";
+
 const tenants = [
   {
     slug: "new-digital-app",
@@ -80,6 +82,9 @@ export async function POST(request) {
     .slice(-8)
     .map((message) => `${message.role === "user" ? "Cliente" : "Assistente"}: ${message.content}`)
     .join("\n");
+  const lastUserMessage =
+    [...messages].reverse().find((message) => message.role === "user")?.content || "";
+  const documentKnowledge = await findRelevantKnowledge(lastUserMessage);
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 18000);
@@ -99,6 +104,7 @@ export async function POST(request) {
           "Sei Mia, l'avatar AI di New Digital App.",
           "Rispondi in italiano, in modo naturale, professionale e facile da capire da smartphone.",
           "Mantieni le risposte compatte: di solito 2 o 3 frasi, salvo richiesta esplicita di dettagli.",
+          "Se trovi contesto dai documenti caricati, usalo prima della conoscenza generale.",
           "Usa prima il contesto confermato. Puoi usare conoscenza generale per spiegare concetti AI, siti web, API e documenti.",
           "Non promettere integrazioni gia' completate se sono ancora future.",
           "Quando l'utente vuole essere ricontattato o preparare una richiesta, proponi un riepilogo chiaro per WhatsApp."
@@ -109,7 +115,7 @@ export async function POST(request) {
             content: [
               {
                 type: "input_text",
-                text: `${buildContext(tenant)}\n\nConversazione recente:\n${transcript}\n\nRispondi al cliente. Se dalla conversazione emerge una richiesta commerciale o operativa, alla fine aggiungi una sezione chiamata RIEPILOGO_ORDINE con testo pronto per WhatsApp.`
+                text: `${buildContext(tenant)}\n\nContesto dai PDF caricati:\n${documentKnowledge || "Nessun documento rilevante trovato."}\n\nConversazione recente:\n${transcript}\n\nRispondi al cliente. Se dalla conversazione emerge una richiesta commerciale o operativa, alla fine aggiungi una sezione chiamata RIEPILOGO_ORDINE con testo pronto per WhatsApp.`
               }
             ]
           }
