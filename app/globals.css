@@ -46,7 +46,7 @@ a {
   text-decoration: none;
 }
 
-.mobile-shell {
+.mobile-chat-shell {
   min-height: 100svh;
   display: grid;
   grid-template-columns: minmax(320px, 0.86fr) minmax(360px, 1.14fr);
@@ -55,7 +55,7 @@ a {
     var(--bg);
 }
 
-.avatar-studio {
+.avatar-stage {
   min-height: 100svh;
   display: flex;
   flex-direction: column;
@@ -144,90 +144,6 @@ a {
   margin-top: 6px;
   color: rgba(255, 255, 255, 0.82);
   font-size: 14px;
-  line-height: 1.35;
-}
-
-.config-panel {
-  display: grid;
-  gap: 14px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface);
-  padding: 16px;
-}
-
-.field-group {
-  display: grid;
-  gap: 8px;
-}
-
-.field-group label {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.field-group input {
-  width: 100%;
-  height: 42px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: #f8fbfd;
-  color: var(--ink);
-  padding: 0 12px;
-}
-
-.segmented,
-.chip-grid {
-  display: grid;
-  gap: 8px;
-}
-
-.segmented {
-  grid-template-columns: 1fr 1fr;
-}
-
-.chip-grid {
-  grid-template-columns: 1fr 1fr;
-}
-
-.segmented button,
-.chip-grid button {
-  min-height: 38px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: #f8fbfd;
-  color: var(--ink);
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.segmented button.is-active,
-.chip-grid button.is-active {
-  border-color: rgba(17, 100, 102, 0.35);
-  background: var(--accent);
-  color: white;
-}
-
-.source-list {
-  display: grid;
-  gap: 10px;
-  border-top: 1px solid var(--line);
-  padding-top: 12px;
-}
-
-.source-list div {
-  display: grid;
-  gap: 2px;
-}
-
-.source-list strong {
-  font-size: 13px;
-}
-
-.source-list span {
-  color: var(--muted);
-  font-size: 12px;
   line-height: 1.35;
 }
 
@@ -351,14 +267,13 @@ a {
 
 .composer {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr;
   gap: 9px;
   padding: 14px;
   border-top: 1px solid var(--line);
 }
 
-.icon-button,
-.send-button {
+.icon-button {
   min-width: 44px;
   height: 44px;
   border-radius: 6px;
@@ -385,13 +300,6 @@ a {
   background: white;
   padding: 0 12px;
   color: var(--ink);
-}
-
-.send-button {
-  border: 0;
-  background: var(--accent);
-  color: white;
-  padding: 0 14px;
 }
 
 .order-bar {
@@ -421,11 +329,11 @@ a {
 }
 
 @media (max-width: 860px) {
-  .mobile-shell {
+  .mobile-chat-shell {
     grid-template-columns: 1fr;
   }
 
-  .avatar-studio {
+  .avatar-stage {
     min-height: auto;
     padding: 16px 16px 0;
   }
@@ -453,11 +361,11 @@ a {
 }
 
 @media (max-width: 520px) {
-  .mobile-shell {
+  .mobile-chat-shell {
     background: var(--bg);
   }
 
-  .avatar-studio {
+  .avatar-stage {
     gap: 12px;
   }
 
@@ -481,10 +389,6 @@ a {
     min-height: 300px;
   }
 
-  .config-panel {
-    padding: 13px;
-  }
-
   .assistant-header {
     grid-template-columns: auto 1fr;
   }
@@ -498,12 +402,7 @@ a {
   }
 
   .composer {
-    grid-template-columns: auto 1fr auto;
-  }
-
-  .send-button {
-    min-width: 54px;
-    padding: 0 10px;
+    grid-template-columns: auto 1fr;
   }
 
   .order-bar {
