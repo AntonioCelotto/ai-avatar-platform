@@ -11,7 +11,7 @@ const tenant = {
 };
 
 const welcomeMessage =
-  "Ciao, sono Mia. Sono qui per offrirti un'intelligenza artificiale semantica che ascolta, comprende e trasforma le idee in esperienze vive. Dimmi cosa vuoi far nascere oggi.";
+  "Ciao, sono Mia cosa desideri oggi?";
 
 const suggestions = [
   "Immagina Mia sul mio sito",
@@ -308,30 +308,37 @@ export function Assistant() {
         </div>
       </div>
 
-      <form
-        className="composer"
-        onSubmit={(event) => {
-          event.preventDefault();
-          sendMessage(input);
-        }}
-      >
-        <button
-          aria-label="Attiva voce continua"
-          className={`icon-button ${listening ? "is-listening" : ""}`}
-          disabled={!canUseSpeech || (loading && !continuousVoice)}
-          onClick={toggleContinuousVoice}
-          title={canUseSpeech ? "Attiva o ferma la voce continua" : "Microfono non disponibile"}
-          type="button"
+      <div className="action-dock">
+        <form
+          className="composer"
+          onSubmit={(event) => {
+            event.preventDefault();
+            sendMessage(input);
+          }}
         >
-          {continuousVoice ? "Stop" : "Voce"}
-        </button>
-        <input
-          aria-label="Messaggio"
-          onChange={(event) => setInput(event.target.value)}
-          placeholder="Scrivi: Mia risponde da sola..."
-          value={input}
-        />
-      </form>
+          <button
+            aria-label="Attiva voce continua"
+            className={`icon-button ${listening ? "is-listening" : ""}`}
+            disabled={!canUseSpeech || (loading && !continuousVoice)}
+            onClick={toggleContinuousVoice}
+            title={canUseSpeech ? "Attiva o ferma la voce continua" : "Microfono non disponibile"}
+            type="button"
+          >
+            <span className="mic-symbol" aria-hidden="true" />
+            <span className="voice-label">{continuousVoice ? "Stop" : "Parla"}</span>
+          </button>
+          <input
+            aria-label="Messaggio"
+            onChange={(event) => setInput(event.target.value)}
+            placeholder="Scrivi qui o parla con Mia..."
+            value={input}
+          />
+        </form>
+        <a aria-label="Apri WhatsApp" className="whatsapp-link" href={whatsappUrl} rel="noreferrer" target="_blank">
+          <span className="whatsapp-icon" aria-hidden="true">W</span>
+          WhatsApp
+        </a>
+      </div>
 
       <div className="order-bar">
         <span>
@@ -343,9 +350,6 @@ export function Assistant() {
                 : "Voce attiva, riparto appena ho finito di parlare."
               : "Sono qui. Scrivi o attiva la voce quando vuoi iniziare."}
         </span>
-        <a className="whatsapp-link" href={whatsappUrl} rel="noreferrer" target="_blank">
-          WhatsApp
-        </a>
       </div>
     </div>
   );
