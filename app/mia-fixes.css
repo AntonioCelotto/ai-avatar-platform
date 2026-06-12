@@ -1,0 +1,141 @@
+/* Final fixes after live mobile review. */
+.hero-avatar {
+  background: #05070d;
+}
+
+.hero-avatar img {
+  z-index: 1;
+  object-fit: cover;
+  object-position: center top;
+  opacity: 1;
+  filter: none;
+}
+
+.hero-avatar::before,
+.hero-avatar::after,
+.neon-ring {
+  display: none;
+}
+
+.voice-badge,
+.hero-avatar__caption {
+  z-index: 2;
+}
+
+.action-dock {
+  grid-template-columns: minmax(0, 1fr) 56px;
+  align-items: center;
+  gap: 10px;
+}
+
+.composer {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 46px;
+  align-items: center;
+}
+
+.composer input {
+  position: relative;
+  z-index: 1;
+  height: 56px;
+  min-height: 56px;
+  padding-right: 60px;
+}
+
+.icon-button {
+  position: relative;
+  z-index: 3;
+  grid-column: 2;
+  grid-row: 1;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  align-self: center;
+  justify-self: center;
+  margin: 0 6px 0 0;
+  transform: none;
+}
+
+.icon-button:disabled {
+  opacity: 1;
+}
+
+.whatsapp-link {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  min-height: 56px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 16px;
+  background: #25d366;
+  color: transparent;
+  font-size: 0;
+  line-height: 0;
+  padding: 0;
+}
+
+.whatsapp-link .whatsapp-icon {
+  display: none;
+}
+
+.whatsapp-link::before {
+  content: "";
+  width: 34px;
+  height: 34px;
+  display: block;
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+}
+
+.whatsapp-link::after {
+  content: "\260E";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  font-size: 25px;
+  font-weight: 900;
+  line-height: 1;
+  transform: rotate(-18deg);
+}
+
+@media (max-width: 390px) {
+  .action-dock {
+    grid-template-columns: minmax(0, 1fr) 52px;
+  }
+
+  .composer {
+    grid-template-columns: 1fr 44px;
+  }
+
+  .composer input,
+  .whatsapp-link {
+    height: 52px;
+    min-height: 52px;
+  }
+
+  .icon-button {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    min-height: 42px;
+  }
+
+  .whatsapp-link {
+    width: 52px;
+  }
+
+  .whatsapp-link::before {
+    width: 31px;
+    height: 31px;
+  }
+
+  .whatsapp-link::after {
+    font-size: 22px;
+  }
+}
