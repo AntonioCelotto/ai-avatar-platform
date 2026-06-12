@@ -133,6 +133,8 @@ export async function uploadKnowledgeFile({ fileName, mimeType, buffer }) {
 export async function insertKnowledgeSource({
   venueId,
   title,
+  sourceType = "document",
+  sourceUrl,
   storagePath,
   extractedText
 }) {
@@ -144,8 +146,9 @@ export async function insertKnowledgeSource({
     },
     body: JSON.stringify({
       venue_id: venueId,
-      source_type: "document",
+      source_type: sourceType,
       title,
+      source_url: sourceUrl,
       storage_path: storagePath,
       status: "ready",
       extracted_text: extractedText
@@ -179,7 +182,20 @@ export async function insertKnowledgeChunks({ sourceId, chunks }) {
 export async function listKnowledgeSources() {
   const venueId = await ensureDefaultVenue();
   return supabaseFetch(
-    `/rest/v1/knowledge_sources?venue_id=eq.${venueId}&select=id,title,status,storage_path,created_at&order=created_at.desc&limit=20`
+    `/rest/v1/knowledge_sources?venue_id=eq.${venueId}&select=id,title,source_type,source_url,status,storage_path,created_at&order=created_at.desc&limit=30`
+  );
+}
+
+export async function deleteKnowledgeSource(sourceId) {
+  const venueId = await ensureDefaultVenue();
+  await supabaseFetch(
+    `/rest/v1/knowledge_sources?id=eq.${sourceId}&venue_id=eq.${venueId}`,
+    {
+      method: "DELETE",
+      headers: {
+        Prefer: "return=minimal"
+      }
+    }
   );
 }
 
