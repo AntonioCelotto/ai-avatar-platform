@@ -11,7 +11,7 @@ function cleanSpeechInput(input) {
     .replace(/https?:\/\/\S+/g, "")
     .replace(/\s+/g, " ")
     .trim()
-    .slice(0, 1400);
+    .slice(0, 420);
 }
 
 export async function POST(request) {
