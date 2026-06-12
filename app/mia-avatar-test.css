@@ -29,3 +29,113 @@
 .hero-avatar img {
   object-position: center 11%;
 }
+
+/* Antonio feedback: keep only Mia in the header, give the portrait more room, and move voice outside the avatar. */
+.mobile-chat-shell {
+  grid-template-rows: minmax(0, 72svh) minmax(0, 1fr);
+}
+
+.avatar-stage {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  padding: 14px 14px 0;
+}
+
+.topbar {
+  grid-template-columns: 1fr;
+  align-items: center;
+}
+
+.brand-mark,
+.profile-dot,
+.title-block,
+.hero-avatar__caption,
+.neon-ring {
+  display: none !important;
+}
+
+.eyebrow {
+  font-size: 18px;
+  font-weight: 750;
+  color: rgba(255, 250, 246, 0.94);
+}
+
+.hero-avatar {
+  min-height: 0;
+  border-radius: 8px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.hero-avatar img {
+  object-position: center 8%;
+  filter: saturate(1.03) contrast(1.02);
+}
+
+.hero-avatar::before {
+  content: none !important;
+  display: none !important;
+}
+
+.hero-avatar::after {
+  z-index: 3;
+  height: 22%;
+  inset: auto 0 0;
+  background: linear-gradient(180deg, rgba(3, 8, 6, 0) 0%, rgba(3, 8, 6, 0.52) 100%);
+}
+
+.voice-badge,
+.voice-badge--outside {
+  position: relative !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  z-index: 6;
+  width: fit-content;
+  min-height: 42px;
+  margin: 0 auto;
+  padding: 0 20px;
+  gap: 10px;
+  border-color: rgba(100, 233, 247, 0.7);
+  background: rgba(5, 11, 15, 0.72);
+  color: #ffffff;
+  font-size: 14px;
+  box-shadow: none;
+}
+
+.voice-orbit span {
+  background: var(--mia-cyan);
+}
+
+@media (max-width: 390px) {
+  .mobile-chat-shell {
+    grid-template-rows: minmax(0, 71svh) minmax(0, 1fr);
+  }
+
+  .avatar-stage {
+    padding-inline: 12px;
+  }
+
+  .eyebrow {
+    font-size: 17px;
+  }
+
+  .voice-badge,
+  .voice-badge--outside {
+    min-height: 40px;
+    padding-inline: 18px;
+    font-size: 13px;
+  }
+}
+
+@media (max-height: 740px) {
+  .mobile-chat-shell {
+    grid-template-rows: minmax(0, 68svh) minmax(0, 1fr);
+  }
+
+  .avatar-stage {
+    gap: 8px;
+    padding-top: 12px;
+  }
+}
