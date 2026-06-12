@@ -1,4 +1,5 @@
 import "./globals.css";
+import "./app-shell.css";
 import { PwaInstaller } from "./pwa-installer";
 
 export const metadata = {
@@ -22,7 +23,7 @@ export const metadata = {
 };
 
 export const viewport = {
-  themeColor: "#116466",
+  themeColor: "#111318",
   colorScheme: "light"
 };
 
