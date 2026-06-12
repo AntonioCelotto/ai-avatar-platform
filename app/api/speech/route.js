@@ -14,10 +14,7 @@ function cleanSpeechInput(input) {
     .slice(0, 420);
 }
 
-export async function POST(request) {
-  const payload = await request.json();
-  const input = cleanSpeechInput(payload.text);
-
+async function generateSpeechResponse(input) {
   if (!input) {
     return Response.json({ error: "Missing text" }, { status: 400 });
   }
@@ -55,4 +52,14 @@ export async function POST(request) {
       "Cache-Control": "no-store"
     }
   });
+}
+
+export async function GET(request) {
+  const { searchParams } = new URL(request.url);
+  return generateSpeechResponse(cleanSpeechInput(searchParams.get("text")));
+}
+
+export async function POST(request) {
+  const payload = await request.json();
+  return generateSpeechResponse(cleanSpeechInput(payload.text));
 }
