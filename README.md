@@ -42,6 +42,14 @@ La prima base e' zero dependency per evitare blocchi di installazione npm e rend
 
 Su Vercel il progetto viene pubblicato come file statici + funzione serverless `/api/chat`. Non serve configurare un comando di build.
 
+Endpoint di controllo sicuro:
+
+```text
+/api/health
+```
+
+Mostra solo se le variabili ambiente sono presenti, senza esporre valori segreti.
+
 ## Supabase
 
 La migrazione iniziale si trova in:
