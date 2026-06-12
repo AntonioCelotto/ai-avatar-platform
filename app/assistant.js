@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { avatarSrc } from "./avatar-data";
 
 const tenant = {
@@ -28,18 +28,18 @@ export function Assistant() {
   const [loading, setLoading] = useState(false);
   const [orderDraft, setOrderDraft] = useState("");
   const [listening, setListening] = useState(false);
+  const [canUseSpeech, setCanUseSpeech] = useState(false);
+
+  useEffect(() => {
+    setCanUseSpeech(
+      "SpeechRecognition" in window || "webkitSpeechRecognition" in window
+    );
+  }, []);
 
   const whatsappText =
     orderDraft ||
     `Ciao, vorrei informazioni sull'avatar AI di ${tenant.name}.`;
   const whatsappUrl = `https://wa.me/${tenant.whatsappPhone}?text=${encodeURIComponent(whatsappText)}`;
-
-  const canUseSpeech = useMemo(
-    () =>
-      typeof window !== "undefined" &&
-      ("SpeechRecognition" in window || "webkitSpeechRecognition" in window),
-    []
-  );
 
   async function sendMessage(content) {
     const cleanContent = content.trim();
@@ -151,7 +151,7 @@ export function Assistant() {
           title={canUseSpeech ? "Parla con Mia" : "Microfono non disponibile"}
           type="button"
         >
-          {listening ? "●" : "Mic"}
+          {listening ? "Rec" : "Mic"}
         </button>
         <input
           aria-label="Messaggio"
