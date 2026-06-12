@@ -8,24 +8,29 @@ export default function Home() {
       <div className="aurora aurora--cyan" />
       <section className="avatar-stage" aria-label="Avatar AI Mia">
         <header className="topbar">
-          <div>
-            <span className="eyebrow">New Digital App</span>
-            <h1>Mia</h1>
-            <p>Intelligenza artificiale semantica</p>
-          </div>
-          <span className="live-pill">Live</span>
+          <span className="brand-mark">N</span>
+          <span className="eyebrow">New Digital App</span>
+          <span className="profile-dot" aria-hidden="true" />
         </header>
+
+        <div className="title-block">
+          <h1>Mia</h1>
+          <p>Intelligenza artificiale semantica</p>
+        </div>
 
         <div className="hero-avatar">
           <img alt="Avatar AI Mia" src={avatarSrc} />
-          <div className="voice-orbit" aria-hidden="true">
-            <span />
-            <span />
-            <span />
+          <div className="neon-ring" aria-hidden="true" />
+          <div className="voice-badge">
+            <span className="voice-orbit" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+            </span>
+            Voce attiva
           </div>
           <div className="hero-avatar__caption">
-            <strong>Ti ascolto.</strong>
-            <span>Scrivi o parla: trasformo le idee in esperienze vive.</span>
+            <strong>Ti ascolto</strong>
           </div>
         </div>
       </section>
