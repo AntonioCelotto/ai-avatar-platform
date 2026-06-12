@@ -4,6 +4,8 @@ import { avatarSrc } from "./avatar-data";
 export default function Home() {
   return (
     <main className="mobile-chat-shell">
+      <div className="aurora aurora--coral" />
+      <div className="aurora aurora--cyan" />
       <section className="avatar-stage" aria-label="Avatar AI Mia">
         <header className="topbar">
           <div>
@@ -16,9 +18,14 @@ export default function Home() {
 
         <div className="hero-avatar">
           <img alt="Avatar AI Mia" src={avatarSrc} />
+          <div className="voice-orbit" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </div>
           <div className="hero-avatar__caption">
-            <strong>Ti ascolto</strong>
-            <span>Parla, scrivi o lascia che Mia trasformi l'idea in azione.</span>
+            <strong>Ti ascolto.</strong>
+            <span>Scrivi o parla: trasformo le idee in esperienze vive.</span>
           </div>
         </div>
       </section>
