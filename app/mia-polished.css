@@ -71,23 +71,44 @@ body {
 
 .hero-avatar {
   border-radius: 0 0 8px 8px;
-  background: var(--mia-panel);
+  background: linear-gradient(180deg, #101620 0%, #070a11 100%);
   box-shadow: 0 28px 80px rgba(0, 0, 0, 0.48);
 }
 
 .hero-avatar img {
-  object-position: center 8%;
+  z-index: 1;
+  object-position: center 16%;
+  filter: saturate(1.05) contrast(1.04);
+}
+
+.hero-avatar::before {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 46%, rgba(255, 255, 255, 0.04), transparent 34%),
+    linear-gradient(180deg, rgba(7, 10, 17, 0) 0 52%, rgba(7, 10, 17, 0.82) 100%);
+}
+
+.hero-avatar::after {
+  z-index: 3;
+  background: linear-gradient(180deg, rgba(7, 9, 15, 0) 58%, rgba(7, 9, 15, 0.68) 100%);
 }
 
 .neon-ring {
-  top: 16%;
+  z-index: 4;
+  top: 13%;
   width: 78%;
   left: 11%;
   border-width: 3px;
   opacity: 0.88;
+  background: transparent;
 }
 
 .voice-badge {
+  z-index: 5;
   bottom: 88px;
   min-height: 52px;
   border-color: rgba(255, 103, 95, 0.86);
@@ -97,6 +118,7 @@ body {
 }
 
 .hero-avatar__caption {
+  z-index: 5;
   bottom: 47px;
 }
 
@@ -107,13 +129,22 @@ body {
 
 .assistant-workspace {
   padding: 20px 18px 18px;
+  background:
+    radial-gradient(circle at 82% 40%, rgba(100, 233, 247, 0.08), transparent 32%),
+    linear-gradient(180deg, rgba(5, 7, 13, 0), rgba(3, 4, 7, 0.96) 24%);
 }
 
 .assistant-panel {
   grid-template-rows: minmax(0, 1fr) auto auto;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .messages {
+  min-height: 0;
+  padding: 0;
+  background: transparent;
   scrollbar-width: none;
 }
 
@@ -145,7 +176,7 @@ body {
 }
 
 .action-dock {
-  grid-template-columns: minmax(0, 1fr) 104px;
+  grid-template-columns: minmax(0, 1fr) 82px;
   gap: 12px;
   align-items: stretch;
   padding-top: 18px;
@@ -153,7 +184,7 @@ body {
 
 .composer {
   position: relative;
-  grid-template-columns: 1fr 70px;
+  grid-template-columns: 1fr 58px;
 }
 
 .composer::before {
@@ -180,35 +211,76 @@ body {
   height: 72px;
   border-radius: 28px;
   padding-left: 68px;
-  padding-right: 92px;
+  padding-right: 80px;
   font-size: 17px;
 }
 
 .icon-button {
-  width: 70px;
-  height: 70px;
+  width: 58px;
+  height: 58px;
   align-self: center;
   justify-self: end;
+  background: linear-gradient(180deg, #fffdf9, #eef3f6);
+  color: var(--mia-coral-strong);
+  box-shadow:
+    0 12px 28px rgba(255, 103, 95, 0.24),
+    inset 0 0 0 2px rgba(255, 103, 95, 0.12);
+}
+
+.icon-button:disabled {
+  opacity: 1;
+  color: rgba(255, 79, 72, 0.42);
+  background: rgba(255, 250, 246, 0.88);
+}
+
+.mic-symbol {
+  width: 15px;
+  height: 24px;
+  border-width: 3px;
+}
+
+.mic-symbol::before {
+  bottom: -10px;
+  width: 3px;
+  height: 10px;
+}
+
+.mic-symbol::after {
+  bottom: -13px;
+  width: 21px;
+  height: 11px;
+  border-width: 3px;
+  border-top: 0;
+}
+
+.icon-button.is-listening {
+  background: radial-gradient(circle at 35% 30%, #ff928a, var(--mia-coral-strong));
+  color: white;
   box-shadow:
     0 18px 36px rgba(255, 103, 95, 0.42),
     inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
 
 .whatsapp-link {
+  width: 82px;
   min-height: 72px;
   border-radius: 18px;
-  border-color: rgba(100, 233, 247, 0.8);
-  background: rgba(5, 9, 14, 0.76);
+  border-color: rgba(100, 233, 247, 0.82);
+  background: rgba(5, 9, 14, 0.84);
   color: var(--mia-text);
+  font-size: 12px;
 }
 
 .whatsapp-icon {
+  width: 34px;
+  height: 34px;
   border-color: var(--mia-cyan);
   color: var(--mia-cyan);
 }
 
 .order-bar {
   padding-top: 9px;
+  background: transparent;
 }
 
 .order-bar span {
@@ -249,12 +321,12 @@ body {
   }
 
   .action-dock {
-    grid-template-columns: minmax(0, 1fr) 94px;
+    grid-template-columns: minmax(0, 1fr) 78px;
     gap: 10px;
   }
 
   .composer {
-    grid-template-columns: 1fr 62px;
+    grid-template-columns: 1fr 54px;
   }
 
   .composer input,
@@ -264,13 +336,13 @@ body {
   }
 
   .icon-button {
-    width: 62px;
-    height: 62px;
+    width: 54px;
+    height: 54px;
   }
 
   .composer input {
     padding-left: 58px;
-    padding-right: 78px;
+    padding-right: 72px;
     font-size: 15px;
   }
 
@@ -282,7 +354,8 @@ body {
   }
 
   .whatsapp-link {
-    font-size: 12px;
+    width: 78px;
+    font-size: 11px;
   }
 }
 
