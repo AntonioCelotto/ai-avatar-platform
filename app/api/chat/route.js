@@ -1,66 +1,55 @@
 const tenants = [
   {
-    slug: "trattoria-demo",
-    name: "Trattoria Demo",
+    slug: "new-digital-app",
+    name: "New Digital App",
     assistantName: "Mia",
-    menu: [
+    knowledge: [
       {
-        name: "Paccheri al pomodoro giallo",
-        description: "Pasta di Gragnano con pomodoro giallo, basilico e ricotta salata.",
-        price: 14,
-        allergens: ["glutine", "latte"],
-        tags: ["vegetariano", "primo"]
+        title: "Prodotto",
+        text:
+          "New Digital App crea avatar AI parlanti per aziende. L'assistente puo' essere installato su siti, app o interfacce dedicate."
       },
       {
-        name: "Tagliata di manzo",
-        description: "Manzo alla griglia con rucola, grana e patate al forno.",
-        price: 22,
-        allergens: ["latte"],
-        tags: ["secondo", "carne"]
+        title: "Apprendimento",
+        text:
+          "L'avatar deve poter imparare da sito web, documenti PDF e integrazioni API con gestionali, CRM, cataloghi o database del cliente."
       },
       {
-        name: "Insalata mediterranea",
-        description: "Misticanza, tonno, olive, pomodorini, cetrioli e mais.",
-        price: 11,
-        allergens: ["pesce"],
-        tags: ["leggero", "senza glutine"]
+        title: "Configurazione avatar",
+        text:
+          "Ogni cliente potra' configurare nome, genere visivo, carattere e tono dell'assistente. Esempi di tono: educato, professionale, diretto, empatico."
       },
       {
-        name: "Tiramisu della casa",
-        description: "Mascarpone, caffe', savoiardi e cacao.",
-        price: 6,
-        allergens: ["glutine", "uova", "latte"],
-        tags: ["dolce"]
+        title: "Canali",
+        text:
+          "Il primo canale di contatto operativo e' WhatsApp tramite numero 393457980259. In seguito potranno essere aggiunte integrazioni dirette."
       }
     ]
   }
 ];
 
 function buildContext(tenant) {
-  const menu = tenant.menu
-    .map(
-      (item) =>
-        `- ${item.name}: ${item.description} Prezzo: ${item.price} euro. Allergeni: ${item.allergens.join(", ")}. Tag: ${item.tags.join(", ")}.`
-    )
+  const knowledge = tenant.knowledge
+    .map((item) => `- ${item.title}: ${item.text}`)
     .join("\n");
 
   return [
-    `Ristorante: ${tenant.name}`,
+    `Azienda: ${tenant.name}`,
     `Assistente: ${tenant.assistantName}`,
-    "Menu:",
-    menu,
-    "Regole: rispondi solo con informazioni presenti, segnala allergeni, prepara riepiloghi ordine chiari per WhatsApp."
+    "Informazioni confermate:",
+    knowledge,
+    "Regole: rispondi in modo breve, concreto e utile. Quando mancano dati specifici, dillo chiaramente e proponi il prossimo passo."
   ].join("\n");
 }
 
 function fallbackReply(messages, tenant, extra = {}) {
   const lastUserMessage =
     [...messages].reverse().find((message) => message.role === "user")?.content || "";
-  const orderDraft = `Nuovo ordine demo per ${tenant.name}:\n${lastUserMessage}`;
+  const orderDraft = `Nuova richiesta per ${tenant.name}:\n${lastUserMessage}`;
 
   return {
     reply:
-      "Per la demo posso aiutarti con menu, allergeni e riepilogo ordine. Ho preparato una bozza che puoi inviare su WhatsApp. Quando colleghiamo OpenAI, questa risposta diventera' conversazionale e contestuale.",
+      "Posso aiutarti a capire come configurare l'avatar AI, collegarlo a sito, documenti o API e preparare una richiesta da inviare su WhatsApp.",
     orderDraft,
     ...extra
   };
@@ -68,7 +57,7 @@ function fallbackReply(messages, tenant, extra = {}) {
 
 export async function POST(request) {
   const payload = await request.json();
-  const tenant = tenants.find((item) => item.slug === (payload.tenantSlug || "trattoria-demo"));
+  const tenant = tenants.find((item) => item.slug === (payload.tenantSlug || "new-digital-app"));
 
   if (!tenant) {
     return Response.json({ error: "Tenant not found" }, { status: 404 });
@@ -100,12 +89,11 @@ export async function POST(request) {
       body: JSON.stringify({
         model: process.env.OPENAI_MODEL || "gpt-5.2",
         instructions: [
-          "Sei un assistente AI per un ristorante.",
-          "Rispondi in italiano, in modo naturale, breve e utile.",
-          "Usa prima il contesto del ristorante. Se una informazione non e' presente, dillo chiaramente.",
-          "Quando il cliente vuole ordinare, proponi un riepilogo ordinato e chiedi conferma.",
-          "Segnala sempre allergeni rilevanti quando parli di piatti.",
-          "Non inventare disponibilita', prezzi o ingredienti non presenti nel contesto."
+          "Sei Mia, l'avatar AI di New Digital App.",
+          "Rispondi in italiano, in modo naturale, professionale e facile da capire da smartphone.",
+          "Usa prima il contesto confermato. Puoi usare conoscenza generale per spiegare concetti AI, siti web, API e documenti.",
+          "Non promettere integrazioni gia' completate se sono ancora future.",
+          "Quando l'utente vuole essere ricontattato o preparare una richiesta, proponi un riepilogo chiaro per WhatsApp."
         ].join("\n"),
         input: [
           {
@@ -113,7 +101,7 @@ export async function POST(request) {
             content: [
               {
                 type: "input_text",
-                text: `${buildContext(tenant)}\n\nConversazione recente:\n${transcript}\n\nRispondi al cliente. Se dalla conversazione emerge un ordine, alla fine aggiungi una sezione chiamata RIEPILOGO_ORDINE con testo pronto per WhatsApp.`
+                text: `${buildContext(tenant)}\n\nConversazione recente:\n${transcript}\n\nRispondi al cliente. Se dalla conversazione emerge una richiesta commerciale o operativa, alla fine aggiungi una sezione chiamata RIEPILOGO_ORDINE con testo pronto per WhatsApp.`
               }
             ]
           }
