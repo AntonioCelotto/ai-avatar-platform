@@ -1,6 +1,7 @@
 import "./globals.css";
 import "./app-shell.css";
 import "./mia-polished.css";
+import "./mia-fixes.css";
 import { PwaInstaller } from "./pwa-installer";
 
 export const metadata = {
