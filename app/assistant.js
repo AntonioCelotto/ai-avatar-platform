@@ -277,9 +277,9 @@ export function Assistant() {
         <img alt="" className="avatar-photo" src={avatarSrc} />
         <div className="assistant-title">
           <strong>{tenant.assistantName}</strong>
-          <span>Avatar AI di {tenant.name}</span>
+          <span>{continuousVoice ? "Voce attiva" : `Avatar AI di ${tenant.name}`}</span>
         </div>
-        <span className="assistant-status">Online</span>
+        <span className="assistant-status">{listening ? "Ascolto" : "Online"}</span>
       </header>
 
       <div className="messages" aria-live="polite">
