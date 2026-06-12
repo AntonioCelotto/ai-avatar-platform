@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/demo/trattoria-demo",
+      "destination": "/demo/trattoria-demo/"
+    }
+  ]
+}

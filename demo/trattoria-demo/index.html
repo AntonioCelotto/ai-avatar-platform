@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Trattoria Demo | AI Avatar Platform</title>
+    <meta
+      name="description"
+      content="Demo ristorante con assistente AI, avatar e invio ordine WhatsApp."
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="demo-page">
+      <section class="restaurant-stage" aria-label="Anteprima ristorante">
+        <div class="restaurant-stage__content">
+          <span class="eyebrow">Demo ristorante</span>
+          <h1>Trattoria Demo</h1>
+          <p>
+            Chiedi consigli sul menu, allergeni o abbinamenti. L'assistente
+            prepara un riepilogo ordine pronto da inviare su WhatsApp.
+          </p>
+          <div class="restaurant-badges" aria-label="Funzioni disponibili">
+            <span>Menu intelligente</span>
+            <span>Allergeni</span>
+            <span>Multilingua</span>
+            <span>WhatsApp ordine</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="assistant-workspace" aria-label="Assistente AI">
+        <div class="assistant-panel">
+          <header class="assistant-header">
+            <div class="avatar" aria-hidden="true">
+              <span class="avatar__mouth"></span>
+            </div>
+            <div class="assistant-title">
+              <strong>Mia</strong>
+              <span>Assistente menu e ordini</span>
+            </div>
+            <span class="assistant-status">Online</span>
+          </header>
+
+          <div class="messages" aria-live="polite">
+            <div class="message-list" id="messageList">
+              <div class="message message--assistant">
+                Ciao, sono Mia. Posso aiutarti a scegliere dal menu di Trattoria
+                Demo, controllare allergeni e preparare l'ordine per WhatsApp.
+              </div>
+            </div>
+
+            <div class="suggestions">
+              <button type="button">Cosa mi consigli se voglio qualcosa di leggero?</button>
+              <button type="button">Avete piatti senza glutine?</button>
+              <button type="button">Preparami un ordine per due persone</button>
+            </div>
+          </div>
+
+          <form class="composer" id="composer">
+            <button
+              aria-label="Voce in arrivo nel prossimo step"
+              class="icon-button"
+              title="Voce in arrivo nel prossimo step"
+              type="button"
+            >
+              Mic
+            </button>
+            <input
+              aria-label="Messaggio"
+              id="messageInput"
+              placeholder="Scrivi cosa vuoi ordinare..."
+            />
+            <button aria-label="Invia" class="send-button" type="submit">Invia</button>
+          </form>
+
+          <div class="order-bar">
+            <span id="orderStatus">Il riepilogo ordine apparira' qui quando lo chiedi.</span>
+            <a
+              class="whatsapp-link"
+              href="https://wa.me/393457980259?text=Ciao%2C%20vorrei%20informazioni%20o%20ordinare%20da%20Trattoria%20Demo."
+              id="whatsappLink"
+              rel="noreferrer"
+              target="_blank"
+            >
+              WhatsApp
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script src="/app.js"></script>
+  </body>
+</html>
