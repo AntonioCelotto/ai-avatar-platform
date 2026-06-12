@@ -20,6 +20,12 @@ export default function Home() {
 
         <div className="hero-avatar">
           <img alt="Avatar AI Mia" src={avatarSrc} />
+          <div className="avatar-motion-layer" aria-hidden="true">
+            <span className="avatar-eye avatar-eye--left" />
+            <span className="avatar-eye avatar-eye--right" />
+            <span className="avatar-mouth" />
+            <span className="avatar-breath" />
+          </div>
           <div className="neon-ring" aria-hidden="true" />
           <div className="voice-badge">
             <span className="voice-orbit" aria-hidden="true">
