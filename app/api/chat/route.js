@@ -53,7 +53,7 @@ function buildContext(tenant) {
   ].join("\n");
 }
 
-function fallbackReply(messages, tenant) {
+function fallbackReply(messages, tenant, extra = {}) {
   const lastUserMessage =
     [...messages].reverse().find((message) => message.role === "user")?.content || "";
   const orderDraft = `Nuovo ordine demo per ${tenant.name}:\n${lastUserMessage}`;
@@ -61,45 +61,23 @@ function fallbackReply(messages, tenant) {
   return {
     reply:
       "Per la demo posso aiutarti con menu, allergeni e riepilogo ordine. Ho preparato una bozza che puoi inviare su WhatsApp. Quando colleghiamo OpenAI, questa risposta diventera' conversazionale e contestuale.",
-    orderDraft
+    orderDraft,
+    ...extra
   };
 }
 
-async function readJson(req) {
-  if (req.body) return req.body;
-
-  const chunks = [];
-  for await (const chunk of req) {
-    chunks.push(chunk);
-  }
-
-  return JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}");
-}
-
-module.exports = async function handler(req, res) {
-  if (req.method !== "POST") {
-    res.statusCode = 405;
-    res.setHeader("Content-Type", "application/json");
-    res.end(JSON.stringify({ error: "Method not allowed" }));
-    return;
-  }
-
-  const payload = await readJson(req);
+export async function POST(request) {
+  const payload = await request.json();
   const tenant = tenants.find((item) => item.slug === (payload.tenantSlug || "trattoria-demo"));
 
   if (!tenant) {
-    res.statusCode = 404;
-    res.setHeader("Content-Type", "application/json");
-    res.end(JSON.stringify({ error: "Tenant not found" }));
-    return;
+    return Response.json({ error: "Tenant not found" }, { status: 404 });
   }
 
   const messages = Array.isArray(payload.messages) ? payload.messages : [];
 
   if (!process.env.OPENAI_API_KEY) {
-    res.setHeader("Content-Type", "application/json");
-    res.end(JSON.stringify(fallbackReply(messages, tenant)));
-    return;
+    return Response.json(fallbackReply(messages, tenant, { source: "fallback_no_key" }));
   }
 
   const transcript = messages
@@ -143,30 +121,18 @@ module.exports = async function handler(req, res) {
       })
     });
   } catch {
-    res.statusCode = 200;
-    res.setHeader("Content-Type", "application/json");
-    res.end(
-      JSON.stringify({
-        ...fallbackReply(messages, tenant),
-        source: "fallback_timeout"
-      })
-    );
-    return;
+    return Response.json(fallbackReply(messages, tenant, { source: "fallback_timeout" }));
   } finally {
     clearTimeout(timeout);
   }
 
   if (!openAIResponse.ok) {
-    res.statusCode = 200;
-    res.setHeader("Content-Type", "application/json");
-    res.end(
-      JSON.stringify({
-        ...fallbackReply(messages, tenant),
+    return Response.json(
+      fallbackReply(messages, tenant, {
         source: "fallback_openai_error",
         openaiStatus: openAIResponse.status
       })
     );
-    return;
   }
 
   const data = await openAIResponse.json();
@@ -178,12 +144,9 @@ module.exports = async function handler(req, res) {
     "";
   const [replyPart, orderPart] = outputText.split("RIEPILOGO_ORDINE");
 
-  res.setHeader("Content-Type", "application/json");
-  res.end(
-    JSON.stringify({
-      reply: replyPart.trim() || outputText,
-      orderDraft: orderPart?.replace(/^[:\s-]+/, "").trim(),
-      source: "openai"
-    })
-  );
-};
+  return Response.json({
+    reply: replyPart.trim() || outputText,
+    orderDraft: orderPart?.replace(/^[:\s-]+/, "").trim(),
+    source: "openai"
+  });
+}

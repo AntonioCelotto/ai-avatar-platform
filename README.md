@@ -4,7 +4,7 @@ Piattaforma multi-cliente per assistenti AI con avatar, voce e knowledge base de
 
 ## Stack
 
-- Static web app + Vercel Serverless Function
+- Next.js su Vercel
 - Supabase per clienti, ristoranti, menu, documenti e conversazioni
 - OpenAI Responses API via REST per generazione risposte
 - WhatsApp link precompilato per MVP ordini
@@ -38,9 +38,7 @@ Non inserire mai `SUPABASE_SERVICE_ROLE_KEY` o `OPENAI_API_KEY` nel frontend.
 
 ## Nota tecnica
 
-La prima base e' zero dependency per evitare blocchi di installazione npm e rendere il deploy Vercel immediato. Quando il repository sara' collegato e il registry sara' disponibile, potremo migrare a Next.js mantenendo schema dati e flusso prodotto.
-
-Su Vercel il progetto viene pubblicato come file statici + funzione serverless `/api/chat`. Non serve configurare un comando di build.
+Il progetto usa Next.js per rendere affidabili sia le pagine sia le API route su Vercel.
 
 Endpoint di controllo sicuro:
 

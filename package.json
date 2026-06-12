@@ -3,9 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node server.mjs",
-    "check": "node --check server.mjs && node --check api/chat.js && node --check api/health.js"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "check": "node --check next.config.mjs"
   },
-  "dependencies": {},
+  "dependencies": {
+    "next": "^15.5.9",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1"
+  },
   "devDependencies": {}
 }
