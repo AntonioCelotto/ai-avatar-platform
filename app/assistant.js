@@ -47,7 +47,6 @@ export function Assistant() {
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
-        URL.revokeObjectURL(audioRef.current.src);
       }
       if ("speechSynthesis" in window) {
         window.speechSynthesis.cancel();
@@ -96,7 +95,7 @@ export function Assistant() {
     if ((!voiceEnabled && !forceSpeak) || !("speechSynthesis" in window)) return;
 
     window.speechSynthesis.cancel();
-    const cleanText = cleanSpeechText(text);
+    const cleanText = getFastSpeechText(text);
     if (!cleanText) return;
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
@@ -115,22 +114,11 @@ export function Assistant() {
     try {
       if (audioRef.current) {
         audioRef.current.pause();
-        URL.revokeObjectURL(audioRef.current.src);
       }
 
-      const response = await fetch("/api/speech", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: cleanText })
-      });
-
-      if (!response.ok) throw new Error("Speech generation failed");
-
-      const blob = await response.blob();
-      const audioUrl = URL.createObjectURL(blob);
+      const audioUrl = `/api/speech?text=${encodeURIComponent(cleanText)}`;
       const audio = new Audio(audioUrl);
       audioRef.current = audio;
-      audio.onended = () => URL.revokeObjectURL(audioUrl);
       await audio.play();
     } catch {
       speakWithBrowser(cleanText, true);
