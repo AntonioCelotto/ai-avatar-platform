@@ -8,16 +8,17 @@ export default function Home() {
         <header className="topbar">
           <div>
             <span className="eyebrow">New Digital App</span>
-            <h1>Parla con Mia</h1>
+            <h1>Mia</h1>
+            <p>Intelligenza artificiale semantica</p>
           </div>
-          <span className="live-pill">Online</span>
+          <span className="live-pill">Live</span>
         </header>
 
         <div className="hero-avatar">
           <img alt="Avatar AI Mia" src={avatarSrc} />
           <div className="hero-avatar__caption">
-            <strong>Mia</strong>
-            <span>Assistente AI per clienti e siti web</span>
+            <strong>Ti ascolto</strong>
+            <span>Parla, scrivi o lascia che Mia trasformi l'idea in azione.</span>
           </div>
         </div>
       </section>
