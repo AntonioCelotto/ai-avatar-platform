@@ -1,8 +1,8 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "AI Avatar Platform",
-  description: "Assistenti AI con avatar per ristoranti, hotel e attivita locali."
+  title: "New Digital App AI",
+  description: "Avatar AI parlanti per siti, app e clienti business."
 };
 
 export default function RootLayout({ children }) {
