@@ -10,21 +10,25 @@ const tenant = {
   whatsappPhone: "393457980259"
 };
 
+const welcomeMessage =
+  "Ciao, sono Mia. Sono qui per offrirti un'intelligenza artificiale semantica che ascolta, comprende e trasforma le idee in esperienze vive. Dimmi cosa vuoi far nascere oggi.";
+
 const suggestions = [
-  "Cosa puoi fare per la mia azienda?",
-  "Come impari dal sito del cliente?",
-  "Posso caricarti un PDF o collegarti a un gestionale?"
+  "Immagina Mia sul mio sito",
+  "Come emozioni un cliente?",
+  "Vorrei vedere cosa sai fare"
 ];
 
 export function Assistant() {
   const audioRef = useRef(null);
+  const recognitionRef = useRef(null);
+  const continuousVoiceRef = useRef(false);
   const lastAutoSentRef = useRef("");
   const sendingRef = useRef(false);
   const [messages, setMessages] = useState([
     {
       role: "assistant",
-      content:
-        "Ciao, sono Mia, l'avatar AI di New Digital App. Posso spiegarti come posso aiutare un cliente, imparare da sito, documenti e collegamenti API."
+      content: welcomeMessage
     }
   ]);
   const [input, setInput] = useState("");
@@ -32,6 +36,7 @@ export function Assistant() {
   const [orderDraft, setOrderDraft] = useState("");
   const [listening, setListening] = useState(false);
   const [canUseSpeech, setCanUseSpeech] = useState(false);
+  const [continuousVoice, setContinuousVoice] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
 
   const whatsappText =
@@ -45,6 +50,16 @@ export function Assistant() {
     );
 
     return () => {
+      continuousVoiceRef.current = false;
+      if (recognitionRef.current) {
+        recognitionRef.current.onend = null;
+        recognitionRef.current.onerror = null;
+        try {
+          recognitionRef.current.stop();
+        } catch {
+          recognitionRef.current = null;
+        }
+      }
       if (audioRef.current) {
         audioRef.current.pause();
       }
@@ -102,6 +117,7 @@ export function Assistant() {
     utterance.lang = "it-IT";
     utterance.rate = 1;
     utterance.pitch = 1;
+    utterance.onend = restartVoiceIfNeeded;
     window.speechSynthesis.speak(utterance);
   }
 
@@ -112,6 +128,7 @@ export function Assistant() {
     if (!cleanText) return;
 
     try {
+      stopVoiceInput(false);
       if (audioRef.current) {
         audioRef.current.pause();
       }
@@ -119,6 +136,8 @@ export function Assistant() {
       const audioUrl = `/api/speech?text=${encodeURIComponent(cleanText)}`;
       const audio = new Audio(audioUrl);
       audioRef.current = audio;
+      audio.onended = restartVoiceIfNeeded;
+      audio.onerror = restartVoiceIfNeeded;
       await audio.play();
     } catch {
       speakWithBrowser(cleanText, true);
@@ -172,8 +191,32 @@ export function Assistant() {
     }
   }
 
-  function startVoiceInput() {
-    if (!canUseSpeech || listening) return;
+  function restartVoiceIfNeeded() {
+    if (!continuousVoiceRef.current || sendingRef.current) return;
+    window.setTimeout(() => startVoiceInput(), 650);
+  }
+
+  function stopVoiceInput(disableContinuous = true) {
+    if (disableContinuous) {
+      continuousVoiceRef.current = false;
+      setContinuousVoice(false);
+    }
+
+    if (!recognitionRef.current) return;
+
+    recognitionRef.current.onend = null;
+    recognitionRef.current.onerror = null;
+    try {
+      recognitionRef.current.stop();
+    } catch {
+      // The browser can throw if recognition has already stopped.
+    }
+    recognitionRef.current = null;
+    setListening(false);
+  }
+
+  function startVoiceInput({ continuous = continuousVoiceRef.current } = {}) {
+    if (!canUseSpeech || listening || sendingRef.current) return;
 
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -181,6 +224,11 @@ export function Assistant() {
     recognition.lang = "it-IT";
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
+    recognition.continuous = false;
+    recognitionRef.current = recognition;
+    continuousVoiceRef.current = continuous;
+    setContinuousVoice(continuous);
+    setVoiceEnabled(true);
     setListening(true);
 
     recognition.onresult = (event) => {
@@ -191,9 +239,36 @@ export function Assistant() {
       setInput(cleanText);
       sendMessage(cleanText);
     };
-    recognition.onend = () => setListening(false);
-    recognition.onerror = () => setListening(false);
-    recognition.start();
+    recognition.onend = () => {
+      recognitionRef.current = null;
+      setListening(false);
+      restartVoiceIfNeeded();
+    };
+    recognition.onerror = (event) => {
+      recognitionRef.current = null;
+      setListening(false);
+      if (event.error === "not-allowed" || event.error === "audio-capture") {
+        continuousVoiceRef.current = false;
+        setContinuousVoice(false);
+        return;
+      }
+      restartVoiceIfNeeded();
+    };
+
+    try {
+      recognition.start();
+    } catch {
+      setListening(false);
+    }
+  }
+
+  function toggleContinuousVoice() {
+    if (continuousVoiceRef.current) {
+      stopVoiceInput(true);
+      return;
+    }
+
+    startVoiceInput({ continuous: true });
   }
 
   return (
@@ -241,14 +316,14 @@ export function Assistant() {
         }}
       >
         <button
-          aria-label="Usa microfono"
+          aria-label="Attiva voce continua"
           className={`icon-button ${listening ? "is-listening" : ""}`}
-          disabled={!canUseSpeech || loading}
-          onClick={startVoiceInput}
-          title={canUseSpeech ? "Parla con Mia" : "Microfono non disponibile"}
+          disabled={!canUseSpeech || (loading && !continuousVoice)}
+          onClick={toggleContinuousVoice}
+          title={canUseSpeech ? "Attiva o ferma la voce continua" : "Microfono non disponibile"}
           type="button"
         >
-          {listening ? "Rec" : "Mic"}
+          {continuousVoice ? "Stop" : "Voce"}
         </button>
         <input
           aria-label="Messaggio"
@@ -262,7 +337,11 @@ export function Assistant() {
         <span>
           {orderDraft
             ? "Riepilogo pronto per WhatsApp"
-            : "Puoi chiedere informazioni o preparare una richiesta cliente."}
+            : continuousVoice
+              ? listening
+                ? "Ti ascolto."
+                : "Voce attiva, riparto appena ho finito di parlare."
+              : "Sono qui. Scrivi o attiva la voce quando vuoi iniziare."}
         </span>
         <a className="whatsapp-link" href={whatsappUrl} rel="noreferrer" target="_blank">
           WhatsApp
