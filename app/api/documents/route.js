@@ -9,7 +9,7 @@ import {
 } from "../../lib/supabase-server";
 
 async function extractPdfText(buffer) {
-  const pdfParse = (await import("pdf-parse")).default;
+  const pdfParse = (await import("pdf-parse/lib/pdf-parse.js")).default;
   const parsed = await pdfParse(buffer);
   return String(parsed.text || "").replace(/\s+/g, " ").trim();
 }
