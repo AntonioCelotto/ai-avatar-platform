@@ -48,7 +48,7 @@
   border-radius: 999px;
   background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.92), rgba(118, 236, 255, 0.74) 34%, rgba(25, 44, 60, 0.05) 68%);
   box-shadow: 0 0 12px rgba(100, 233, 247, 0.46);
-  opacity: 0.34;
+  opacity: 0.28;
   transform: translateX(-50%) scaleY(0.72);
   animation: miaEyeBlink 5.2s ease-in-out infinite, miaEyeFocus 7.2s ease-in-out infinite;
   mix-blend-mode: screen;
@@ -71,10 +71,10 @@
   height: 8px;
   border-radius: 999px;
   background: radial-gradient(ellipse at center, rgba(255, 117, 112, 0.58), rgba(255, 117, 112, 0.16) 52%, rgba(255, 117, 112, 0) 72%);
-  box-shadow: 0 0 16px rgba(255, 103, 95, 0.34);
-  opacity: 0.44;
-  transform: translate(-50%, -50%) scaleX(0.82) scaleY(0.5);
-  animation: miaMouthTalk 1.25s ease-in-out infinite;
+  box-shadow: 0 0 16px rgba(255, 103, 95, 0.28);
+  opacity: 0.18;
+  transform: translate(-50%, -50%) scaleX(0.72) scaleY(0.28);
+  animation: miaMouthIdle 4.8s ease-in-out infinite;
   mix-blend-mode: screen;
 }
 
@@ -86,10 +86,45 @@
   aspect-ratio: 1;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(100, 233, 247, 0.14), rgba(255, 103, 95, 0.08) 48%, transparent 70%);
-  opacity: 0.36;
+  opacity: 0.3;
   transform: translate(-50%, -50%) scale(0.92);
   animation: miaBreathGlow 4.8s ease-in-out infinite;
   mix-blend-mode: screen;
+}
+
+html[data-mia-avatar-state="ready"] .avatar-eye,
+html[data-mia-avatar-state="listening"] .avatar-eye {
+  opacity: 0.42;
+  box-shadow: 0 0 16px rgba(100, 233, 247, 0.62);
+}
+
+html[data-mia-avatar-state="listening"] .avatar-breath {
+  opacity: 0.52;
+  animation-duration: 2.7s;
+}
+
+html[data-mia-avatar-state="thinking"] .avatar-eye {
+  opacity: 0.36;
+  animation-duration: 3.4s, 5.8s;
+}
+
+html[data-mia-avatar-state="thinking"] .avatar-breath {
+  opacity: 0.44;
+  animation-duration: 2.2s;
+}
+
+html[data-mia-avatar-state="speaking"] .avatar-eye {
+  opacity: 0.46;
+}
+
+html[data-mia-avatar-state="speaking"] .avatar-mouth {
+  opacity: 0.58;
+  animation: miaMouthTalk 0.46s ease-in-out infinite;
+}
+
+html[data-mia-avatar-state="speaking"] .avatar-breath {
+  opacity: 0.48;
+  animation-duration: 3.2s;
 }
 
 .hero-avatar::before,
@@ -240,21 +275,32 @@
   }
 }
 
+@keyframes miaMouthIdle {
+  0%, 100% {
+    opacity: 0.14;
+    transform: translate(-50%, -50%) scaleX(0.66) scaleY(0.24);
+  }
+  50% {
+    opacity: 0.24;
+    transform: translate(-50%, -50%) scaleX(0.78) scaleY(0.36);
+  }
+}
+
 @keyframes miaMouthTalk {
   0%, 100% {
-    opacity: 0.22;
+    opacity: 0.26;
     transform: translate(-50%, -50%) scaleX(0.72) scaleY(0.34);
   }
   28% {
-    opacity: 0.52;
-    transform: translate(-50%, -50%) scaleX(0.96) scaleY(0.86);
+    opacity: 0.58;
+    transform: translate(-50%, -50%) scaleX(0.98) scaleY(0.86);
   }
   48% {
-    opacity: 0.32;
+    opacity: 0.34;
     transform: translate(-50%, -50%) scaleX(0.78) scaleY(0.42);
   }
   72% {
-    opacity: 0.58;
+    opacity: 0.62;
     transform: translate(-50%, -50%) scaleX(1.04) scaleY(0.72);
   }
 }
