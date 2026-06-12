@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { avatarSrc } from "./avatar-data";
 
 const tenant = {
@@ -17,6 +17,8 @@ const suggestions = [
 ];
 
 export function Assistant() {
+  const lastAutoSentRef = useRef("");
+  const sendingRef = useRef(false);
   const [messages, setMessages] = useState([
     {
       role: "assistant",
@@ -29,6 +31,12 @@ export function Assistant() {
   const [orderDraft, setOrderDraft] = useState("");
   const [listening, setListening] = useState(false);
   const [canUseSpeech, setCanUseSpeech] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(false);
+
+  const whatsappText =
+    orderDraft ||
+    `Ciao, vorrei informazioni sull'avatar AI di ${tenant.name}.`;
+  const whatsappUrl = `https://wa.me/${tenant.whatsappPhone}?text=${encodeURIComponent(whatsappText)}`;
 
   useEffect(() => {
     setCanUseSpeech(
@@ -36,15 +44,39 @@ export function Assistant() {
     );
   }, []);
 
-  const whatsappText =
-    orderDraft ||
-    `Ciao, vorrei informazioni sull'avatar AI di ${tenant.name}.`;
-  const whatsappUrl = `https://wa.me/${tenant.whatsappPhone}?text=${encodeURIComponent(whatsappText)}`;
+  useEffect(() => {
+    const cleanInput = input.trim();
+    if (cleanInput.length < 2 || loading || listening || sendingRef.current) return;
+
+    const timer = window.setTimeout(() => {
+      if (lastAutoSentRef.current === cleanInput) return;
+      lastAutoSentRef.current = cleanInput;
+      sendMessage(cleanInput);
+    }, 1400);
+
+    return () => window.clearTimeout(timer);
+  }, [input, loading, listening]);
+
+  function speakReply(text, forceSpeak = false) {
+    if ((!voiceEnabled && !forceSpeak) || !("speechSynthesis" in window)) return;
+
+    window.speechSynthesis.cancel();
+    const cleanText = text.replace(/RIEPILOGO_ORDINE[\s\S]*/g, "").trim();
+    if (!cleanText) return;
+
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.lang = "it-IT";
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    window.speechSynthesis.speak(utterance);
+  }
 
   async function sendMessage(content) {
     const cleanContent = content.trim();
-    if (!cleanContent || loading) return;
+    if (!cleanContent || loading || sendingRef.current) return;
 
+    sendingRef.current = true;
+    setVoiceEnabled(true);
     const nextMessages = [...messages, { role: "user", content: cleanContent }];
     setMessages(nextMessages);
     setInput("");
@@ -60,21 +92,28 @@ export function Assistant() {
         })
       });
       const data = await response.json();
+      const reply =
+        data.reply ||
+        "Ho ricevuto il messaggio, ma non ho generato una risposta completa.";
+      speakReply(reply, true);
       setMessages((current) => [
         ...current,
-        { role: "assistant", content: data.reply }
+        { role: "assistant", content: reply }
       ]);
       if (data.orderDraft) setOrderDraft(data.orderDraft);
     } catch {
+      const fallbackText =
+        "Non riesco a rispondere in questo momento. Puoi comunque inviare una richiesta su WhatsApp.";
+      speakReply(fallbackText, true);
       setMessages((current) => [
         ...current,
         {
           role: "assistant",
-          content:
-            "Non riesco a rispondere in questo momento. Puoi comunque inviare una richiesta su WhatsApp."
+          content: fallbackText
         }
       ]);
     } finally {
+      sendingRef.current = false;
       setLoading(false);
     }
   }
@@ -92,7 +131,11 @@ export function Assistant() {
 
     recognition.onresult = (event) => {
       const text = event.results?.[0]?.[0]?.transcript || "";
-      setInput(text);
+      const cleanText = text.trim();
+      if (!cleanText) return;
+      lastAutoSentRef.current = cleanText;
+      setInput(cleanText);
+      sendMessage(cleanText);
     };
     recognition.onend = () => setListening(false);
     recognition.onerror = () => setListening(false);
@@ -156,12 +199,9 @@ export function Assistant() {
         <input
           aria-label="Messaggio"
           onChange={(event) => setInput(event.target.value)}
-          placeholder="Scrivi o parla con Mia..."
+          placeholder="Scrivi: Mia risponde da sola..."
           value={input}
         />
-        <button aria-label="Invia" className="send-button" type="submit">
-          Invia
-        </button>
       </form>
 
       <div className="order-bar">
