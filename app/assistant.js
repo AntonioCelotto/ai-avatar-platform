@@ -17,6 +17,7 @@ const suggestions = [
 ];
 
 export function Assistant() {
+  const audioRef = useRef(null);
   const lastAutoSentRef = useRef("");
   const sendingRef = useRef(false);
   const [messages, setMessages] = useState([
@@ -42,6 +43,16 @@ export function Assistant() {
     setCanUseSpeech(
       "SpeechRecognition" in window || "webkitSpeechRecognition" in window
     );
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        URL.revokeObjectURL(audioRef.current.src);
+      }
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -57,11 +68,26 @@ export function Assistant() {
     return () => window.clearTimeout(timer);
   }, [input, loading, listening]);
 
-  function speakReply(text, forceSpeak = false) {
+  function cleanSpeechText(text) {
+    return String(text || "")
+      .replace(/RIEPILOGO_ORDINE[\s\S]*/g, "")
+      .replace(/```[\s\S]*?```/g, " ")
+      .replace(/`([^`]+)`/g, "$1")
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+      .replace(/\*\*([^*]+)\*\*/g, "$1")
+      .replace(/\*([^*]+)\*/g, "$1")
+      .replace(/^\s*[-*]\s+/gm, "")
+      .replace(/[>#_~]/g, "")
+      .replace(/https?:\/\/\S+/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function speakWithBrowser(text, forceSpeak = false) {
     if ((!voiceEnabled && !forceSpeak) || !("speechSynthesis" in window)) return;
 
     window.speechSynthesis.cancel();
-    const cleanText = text.replace(/RIEPILOGO_ORDINE[\s\S]*/g, "").trim();
+    const cleanText = cleanSpeechText(text);
     if (!cleanText) return;
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
@@ -69,6 +95,37 @@ export function Assistant() {
     utterance.rate = 1;
     utterance.pitch = 1;
     window.speechSynthesis.speak(utterance);
+  }
+
+  async function speakReply(text, forceSpeak = false) {
+    if (!forceSpeak && !voiceEnabled) return;
+
+    const cleanText = cleanSpeechText(text);
+    if (!cleanText) return;
+
+    try {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        URL.revokeObjectURL(audioRef.current.src);
+      }
+
+      const response = await fetch("/api/speech", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: cleanText })
+      });
+
+      if (!response.ok) throw new Error("Speech generation failed");
+
+      const blob = await response.blob();
+      const audioUrl = URL.createObjectURL(blob);
+      const audio = new Audio(audioUrl);
+      audioRef.current = audio;
+      audio.onended = () => URL.revokeObjectURL(audioUrl);
+      await audio.play();
+    } catch {
+      speakWithBrowser(cleanText, true);
+    }
   }
 
   async function sendMessage(content) {
@@ -95,16 +152,15 @@ export function Assistant() {
       const reply =
         data.reply ||
         "Ho ricevuto il messaggio, ma non ho generato una risposta completa.";
-      speakReply(reply, true);
       setMessages((current) => [
         ...current,
         { role: "assistant", content: reply }
       ]);
+      speakReply(reply, true);
       if (data.orderDraft) setOrderDraft(data.orderDraft);
     } catch {
       const fallbackText =
         "Non riesco a rispondere in questo momento. Puoi comunque inviare una richiesta su WhatsApp.";
-      speakReply(fallbackText, true);
       setMessages((current) => [
         ...current,
         {
@@ -112,6 +168,7 @@ export function Assistant() {
           content: fallbackText
         }
       ]);
+      speakReply(fallbackText, true);
     } finally {
       sendingRef.current = false;
       setLoading(false);
