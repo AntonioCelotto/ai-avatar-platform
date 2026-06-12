@@ -364,7 +364,7 @@ a {
   font-weight: 900;
 }
 
-.document-uploader,
+.dashboard-controls,
 .document-list {
   width: min(760px, 100%);
   border: 1px solid var(--line);
@@ -374,12 +374,22 @@ a {
   box-shadow: 0 12px 35px rgba(23, 33, 43, 0.08);
 }
 
-.document-uploader form {
+.dashboard-controls {
+  display: grid;
+  gap: 14px;
+}
+
+.source-form {
   display: grid;
   gap: 10px;
 }
 
-.document-uploader label,
+.source-form + .source-form {
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
+
+.source-form label,
 .document-list h2 {
   margin: 0;
   color: var(--ink);
@@ -387,7 +397,7 @@ a {
   font-weight: 900;
 }
 
-.document-uploader input {
+.source-form input {
   min-height: 44px;
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -395,7 +405,7 @@ a {
   padding: 10px;
 }
 
-.document-uploader button {
+.source-form button {
   min-height: 44px;
   border: 0;
   border-radius: 6px;
@@ -439,11 +449,42 @@ a {
   padding: 12px;
 }
 
+.document-item > div:first-child {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.document-item small {
+  color: var(--muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
 .document-item span {
   color: var(--signal);
   font-size: 12px;
   font-weight: 900;
   text-transform: uppercase;
+}
+
+.document-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.document-actions button {
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: white;
+  color: var(--danger);
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 900;
 }
 
 @media (max-width: 860px) {
@@ -530,5 +571,14 @@ a {
 
   .whatsapp-link {
     justify-content: center;
+  }
+
+  .document-item {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .document-actions {
+    justify-content: flex-start;
   }
 }
