@@ -83,6 +83,15 @@ export function Assistant() {
       .trim();
   }
 
+  function getFastSpeechText(text) {
+    const cleanText = cleanSpeechText(text);
+    if (cleanText.length <= 360) return cleanText;
+
+    const sentences = cleanText.match(/[^.!?]+[.!?]+/g) || [];
+    const preview = sentences.slice(0, 2).join(" ").trim();
+    return (preview || cleanText).slice(0, 360).trim();
+  }
+
   function speakWithBrowser(text, forceSpeak = false) {
     if ((!voiceEnabled && !forceSpeak) || !("speechSynthesis" in window)) return;
 
@@ -100,7 +109,7 @@ export function Assistant() {
   async function speakReply(text, forceSpeak = false) {
     if (!forceSpeak && !voiceEnabled) return;
 
-    const cleanText = cleanSpeechText(text);
+    const cleanText = getFastSpeechText(text);
     if (!cleanText) return;
 
     try {
