@@ -1,5 +1,6 @@
 import "./globals.css";
 import "./app-shell.css";
+import "./mia-polished.css";
 import { PwaInstaller } from "./pwa-installer";
 
 export const metadata = {
@@ -9,7 +10,7 @@ export const metadata = {
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent",
     title: "Mia AI"
   },
   icons: {
@@ -23,8 +24,8 @@ export const metadata = {
 };
 
 export const viewport = {
-  themeColor: "#111318",
-  colorScheme: "light"
+  themeColor: "#05070d",
+  colorScheme: "dark"
 };
 
 export default function RootLayout({ children }) {
