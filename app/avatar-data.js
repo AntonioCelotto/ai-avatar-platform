@@ -1,1 +1,1 @@
-export const avatarSrc = "/mia-avatar.svg";
+export const avatarSrc = "/mia-avatar.jpg";
