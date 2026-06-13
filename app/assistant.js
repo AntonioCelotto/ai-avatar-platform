@@ -26,6 +26,7 @@ export function Assistant() {
   const lastAutoSentRef = useRef("");
   const sendingRef = useRef(false);
   const lipSyncFrameRef = useRef(null);
+  const speechStartTimerRef = useRef(null);
   const [messages, setMessages] = useState([
     {
       role: "assistant",
@@ -53,6 +54,10 @@ export function Assistant() {
 
     return () => {
       continuousVoiceRef.current = false;
+      if (speechStartTimerRef.current) {
+        window.clearTimeout(speechStartTimerRef.current);
+        speechStartTimerRef.current = null;
+      }
       stopLipSync();
       delete document.documentElement.dataset.miaAvatarState;
       if (recognitionRef.current) {
@@ -155,7 +160,22 @@ export function Assistant() {
     startLipSync();
   }
 
+  function scheduleBeginSpeaking(delay = 1400) {
+    if (speechStartTimerRef.current) {
+      window.clearTimeout(speechStartTimerRef.current);
+    }
+
+    speechStartTimerRef.current = window.setTimeout(() => {
+      speechStartTimerRef.current = null;
+      beginSpeaking();
+    }, delay);
+  }
+
   function finishSpeaking() {
+    if (speechStartTimerRef.current) {
+      window.clearTimeout(speechStartTimerRef.current);
+      speechStartTimerRef.current = null;
+    }
     stopLipSync();
     setSpeaking(false);
     restartVoiceIfNeeded();
@@ -193,13 +213,17 @@ export function Assistant() {
       const audioUrl = `/api/speech?text=${encodeURIComponent(cleanText)}`;
       const audio = new Audio(audioUrl);
       audioRef.current = audio;
-      audio.onplaying = beginSpeaking;
+      audio.onplaying = () => scheduleBeginSpeaking(1400);
       audio.onended = finishSpeaking;
       audio.onerror = finishSpeaking;
       setSpeaking(false);
       stopLipSync();
       await audio.play();
     } catch {
+      if (speechStartTimerRef.current) {
+        window.clearTimeout(speechStartTimerRef.current);
+        speechStartTimerRef.current = null;
+      }
       stopLipSync();
       setSpeaking(false);
       speakWithBrowser(cleanText, true);
