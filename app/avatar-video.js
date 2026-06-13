@@ -19,18 +19,45 @@ export function AvatarVideo() {
     const video = videoRef.current;
     if (!video) return;
 
-    const playVideo = () => {
-      video.muted = true;
-      video.play().catch(() => {});
+    const pauseAtStart = () => {
+      try {
+        video.pause();
+        if (Number.isFinite(video.duration)) {
+          video.currentTime = 0.05;
+        }
+      } catch {
+        // Browsers can reject currentTime changes before metadata is ready.
+      }
     };
 
-    video.addEventListener("loadeddata", playVideo);
-    video.addEventListener("canplay", playVideo);
-    playVideo();
+    const syncWithMiaState = () => {
+      const isSpeaking =
+        document.documentElement.dataset.miaAvatarState === "speaking";
+
+      video.muted = true;
+
+      if (isSpeaking) {
+        video.play().catch(() => {});
+        return;
+      }
+
+      pauseAtStart();
+    };
+
+    video.addEventListener("loadedmetadata", pauseAtStart);
+
+    const observer = new MutationObserver(syncWithMiaState);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-mia-avatar-state"]
+    });
+
+    pauseAtStart();
+    syncWithMiaState();
 
     return () => {
-      video.removeEventListener("loadeddata", playVideo);
-      video.removeEventListener("canplay", playVideo);
+      observer.disconnect();
+      video.removeEventListener("loadedmetadata", pauseAtStart);
       video.pause();
     };
   }, []);
@@ -38,7 +65,6 @@ export function AvatarVideo() {
   return (
     <video
       aria-label="Avatar video Mia"
-      autoPlay
       loop
       muted
       playsInline
