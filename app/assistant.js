@@ -25,6 +25,7 @@ export function Assistant() {
   const continuousVoiceRef = useRef(false);
   const lastAutoSentRef = useRef("");
   const sendingRef = useRef(false);
+  const lipSyncFrameRef = useRef(null);
   const [messages, setMessages] = useState([
     {
       role: "assistant",
@@ -52,6 +53,7 @@ export function Assistant() {
 
     return () => {
       continuousVoiceRef.current = false;
+      stopLipSync();
       delete document.documentElement.dataset.miaAvatarState;
       if (recognitionRef.current) {
         recognitionRef.current.onend = null;
@@ -122,7 +124,34 @@ export function Assistant() {
     return (preview || cleanText).slice(0, 360).trim();
   }
 
+  function stopLipSync() {
+    if (lipSyncFrameRef.current) {
+      window.cancelAnimationFrame(lipSyncFrameRef.current);
+      lipSyncFrameRef.current = null;
+    }
+    document.documentElement.style.setProperty("--mia-mouth-open", "0");
+  }
+
+  function startLipSync() {
+    stopLipSync();
+    const startedAt = performance.now();
+
+    const animate = (now) => {
+      const elapsed = (now - startedAt) / 1000;
+      const phrasePulse = Math.sin(elapsed * 18) * 0.5 + 0.5;
+      const syllablePulse = Math.sin(elapsed * 31 + 0.8) * 0.5 + 0.5;
+      const pausePulse = Math.sin(elapsed * 5.2) * 0.5 + 0.5;
+      const open = Math.max(0.06, Math.min(1, phrasePulse * 0.58 + syllablePulse * 0.34 + pausePulse * 0.08));
+
+      document.documentElement.style.setProperty("--mia-mouth-open", open.toFixed(3));
+      lipSyncFrameRef.current = window.requestAnimationFrame(animate);
+    };
+
+    lipSyncFrameRef.current = window.requestAnimationFrame(animate);
+  }
+
   function finishSpeaking() {
+    stopLipSync();
     setSpeaking(false);
     restartVoiceIfNeeded();
   }
@@ -141,6 +170,7 @@ export function Assistant() {
     utterance.onend = finishSpeaking;
     utterance.onerror = finishSpeaking;
     setSpeaking(true);
+    startLipSync();
     window.speechSynthesis.speak(utterance);
   }
 
@@ -162,8 +192,10 @@ export function Assistant() {
       audio.onended = finishSpeaking;
       audio.onerror = finishSpeaking;
       setSpeaking(true);
+      startLipSync();
       await audio.play();
     } catch {
+      stopLipSync();
       setSpeaking(false);
       speakWithBrowser(cleanText, true);
     }
