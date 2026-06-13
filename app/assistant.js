@@ -150,6 +150,11 @@ export function Assistant() {
     lipSyncFrameRef.current = window.requestAnimationFrame(animate);
   }
 
+  function beginSpeaking() {
+    setSpeaking(true);
+    startLipSync();
+  }
+
   function finishSpeaking() {
     stopLipSync();
     setSpeaking(false);
@@ -167,10 +172,9 @@ export function Assistant() {
     utterance.lang = "it-IT";
     utterance.rate = 1;
     utterance.pitch = 1;
+    utterance.onstart = beginSpeaking;
     utterance.onend = finishSpeaking;
     utterance.onerror = finishSpeaking;
-    setSpeaking(true);
-    startLipSync();
     window.speechSynthesis.speak(utterance);
   }
 
@@ -189,10 +193,11 @@ export function Assistant() {
       const audioUrl = `/api/speech?text=${encodeURIComponent(cleanText)}`;
       const audio = new Audio(audioUrl);
       audioRef.current = audio;
+      audio.onplaying = beginSpeaking;
       audio.onended = finishSpeaking;
       audio.onerror = finishSpeaking;
-      setSpeaking(true);
-      startLipSync();
+      setSpeaking(false);
+      stopLipSync();
       await audio.play();
     } catch {
       stopLipSync();
