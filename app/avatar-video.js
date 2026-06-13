@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { avatarSrc } from "./avatar-data";
+import { useEffect, useRef } from "react";
 import { avatarVideoSrc } from "./avatar-video-data";
 
 const mediaStyle = {
@@ -10,19 +9,12 @@ const mediaStyle = {
   display: "block",
   objectFit: "cover",
   objectPosition: "center 8%",
-  filter: "saturate(1.03) contrast(1.02)"
-};
-
-const fallbackStyle = {
-  ...mediaStyle,
-  position: "absolute",
-  inset: 0,
-  zIndex: 0
+  filter: "saturate(1.03) contrast(1.02)",
+  background: "#050505"
 };
 
 export function AvatarVideo() {
   const videoRef = useRef(null);
-  const [videoReady, setVideoReady] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -33,54 +25,28 @@ export function AvatarVideo() {
       video.play().catch(() => {});
     };
 
-    const syncWithMiaState = () => {
-      const state = document.documentElement.dataset.miaAvatarState;
-
-      if (state === "speaking" || state === "thinking" || state === "ready" || state === "idle") {
-        playVideo();
-      }
-    };
-
-    video.addEventListener("loadeddata", () => {
-      setVideoReady(true);
-      playVideo();
-    });
+    video.addEventListener("loadeddata", playVideo);
     video.addEventListener("canplay", playVideo);
-
-    const observer = new MutationObserver(syncWithMiaState);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["data-mia-avatar-state"]
-    });
-
     playVideo();
-    syncWithMiaState();
 
     return () => {
-      observer.disconnect();
+      video.removeEventListener("loadeddata", playVideo);
+      video.removeEventListener("canplay", playVideo);
       video.pause();
     };
   }, []);
 
   return (
-    <>
-      {!videoReady ? <img alt="" src={avatarSrc} style={fallbackStyle} /> : null}
-      <video
-        aria-label="Avatar video Mia"
-        autoPlay
-        loop
-        muted
-        playsInline
-        preload="auto"
-        ref={videoRef}
-        src={avatarVideoSrc}
-        style={{
-          ...mediaStyle,
-          position: "relative",
-          zIndex: 1,
-          opacity: videoReady ? 1 : 0
-        }}
-      />
-    </>
+    <video
+      aria-label="Avatar video Mia"
+      autoPlay
+      loop
+      muted
+      playsInline
+      preload="auto"
+      ref={videoRef}
+      src={avatarVideoSrc}
+      style={mediaStyle}
+    />
   );
 }
