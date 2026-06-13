@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { avatarSrc } from "./avatar-data";
 import { avatarVideoSrc } from "./avatar-video-data";
 
@@ -13,68 +13,74 @@ const mediaStyle = {
   filter: "saturate(1.03) contrast(1.02)"
 };
 
+const fallbackStyle = {
+  ...mediaStyle,
+  position: "absolute",
+  inset: 0,
+  zIndex: 0
+};
+
 export function AvatarVideo() {
   const videoRef = useRef(null);
+  const [videoReady, setVideoReady] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    const pauseAtStart = () => {
-      try {
-        video.pause();
-        if (Number.isFinite(video.duration)) {
-          video.currentTime = 0.05;
-        }
-      } catch {
-        // Ignore browser timing errors while metadata is loading.
-      }
+    const playVideo = () => {
+      video.muted = true;
+      video.play().catch(() => {});
     };
 
     const syncWithMiaState = () => {
-      const isSpeaking =
-        document.documentElement.dataset.miaAvatarState === "speaking";
+      const state = document.documentElement.dataset.miaAvatarState;
 
-      if (isSpeaking) {
-        video.play().catch(() => {});
-        return;
+      if (state === "speaking" || state === "thinking" || state === "ready" || state === "idle") {
+        playVideo();
       }
-
-      pauseAtStart();
     };
 
-    video.addEventListener("loadedmetadata", pauseAtStart);
+    video.addEventListener("loadeddata", () => {
+      setVideoReady(true);
+      playVideo();
+    });
+    video.addEventListener("canplay", playVideo);
+
     const observer = new MutationObserver(syncWithMiaState);
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["data-mia-avatar-state"]
     });
 
+    playVideo();
     syncWithMiaState();
 
     return () => {
       observer.disconnect();
-      video.removeEventListener("loadedmetadata", pauseAtStart);
       video.pause();
     };
   }, []);
 
   return (
     <>
+      {!videoReady ? <img alt="" src={avatarSrc} style={fallbackStyle} /> : null}
       <video
         aria-label="Avatar video Mia"
+        autoPlay
         loop
         muted
         playsInline
         preload="auto"
-        poster={avatarSrc}
         ref={videoRef}
         src={avatarVideoSrc}
-        style={mediaStyle}
+        style={{
+          ...mediaStyle,
+          position: "relative",
+          zIndex: 1,
+          opacity: videoReady ? 1 : 0
+        }}
       />
-      <noscript>
-        <img alt="" src={avatarSrc} style={mediaStyle} />
-      </noscript>
     </>
   );
 }
