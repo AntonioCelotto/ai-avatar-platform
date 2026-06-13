@@ -7,14 +7,33 @@ export default function Home() {
       <div className="aurora aurora--coral" />
       <div className="aurora aurora--cyan" />
       <section className="avatar-stage" aria-label="Mia.Ai">
-        <header className="topbar">
-          <span className="brand-mark">M</span>
-          <span className="eyebrow">Mia.Ai</span>
-          <span className="profile-dot" aria-hidden="true" />
-        </header>
-
-        <div className="hero-avatar">
-          <img alt="" src={avatarSrc} />
+        <div
+          aria-label="Avatar Mia"
+          style={{
+            position: "relative",
+            zIndex: 1,
+            gridRow: "1 / 3",
+            minHeight: 0,
+            width: "100%",
+            height: "100%",
+            overflow: "hidden",
+            borderRadius: 8,
+            background: "transparent",
+            boxShadow: "none"
+          }}
+        >
+          <img
+            alt=""
+            src={avatarSrc}
+            style={{
+              width: "100%",
+              height: "100%",
+              display: "block",
+              objectFit: "cover",
+              objectPosition: "center 8%",
+              filter: "saturate(1.03) contrast(1.02)"
+            }}
+          />
           <div className="avatar-motion-layer" aria-hidden="true">
             <span className="avatar-eye avatar-eye--left" />
             <span className="avatar-eye avatar-eye--right" />
