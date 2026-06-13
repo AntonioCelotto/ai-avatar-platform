@@ -7,22 +7,11 @@ export default function Home() {
       <div className="aurora aurora--coral" />
       <div className="aurora aurora--cyan" />
       <section className="avatar-stage" aria-label="Mia.Ai">
-        <div
-          aria-label="Avatar Mia"
-          style={{
-            position: "relative",
-            zIndex: 1,
-            gridRow: "1 / 3",
-            minHeight: 0,
-            width: "100%",
-            height: "100%",
-            overflow: "hidden",
-            borderRadius: 8,
-            background: "transparent",
-            boxShadow: "none"
-          }}
-        >
+        <div className="avatar-frame" aria-label="Avatar Mia">
           <AvatarVideo />
+          <div className="mia-name-mark" aria-hidden="true">
+            <span>MIA</span>
+          </div>
         </div>
 
         <div className="voice-badge voice-badge--outside">
