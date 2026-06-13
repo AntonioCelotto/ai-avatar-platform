@@ -1,16 +1,49 @@
 import { avatarVideoSrc } from "../../avatar-video-data";
 
-export const dynamic = "force-static";
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-export function GET() {
-  const base64 = avatarVideoSrc.split(",")[1] || "";
-  const video = Buffer.from(base64, "base64");
+const base64 = avatarVideoSrc.split(",")[1] || "";
+const video = Buffer.from(base64, "base64");
 
-  return new Response(video, {
+export function GET(request) {
+  const range = request.headers.get("range");
+  const headers = {
+    "Accept-Ranges": "bytes",
+    "Cache-Control": "public, max-age=31536000, immutable",
+    "Content-Type": "video/mp4"
+  };
+
+  if (!range) {
+    return new Response(video, {
+      headers: {
+        ...headers,
+        "Content-Length": String(video.length)
+      }
+    });
+  }
+
+  const match = range.match(/bytes=(\d*)-(\d*)/);
+  if (!match) {
+    return new Response(video, {
+      headers: {
+        ...headers,
+        "Content-Length": String(video.length)
+      }
+    });
+  }
+
+  const start = match[1] ? Number(match[1]) : 0;
+  const end = match[2] ? Number(match[2]) : video.length - 1;
+  const safeEnd = Math.min(end, video.length - 1);
+  const chunk = video.subarray(start, safeEnd + 1);
+
+  return new Response(chunk, {
+    status: 206,
     headers: {
-      "Content-Type": "video/mp4",
-      "Content-Length": String(video.length),
-      "Cache-Control": "public, max-age=31536000, immutable"
+      ...headers,
+      "Content-Length": String(chunk.length),
+      "Content-Range": `bytes ${start}-${safeEnd}/${video.length}`
     }
   });
 }
