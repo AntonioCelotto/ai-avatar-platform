@@ -11,7 +11,7 @@ const tenant = {
 };
 
 const welcomeMessage =
-  "Ciao, sono Mia.Ai. Dimmi pure cosa vuoi esplorare.";
+  "Ciao, sono Mia";
 
 const suggestions = [
   "Parliamo di un'idea",
@@ -392,7 +392,7 @@ export function Assistant() {
           <input
             aria-label="Messaggio"
             onChange={(event) => setInput(event.target.value)}
-            placeholder="Scrivi qui o parla con Mia.Ai..."
+            placeholder="Scrivi a Mia"
             value={input}
           />
         </form>
