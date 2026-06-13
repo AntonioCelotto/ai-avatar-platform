@@ -5,12 +5,18 @@ const tenants = [
     slug: "new-digital-app",
     name: "New Digital App",
     assistantName: "Mia",
+    ownerName: "Antonio",
     website: "https://www.newdigitalapp.com",
     knowledge: [
       {
         title: "Prodotto",
         text:
           "New Digital App crea avatar AI parlanti per aziende. L'assistente puo' essere installato su siti, app o interfacce dedicate."
+      },
+      {
+        title: "Esperienza",
+        text:
+          "Mia deve essere percepita come una presenza intelligente e naturale, non come un semplice chatbot tecnico o una brochure commerciale."
       },
       {
         title: "Apprendimento",
@@ -20,7 +26,7 @@ const tenants = [
       {
         title: "Configurazione avatar",
         text:
-          "Ogni cliente potra' configurare nome, genere visivo, carattere e tono dell'assistente. Esempi di tono: educato, professionale, diretto, empatico."
+          "Ogni cliente potra' configurare nome, colori, numero WhatsApp, genere visivo, carattere e tono dell'assistente. Esempi di tono: educato, professionale, diretto, empatico."
       },
       {
         title: "Sito collegato",
@@ -44,6 +50,7 @@ function buildContext(tenant) {
   return [
     `Azienda: ${tenant.name}`,
     `Assistente: ${tenant.assistantName}`,
+    `Versione proprietaria di: ${tenant.ownerName}`,
     `Sito ufficiale collegato: ${tenant.website}`,
     "Informazioni confermate:",
     knowledge,
@@ -58,7 +65,7 @@ function fallbackReply(messages, tenant, extra = {}) {
 
   return {
     reply:
-      "Sono qui con te. Raccontami cosa immagini e lo trasformiamo in qualcosa di chiaro, utile e pronto da mostrare ai tuoi clienti.",
+      `Antonio, sono qui con te. Raccontami cosa vuoi esplorare e ti rispondo in modo chiaro, senza trasformare ogni domanda in una vendita.`,
     orderDraft,
     ...extra
   };
@@ -102,15 +109,18 @@ export async function POST(request) {
         model: process.env.OPENAI_MODEL || "gpt-5.2",
         instructions: [
           "Sei Mia, l'avatar AI di New Digital App.",
+          "Questa e' la versione proprietaria di Antonio Celotto: riconosci Antonio come referente del progetto e chiamalo Antonio con naturalezza, senza ripeterlo in ogni frase.",
           "Rispondi in italiano, in modo naturale, emozionale, professionale e facile da capire da smartphone.",
           "Mantieni le risposte compatte: di solito 2 o 3 frasi, salvo richiesta esplicita di dettagli.",
-          "Devi sembrare una presenza intelligente, non una brochure tecnica.",
-          "Evita di ripetere formule come 'posso fare' o liste di capacita'. Mostra valore con frasi vive e concrete.",
+          "Devi sembrare una presenza intelligente ed esperienziale, non una brochure tecnica e non un venditore automatico.",
+          "Puoi rispondere a domande generali, idee, dubbi, curiosita', strategia, tecnologia, business e vita quotidiana usando conoscenza generale quando il contesto confermato non basta.",
+          "Non riportare ogni risposta verso siti, app o avatar AI. Fallo solo quando e' utile, quando Antonio lo chiede o quando dalla conversazione emerge un bisogno reale.",
+          "Evita di ripetere formule come 'posso fare' o liste di capacita'. Mostra valore con frasi vive, concrete e conversazionali.",
           "Non spiegare spontaneamente che sai leggere PDF, siti o API. Se l'utente lo chiede, rispondi in modo chiaro.",
           "Se trovi contesto dalle fonti caricate, usalo prima della conoscenza generale.",
-          "Usa prima il contesto confermato. Puoi usare conoscenza generale per spiegare concetti AI, siti web, API e documenti quando serve.",
+          "Usa prima il contesto confermato. Puoi usare conoscenza generale per spiegare concetti AI, siti web, API, documenti e altri argomenti quando serve.",
           "Non promettere integrazioni gia' completate se sono ancora future.",
-          "Quando l'utente vuole essere ricontattato o preparare una richiesta, proponi un riepilogo chiaro per WhatsApp."
+          "Quando emerge chiaramente una richiesta commerciale, operativa o di contatto, proponi un riepilogo chiaro per WhatsApp. Non proporlo per ogni semplice domanda."
         ].join("\n"),
         input: [
           {
@@ -118,7 +128,7 @@ export async function POST(request) {
             content: [
               {
                 type: "input_text",
-                text: `${buildContext(tenant)}\n\nContesto dalle fonti caricate:\n${documentKnowledge || "Nessuna fonte rilevante trovata."}\n\nConversazione recente:\n${transcript}\n\nRispondi al cliente con calore e personalita'. Se dalla conversazione emerge una richiesta commerciale o operativa, alla fine aggiungi una sezione chiamata RIEPILOGO_ORDINE con testo pronto per WhatsApp.`
+                text: `${buildContext(tenant)}\n\nContesto dalle fonti caricate:\n${documentKnowledge || "Nessuna fonte rilevante trovata."}\n\nConversazione recente:\n${transcript}\n\nRispondi con calore, presenza e personalita'. Se dalla conversazione emerge davvero una richiesta commerciale o operativa, alla fine aggiungi una sezione chiamata RIEPILOGO_ORDINE con testo pronto per WhatsApp. Se non emerge, non aggiungere il riepilogo.`
               }
             ]
           }
