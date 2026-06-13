@@ -11,12 +11,12 @@ const tenant = {
 };
 
 const welcomeMessage =
-  "Ciao, sono Mia.Ai cosa desideri?";
+  "Ciao Antonio, sono Mia.Ai. Dimmi pure cosa vuoi esplorare.";
 
 const suggestions = [
-  "Immagina Mia.Ai sul mio sito",
+  "Parliamo di un'idea",
   "Come emozioni un cliente?",
-  "Vorrei vedere cosa sai fare"
+  "Cosa potresti fare per me?"
 ];
 
 export function Assistant() {
