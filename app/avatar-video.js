@@ -1,4 +1,6 @@
-import { avatarSrc } from "./avatar-data";
+"use client";
+
+import { useEffect, useRef } from "react";
 
 const mediaStyle = {
   width: "100%",
@@ -11,5 +13,39 @@ const mediaStyle = {
 };
 
 export function AvatarVideo() {
-  return <img alt="" src={avatarSrc} style={mediaStyle} />;
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const playVideo = () => {
+      video.muted = true;
+      video.play().catch(() => {});
+    };
+
+    video.addEventListener("loadeddata", playVideo);
+    video.addEventListener("canplay", playVideo);
+    playVideo();
+
+    return () => {
+      video.removeEventListener("loadeddata", playVideo);
+      video.removeEventListener("canplay", playVideo);
+      video.pause();
+    };
+  }, []);
+
+  return (
+    <video
+      aria-label="Avatar video Mia"
+      autoPlay
+      loop
+      muted
+      playsInline
+      preload="auto"
+      ref={videoRef}
+      src="/mia-avatar-video.mp4"
+      style={mediaStyle}
+    />
+  );
 }
