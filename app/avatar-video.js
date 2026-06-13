@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { avatarVideoSrc } from "./avatar-video-data";
 
 const mediaStyle = {
   width: "100%",
@@ -45,7 +44,7 @@ export function AvatarVideo() {
       playsInline
       preload="auto"
       ref={videoRef}
-      src={avatarVideoSrc}
+      src="/api/avatar-video"
       style={mediaStyle}
     />
   );
