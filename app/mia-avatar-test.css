@@ -139,3 +139,50 @@
     padding-top: 12px;
   }
 }
+
+/* Soft lipsync pass: keep the portrait clean, animate only a subtle mouth shadow while Mia speaks. */
+.avatar-motion-layer {
+  display: block !important;
+}
+
+.avatar-eye,
+.avatar-breath {
+  display: none !important;
+}
+
+.avatar-mouth {
+  display: block !important;
+  left: 50.1%;
+  top: 47.8%;
+  width: 34px;
+  height: 9px;
+  border: 0;
+  border-radius: 999px;
+  background: radial-gradient(ellipse at center, rgba(48, 8, 15, 0.78) 0%, rgba(92, 18, 28, 0.48) 48%, rgba(255, 94, 93, 0.08) 76%, transparent 100%);
+  box-shadow: 0 0 9px rgba(255, 112, 105, 0.16), 0 1px 5px rgba(0, 0, 0, 0.26) inset;
+  opacity: 0;
+  mix-blend-mode: multiply;
+  transform: translate(-50%, -50%) scaleX(0.76) scaleY(0.2);
+  transform-origin: center;
+  transition: opacity 140ms ease, transform 80ms linear;
+  animation: none !important;
+}
+
+html[data-mia-avatar-state="speaking"] .avatar-mouth {
+  opacity: calc(0.18 + (var(--mia-mouth-open, 0) * 0.5));
+  transform: translate(-50%, -50%) scaleX(calc(0.78 + (var(--mia-mouth-open, 0) * 0.32))) scaleY(calc(0.24 + (var(--mia-mouth-open, 0) * 1.08)));
+}
+
+@media (max-width: 390px) {
+  .avatar-mouth {
+    width: 30px;
+    height: 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-mia-avatar-state="speaking"] .avatar-mouth {
+    opacity: 0.32;
+    transform: translate(-50%, -50%) scaleX(0.86) scaleY(0.42);
+  }
+}
