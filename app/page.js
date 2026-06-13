@@ -1,5 +1,5 @@
 import { Assistant } from "./assistant";
-import { avatarSrc } from "./avatar-data";
+import { AvatarVideo } from "./avatar-video";
 
 export default function Home() {
   return (
@@ -22,25 +22,7 @@ export default function Home() {
             boxShadow: "none"
           }}
         >
-          <img
-            alt=""
-            src={avatarSrc}
-            style={{
-              width: "100%",
-              height: "100%",
-              display: "block",
-              objectFit: "cover",
-              objectPosition: "center 8%",
-              filter: "saturate(1.03) contrast(1.02)"
-            }}
-          />
-          <div className="avatar-motion-layer" aria-hidden="true">
-            <span className="avatar-eye avatar-eye--left" />
-            <span className="avatar-eye avatar-eye--right" />
-            <span className="avatar-mouth" />
-            <span className="avatar-breath" />
-          </div>
-          <div className="neon-ring" aria-hidden="true" />
+          <AvatarVideo />
         </div>
 
         <div className="voice-badge voice-badge--outside">
