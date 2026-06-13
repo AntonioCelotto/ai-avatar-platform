@@ -1,6 +1,4 @@
-"use client";
-
-import { useEffect, useRef } from "react";
+import { avatarSrc } from "./avatar-data";
 
 const mediaStyle = {
   width: "100%",
@@ -13,39 +11,5 @@ const mediaStyle = {
 };
 
 export function AvatarVideo() {
-  const videoRef = useRef(null);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    const playVideo = () => {
-      video.muted = true;
-      video.play().catch(() => {});
-    };
-
-    video.addEventListener("loadeddata", playVideo);
-    video.addEventListener("canplay", playVideo);
-    playVideo();
-
-    return () => {
-      video.removeEventListener("loadeddata", playVideo);
-      video.removeEventListener("canplay", playVideo);
-      video.pause();
-    };
-  }, []);
-
-  return (
-    <video
-      aria-label="Avatar video Mia"
-      autoPlay
-      loop
-      muted
-      playsInline
-      preload="auto"
-      ref={videoRef}
-      src="/api/avatar-video"
-      style={mediaStyle}
-    />
-  );
+  return <img alt="" src={avatarSrc} style={mediaStyle} />;
 }
