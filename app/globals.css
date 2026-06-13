@@ -80,19 +80,20 @@ a {
 .avatar-frame::after {
   content: "";
   position: absolute;
-  inset: auto 0 0;
+  inset: 0 0 auto;
   z-index: 1;
-  height: 42%;
+  height: 30%;
   pointer-events: none;
-  background: linear-gradient(180deg, transparent, rgba(5, 5, 5, 0.58));
+  background: linear-gradient(180deg, rgba(5, 5, 5, 0.48), transparent);
 }
 
 .mia-name-mark {
   position: absolute;
-  left: clamp(18px, 4vw, 42px);
-  bottom: clamp(20px, 5vh, 54px);
+  top: clamp(18px, 4vh, 42px);
+  left: 50%;
   z-index: 2;
   pointer-events: none;
+  transform: translateX(-50%);
   animation: miaMarkIn 1000ms cubic-bezier(0.2, 0.78, 0.18, 1) 160ms both;
 }
 
@@ -101,14 +102,15 @@ a {
   background: linear-gradient(180deg, #ffffff 0%, #eef7f7 42%, #b8d8d7 100%);
   background-clip: text;
   color: transparent;
-  font-size: clamp(72px, 14vw, 158px);
+  font-size: clamp(58px, 10vw, 112px);
   font-weight: 950;
-  line-height: 0.78;
+  line-height: 0.82;
   letter-spacing: 0;
+  text-align: center;
   text-shadow:
     0 1px 0 rgba(255, 255, 255, 0.35),
-    0 18px 44px rgba(0, 0, 0, 0.42),
-    0 0 28px rgba(17, 100, 102, 0.24);
+    0 14px 36px rgba(0, 0, 0, 0.38),
+    0 0 24px rgba(17, 100, 102, 0.22);
   -webkit-background-clip: text;
   -webkit-text-stroke: 1px rgba(255, 255, 255, 0.18);
 }
@@ -116,13 +118,13 @@ a {
 .mia-name-mark::after {
   content: "";
   position: absolute;
-  right: -10%;
-  bottom: -10px;
+  right: 2%;
+  bottom: -8px;
   left: 2%;
   height: 2px;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.78), rgba(17, 100, 102, 0));
-  opacity: 0.72;
-  transform-origin: left center;
+  background: linear-gradient(90deg, rgba(17, 100, 102, 0), rgba(255, 255, 255, 0.76), rgba(17, 100, 102, 0));
+  opacity: 0.7;
+  transform-origin: center;
   animation: miaLineIn 900ms cubic-bezier(0.2, 0.78, 0.18, 1) 420ms both;
 }
 
@@ -130,13 +132,13 @@ a {
   from {
     opacity: 0;
     filter: blur(10px);
-    transform: translate3d(0, 18px, 0) scale(0.96);
+    transform: translate3d(-50%, -14px, 0) scale(0.96);
   }
 
   to {
     opacity: 1;
     filter: blur(0);
-    transform: translate3d(0, 0, 0) scale(1);
+    transform: translate3d(-50%, 0, 0) scale(1);
   }
 }
 
@@ -147,7 +149,7 @@ a {
   }
 
   to {
-    opacity: 0.72;
+    opacity: 0.7;
     transform: scaleX(1);
   }
 }
@@ -591,8 +593,8 @@ a {
   }
 
   .mia-name-mark {
-    left: 22px;
-    bottom: 28px;
+    top: 22px;
+    left: 50%;
   }
 
   .topbar h1 {
@@ -630,8 +632,12 @@ a {
     min-height: 430px;
   }
 
+  .mia-name-mark {
+    top: 18px;
+  }
+
   .mia-name-mark span {
-    font-size: clamp(64px, 24vw, 104px);
+    font-size: clamp(52px, 18vw, 78px);
   }
 
   .topbar {
