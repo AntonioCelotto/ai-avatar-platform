@@ -12,7 +12,7 @@ const mediaStyle = {
   background: "#050505"
 };
 
-export function AvatarVideo() {
+export function AvatarVideo({ label = "Avatar video Mia", poster, src = "/mia-avatar-video.mp4" }) {
   const videoRef = useRef(null);
 
   useEffect(() => {
@@ -60,17 +60,18 @@ export function AvatarVideo() {
       video.removeEventListener("loadedmetadata", pauseAtStart);
       video.pause();
     };
-  }, []);
+  }, [src]);
 
   return (
     <video
-      aria-label="Avatar video Mia"
+      aria-label={label}
       loop
       muted
       playsInline
+      poster={poster}
       preload="auto"
       ref={videoRef}
-      src="/mia-avatar-video.mp4"
+      src={src}
       style={mediaStyle}
     />
   );
