@@ -1,46 +1,5 @@
+import { defaultTenantSlug, getTenant } from "../../tenant-config";
 import { findRelevantKnowledge } from "../../lib/supabase-server";
-
-const tenants = [
-  {
-    slug: "new-digital-app",
-    name: "New Digital App",
-    assistantName: "Mia",
-    ownerName: "Antonio",
-    website: "https://www.newdigitalapp.com",
-    knowledge: [
-      {
-        title: "Prodotto",
-        text:
-          "New Digital App crea avatar AI parlanti per aziende. L'assistente puo' essere installato su siti, app o interfacce dedicate."
-      },
-      {
-        title: "Esperienza",
-        text:
-          "Mia deve essere percepita come una presenza intelligente e naturale, non come un semplice chatbot tecnico o una brochure commerciale."
-      },
-      {
-        title: "Apprendimento",
-        text:
-          "L'avatar deve poter imparare da sito web, documenti PDF e integrazioni API con gestionali, CRM, cataloghi o database del cliente."
-      },
-      {
-        title: "Configurazione avatar",
-        text:
-          "Ogni cliente potra' configurare nome, colori, numero WhatsApp, genere visivo, carattere e tono dell'assistente. Esempi di tono: educato, professionale, diretto, empatico."
-      },
-      {
-        title: "Sito collegato",
-        text:
-          "Il sito ufficiale collegato al primo avatar e' www.newdigitalapp.com."
-      },
-      {
-        title: "Canali",
-        text:
-          "Il primo canale di contatto operativo e' WhatsApp tramite numero 393457980259. In seguito potranno essere aggiunte integrazioni dirette."
-      }
-    ]
-  }
-];
 
 function buildContext(tenant) {
   const knowledge = tenant.knowledge
@@ -49,9 +8,12 @@ function buildContext(tenant) {
 
   return [
     `Azienda collegata: ${tenant.name}`,
-    `Assistente: ${tenant.assistantName}`,
+    `Assistente: ${tenant.spokenAssistantName}`,
     `Proprietario/referente del progetto: ${tenant.ownerName}`,
     `Sito ufficiale collegato: ${tenant.website}`,
+    `Ruolo assistente: ${tenant.personality.role}`,
+    `Tono richiesto: ${tenant.personality.tone}`,
+    `Obiettivo esperienza: ${tenant.personality.experienceGoal}`,
     "Informazioni confermate:",
     knowledge,
     "Regole: rispondi in modo breve, concreto, umano e coinvolgente. Non elencare funzioni tecniche se l'utente non le chiede. Quando mancano dati specifici, dillo con naturalezza e accompagna verso il prossimo passo."
@@ -73,7 +35,7 @@ function fallbackReply(messages, tenant, extra = {}) {
 
 export async function POST(request) {
   const payload = await request.json();
-  const tenant = tenants.find((item) => item.slug === (payload.tenantSlug || "new-digital-app"));
+  const tenant = getTenant(payload.tenantSlug || defaultTenantSlug);
 
   if (!tenant) {
     return Response.json({ error: "Tenant not found" }, { status: 404 });
@@ -108,10 +70,10 @@ export async function POST(request) {
       body: JSON.stringify({
         model: process.env.OPENAI_MODEL || "gpt-5.2",
         instructions: [
-          "Sei Mia, un avatar AI conversazionale con tono naturale, caldo e intelligente.",
-          "Antonio Celotto e' il proprietario/referente del progetto, ma non devi presumere che ogni visitatore sia Antonio.",
-          "Chiama l'utente Antonio solo se nella conversazione dice chiaramente di essere Antonio o se sta parlando come proprietario del progetto. Altrimenti usa un tono neutro e non chiamarlo per nome.",
-          "Non aprire le risposte parlando di New Digital App, siti, app o avatar AI se l'utente non lo chiede. Queste informazioni sono contesto interno, non il centro di ogni risposta.",
+          `Sei ${tenant.spokenAssistantName}, ${tenant.personality.role}, con tono ${tenant.personality.tone}.`,
+          `${tenant.ownerName} e' il proprietario/referente del progetto, ma non devi presumere che ogni visitatore sia ${tenant.ownerName}.`,
+          `Chiama l'utente ${tenant.ownerName} solo se nella conversazione dice chiaramente di essere ${tenant.ownerName} o se sta parlando come proprietario del progetto. Altrimenti usa un tono neutro e non chiamarlo per nome.`,
+          `Non aprire le risposte parlando di ${tenant.name}, siti, app o avatar AI se l'utente non lo chiede. Queste informazioni sono contesto interno, non il centro di ogni risposta.`,
           "Rispondi in italiano, in modo naturale, emozionale, professionale e facile da capire da smartphone.",
           "Mantieni le risposte compatte: di solito 2 o 3 frasi, salvo richiesta esplicita di dettagli.",
           "Devi sembrare una presenza intelligente ed esperienziale, non una brochure tecnica e non un venditore automatico.",
