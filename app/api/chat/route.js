@@ -53,7 +53,7 @@ export async function POST(request) {
     .join("\n");
   const lastUserMessage =
     [...messages].reverse().find((message) => message.role === "user")?.content || "";
-  const documentKnowledge = await findRelevantKnowledge(lastUserMessage);
+  const documentKnowledge = await findRelevantKnowledge(lastUserMessage, tenant.slug);
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 18000);
