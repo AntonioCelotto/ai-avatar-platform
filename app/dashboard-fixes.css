@@ -1,0 +1,47 @@
+/* Dashboard contrast fixes for document and website source forms. */
+.dashboard-shell,
+.dashboard-controls,
+.document-list {
+  color-scheme: light;
+  color: var(--ink);
+}
+
+.source-form input,
+.source-form textarea,
+.source-form select {
+  border-color: var(--line);
+  background: #ffffff;
+  color: var(--ink);
+  caret-color: var(--accent);
+  -webkit-text-fill-color: var(--ink);
+}
+
+.source-form input::placeholder,
+.source-form textarea::placeholder {
+  color: var(--muted);
+  opacity: 1;
+  -webkit-text-fill-color: var(--muted);
+}
+
+.source-form input[type="file"] {
+  background: #ffffff;
+  color: var(--ink);
+}
+
+.source-form input[type="file"]::file-selector-button {
+  min-height: 34px;
+  margin-right: 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-soft);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 800;
+}
+
+.source-form input:-webkit-autofill,
+.source-form input:-webkit-autofill:hover,
+.source-form input:-webkit-autofill:focus {
+  box-shadow: 0 0 0 1000px #ffffff inset;
+  -webkit-text-fill-color: var(--ink);
+}
