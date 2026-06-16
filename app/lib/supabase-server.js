@@ -1,9 +1,11 @@
+import { defaultTenantSlug, getTenant } from "../tenant-config";
+
 const supabaseUrl =
   process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 
 export const KNOWLEDGE_BUCKET = "knowledge-documents";
-export const DEFAULT_TENANT_SLUG = "new-digital-app";
+export const DEFAULT_TENANT_SLUG = defaultTenantSlug;
 
 export function isSupabaseConfigured() {
   return Boolean(supabaseUrl && serviceRoleKey);
@@ -64,9 +66,10 @@ export function chunkText(text, maxLength = 1200) {
   return chunks;
 }
 
-export async function ensureDefaultVenue() {
+export async function ensureDefaultVenue(tenantSlug = DEFAULT_TENANT_SLUG) {
+  const tenant = getTenant(tenantSlug);
   const existingVenues = await supabaseFetch(
-    `/rest/v1/venues?slug=eq.${DEFAULT_TENANT_SLUG}&select=id&limit=1`
+    `/rest/v1/venues?slug=eq.${tenant.slug}&select=id&limit=1`
   );
   if (existingVenues?.[0]?.id) return existingVenues[0].id;
 
@@ -77,8 +80,8 @@ export async function ensureDefaultVenue() {
       Prefer: "return=representation"
     },
     body: JSON.stringify({
-      name: "New Digital App",
-      owner_name: "Antonio Celotto"
+      name: tenant.name,
+      owner_name: tenant.ownerName
     })
   });
 
@@ -93,11 +96,11 @@ export async function ensureDefaultVenue() {
     },
     body: JSON.stringify({
       organization_id: organizationId,
-      slug: DEFAULT_TENANT_SLUG,
-      name: "New Digital App",
+      slug: tenant.slug,
+      name: tenant.name,
       vertical: "agency",
-      whatsapp_order_phone: process.env.WHATSAPP_ORDER_PHONE || "393457980259",
-      website_url: "https://www.newdigitalapp.com",
+      whatsapp_order_phone: tenant.whatsappPhone,
+      website_url: tenant.website,
       status: "active"
     })
   });
@@ -107,9 +110,15 @@ export async function ensureDefaultVenue() {
   return venueId;
 }
 
-export async function uploadKnowledgeFile({ fileName, mimeType, buffer }) {
+export async function uploadKnowledgeFile({
+  fileName,
+  mimeType,
+  buffer,
+  tenantSlug = DEFAULT_TENANT_SLUG
+}) {
+  const tenant = getTenant(tenantSlug);
   const safeName = fileName.replace(/[^a-zA-Z0-9_.-]+/g, "-").toLowerCase();
-  const storagePath = `${DEFAULT_TENANT_SLUG}/${Date.now()}-${safeName}`;
+  const storagePath = `${tenant.slug}/${Date.now()}-${safeName}`;
   const response = await fetch(
     getSupabaseUrl(`/storage/v1/object/${KNOWLEDGE_BUCKET}/${storagePath}`),
     {
@@ -179,15 +188,15 @@ export async function insertKnowledgeChunks({ sourceId, chunks }) {
   });
 }
 
-export async function listKnowledgeSources() {
-  const venueId = await ensureDefaultVenue();
+export async function listKnowledgeSources(tenantSlug = DEFAULT_TENANT_SLUG) {
+  const venueId = await ensureDefaultVenue(tenantSlug);
   return supabaseFetch(
     `/rest/v1/knowledge_sources?venue_id=eq.${venueId}&select=id,title,source_type,source_url,status,storage_path,created_at&order=created_at.desc&limit=30`
   );
 }
 
-export async function deleteKnowledgeSource(sourceId) {
-  const venueId = await ensureDefaultVenue();
+export async function deleteKnowledgeSource(sourceId, tenantSlug = DEFAULT_TENANT_SLUG) {
+  const venueId = await ensureDefaultVenue(tenantSlug);
   await supabaseFetch(
     `/rest/v1/knowledge_sources?id=eq.${sourceId}&venue_id=eq.${venueId}`,
     {
@@ -199,11 +208,11 @@ export async function deleteKnowledgeSource(sourceId) {
   );
 }
 
-export async function findRelevantKnowledge(question) {
+export async function findRelevantKnowledge(question, tenantSlug = DEFAULT_TENANT_SLUG) {
   if (!isSupabaseConfigured()) return "";
 
   try {
-    const venueId = await ensureDefaultVenue();
+    const venueId = await ensureDefaultVenue(tenantSlug);
     const terms = String(question || "")
       .toLowerCase()
       .replace(/[^a-z0-9àèéìòùç\s]/gi, " ")
