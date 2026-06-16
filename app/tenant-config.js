@@ -15,6 +15,14 @@ export const tenants = [
     avatarPoster: "",
     brandMark: "MIA",
     orderFallbackText: "Ciao, vorrei informazioni sull'avatar AI di New Digital App.",
+    theme: {
+      "--mia-coral": "#ff675f",
+      "--mia-coral-strong": "#ff4f48",
+      "--mia-cyan": "#64e9f7",
+      "--accent": "#ff675f",
+      "--accent-strong": "#ff4f48",
+      "--signal": "#64e9f7"
+    },
     suggestions: [
       "Parliamo di un'idea",
       "Aiutami a ragionare",
@@ -61,17 +69,25 @@ export const tenants = [
   {
     slug: "demo-cliente-01",
     name: "Demo Cliente 01",
-    assistantName: "Sofia.Ai",
-    spokenAssistantName: "Sofia",
+    assistantName: "Luna.Ai",
+    spokenAssistantName: "Luna",
     ownerName: "Referente Cliente",
     website: "https://example.com",
     whatsappPhone: "390000000000",
-    welcomeMessage: "Ciao, sono Sofia",
-    inputPlaceholder: "Scrivi a Sofia",
+    welcomeMessage: "Ciao, sono Luna",
+    inputPlaceholder: "Scrivi a Luna",
     avatarVideo: "/mia-avatar-video.mp4",
     avatarPoster: "",
-    brandMark: "SOFIA",
+    brandMark: "LUNA",
     orderFallbackText: "Ciao, vorrei informazioni sull'assistente AI di Demo Cliente 01.",
+    theme: {
+      "--mia-coral": "#2dd4bf",
+      "--mia-coral-strong": "#14b8a6",
+      "--mia-cyan": "#facc15",
+      "--accent": "#2dd4bf",
+      "--accent-strong": "#14b8a6",
+      "--signal": "#facc15"
+    },
     suggestions: [
       "Parliamo della mia esigenza",
       "Aiutami a scegliere",
@@ -112,6 +128,7 @@ export function getTenantPublicConfig(slug = defaultTenantSlug) {
     avatarPoster: tenant.avatarPoster,
     brandMark: tenant.brandMark,
     orderFallbackText: tenant.orderFallbackText,
-    suggestions: tenant.suggestions
+    suggestions: tenant.suggestions,
+    theme: tenant.theme
   };
 }
