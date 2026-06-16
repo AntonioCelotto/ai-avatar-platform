@@ -3,23 +3,23 @@
 import { useEffect, useRef, useState } from "react";
 import { avatarSrc } from "./avatar-data";
 
-const tenant = {
+const fallbackTenant = {
   slug: "new-digital-app",
   name: "New Digital App",
   assistantName: "Mia.Ai",
-  whatsappPhone: "393457980259"
+  whatsappPhone: "393457980259",
+  welcomeMessage: "Ciao, sono Mia",
+  inputPlaceholder: "Scrivi a Mia",
+  orderFallbackText: "Ciao, vorrei informazioni sull'avatar AI di New Digital App.",
+  suggestions: [
+    "Parliamo di un'idea",
+    "Aiutami a ragionare",
+    "Fammi una domanda"
+  ]
 };
 
-const welcomeMessage =
-  "Ciao, sono Mia";
-
-const suggestions = [
-  "Parliamo di un'idea",
-  "Aiutami a ragionare",
-  "Fammi una domanda"
-];
-
-export function Assistant() {
+export function Assistant({ tenant: tenantConfig = fallbackTenant }) {
+  const tenant = { ...fallbackTenant, ...tenantConfig };
   const audioRef = useRef(null);
   const recognitionRef = useRef(null);
   const continuousVoiceRef = useRef(false);
@@ -29,7 +29,7 @@ export function Assistant() {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
-      content: welcomeMessage
+      content: tenant.welcomeMessage
     }
   ]);
   const [input, setInput] = useState("");
@@ -41,9 +41,7 @@ export function Assistant() {
   const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [speaking, setSpeaking] = useState(false);
 
-  const whatsappText =
-    orderDraft ||
-    `Ciao, vorrei informazioni sull'avatar AI di ${tenant.name}.`;
+  const whatsappText = orderDraft || tenant.orderFallbackText;
   const whatsappUrl = `https://wa.me/${tenant.whatsappPhone}?text=${encodeURIComponent(whatsappText)}`;
 
   useEffect(() => {
@@ -357,7 +355,7 @@ export function Assistant() {
         </div>
 
         <div className="suggestions">
-          {suggestions.map((suggestion) => (
+          {tenant.suggestions.map((suggestion) => (
             <button
               disabled={loading}
               key={suggestion}
@@ -392,7 +390,7 @@ export function Assistant() {
           <input
             aria-label="Messaggio"
             onChange={(event) => setInput(event.target.value)}
-            placeholder="Scrivi a Mia"
+            placeholder={tenant.inputPlaceholder}
             value={input}
           />
         </form>
