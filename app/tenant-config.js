@@ -68,8 +68,8 @@ export const tenants = [
     whatsappPhone: "390000000000",
     welcomeMessage: "Ciao, sono Sofia",
     inputPlaceholder: "Scrivi a Sofia",
-    avatarVideo: "/clients/demo-cliente-01/avatar.mp4",
-    avatarPoster: "/clients/demo-cliente-01/poster.jpg",
+    avatarVideo: "/mia-avatar-video.mp4",
+    avatarPoster: "",
     brandMark: "SOFIA",
     orderFallbackText: "Ciao, vorrei informazioni sull'assistente AI di Demo Cliente 01.",
     suggestions: [
