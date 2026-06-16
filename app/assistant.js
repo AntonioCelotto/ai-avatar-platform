@@ -341,7 +341,7 @@ export function Assistant() {
           <strong>{tenant.assistantName}</strong>
           {continuousVoice ? <span>Voce attiva</span> : null}
         </div>
-        <span className="assistant-status">{speaking ? "Parlo" : listening ? "Ascolto" : "Online"}</span>
+        <span className="assistant-status">{continuousVoice ? "Voce" : speaking ? "Parlo" : listening ? "Ascolto" : "Online"}</span>
       </header>
 
       <div className="messages" aria-live="polite">
@@ -380,7 +380,7 @@ export function Assistant() {
         >
           <button
             aria-label="Attiva voce continua"
-            className={`icon-button ${listening ? "is-listening" : ""}`}
+            className={`icon-button ${continuousVoice ? "is-listening" : ""}`}
             disabled={!canUseSpeech || (loading && !continuousVoice)}
             onClick={toggleContinuousVoice}
             title={canUseSpeech ? "Attiva o ferma la voce continua" : "Microfono non disponibile"}
@@ -407,9 +407,7 @@ export function Assistant() {
           {orderDraft
             ? "Riepilogo pronto per WhatsApp"
             : continuousVoice
-              ? listening
-                ? "Ti ascolto."
-                : "Voce attiva, riparto appena ho finito di parlare."
+              ? "Voce attiva."
               : "Sono qui. Scrivi o attiva la voce quando vuoi iniziare."}
         </span>
       </div>
