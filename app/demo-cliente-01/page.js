@@ -11,7 +11,7 @@ export default function DemoClientPage() {
   const tenant = getTenantPublicConfig("demo-cliente-01");
 
   return (
-    <main className="mobile-chat-shell">
+    <main className="mobile-chat-shell" style={tenant.theme}>
       <div className="aurora aurora--coral" />
       <div className="aurora aurora--cyan" />
       <section className="avatar-stage" aria-label={tenant.assistantName}>
