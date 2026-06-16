@@ -8,6 +8,7 @@ import {
   listKnowledgeSources,
   uploadKnowledgeFile
 } from "../../lib/supabase-server";
+import { defaultTenantSlug, getTenant } from "../../tenant-config";
 
 async function extractPdfText(buffer) {
   const pdfParse = (await import("pdf-parse/lib/pdf-parse.js")).default;
@@ -48,6 +49,10 @@ function assertValidPin(pin) {
   return null;
 }
 
+function getTenantSlug(value) {
+  return getTenant(String(value || defaultTenantSlug)).slug;
+}
+
 async function importWebsiteSource(url) {
   const websiteUrl = new URL(url);
   const controller = new AbortController();
@@ -72,7 +77,7 @@ async function importWebsiteSource(url) {
   }
 }
 
-export async function GET() {
+export async function GET(request) {
   if (!isSupabaseConfigured()) {
     return Response.json({
       configured: false,
@@ -80,8 +85,10 @@ export async function GET() {
     });
   }
 
+  const tenantSlug = getTenantSlug(new URL(request.url).searchParams.get("tenantSlug"));
+
   try {
-    const documents = await listKnowledgeSources();
+    const documents = await listKnowledgeSources(tenantSlug);
     return Response.json({ configured: true, documents });
   } catch (error) {
     return Response.json(
@@ -106,6 +113,7 @@ export async function POST(request) {
   const action = String(formData.get("action") || "pdf");
   const file = formData.get("file");
   const pin = String(formData.get("pin") || "");
+  const tenantSlug = getTenantSlug(formData.get("tenantSlug"));
   const pinError = assertValidPin(pin);
 
   if (pinError) return pinError;
@@ -124,7 +132,7 @@ export async function POST(request) {
     }
 
     try {
-      const venueId = await ensureDefaultVenue();
+      const venueId = await ensureDefaultVenue(tenantSlug);
       const extractedText = await importWebsiteSource(websiteUrl.toString());
 
       if (extractedText.length < 120) {
@@ -173,12 +181,13 @@ export async function POST(request) {
 
   try {
     const [venueId, extractedText, storagePath] = await Promise.all([
-      ensureDefaultVenue(),
+      ensureDefaultVenue(tenantSlug),
       extractPdfText(buffer),
       uploadKnowledgeFile({
         fileName: file.name,
         mimeType: file.type,
-        buffer
+        buffer,
+        tenantSlug
       })
     ]);
 
@@ -226,8 +235,10 @@ export async function DELETE(request) {
     return Response.json({ error: "Fonte non valida." }, { status: 400 });
   }
 
+  const tenantSlug = getTenantSlug(payload.tenantSlug);
+
   try {
-    await deleteKnowledgeSource(payload.id);
+    await deleteKnowledgeSource(payload.id, tenantSlug);
     return Response.json({ ok: true });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
