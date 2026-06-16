@@ -3,8 +3,12 @@ import { AvatarVideo } from "../avatar-video";
 import { getTenantPublicConfig } from "../tenant-config";
 
 export const metadata = {
-  title: "Demo Cliente 01 - Avatar AI",
-  description: "Simulazione cliente per avatar AI configurabile."
+  title: "EPM - Demo Cliente 01",
+  description: "Simulazione cliente per avatar AI configurabile.",
+  icons: {
+    icon: [{ url: "/epm-icon.svg", type: "image/svg+xml" }],
+    shortcut: [{ url: "/epm-icon.svg", type: "image/svg+xml" }]
+  }
 };
 
 export default function DemoClientPage() {
