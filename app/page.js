@@ -12,15 +12,14 @@ export default function Home() {
           <div className="mia-name-mark" aria-hidden="true">
             <span>MIA</span>
           </div>
-        </div>
-
-        <div className="voice-badge voice-badge--outside">
-          <span className="voice-orbit" aria-hidden="true">
-            <span />
-            <span />
-            <span />
-          </span>
-          Voce attiva
+          <div className="voice-badge voice-badge--inside">
+            <span className="voice-orbit" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+            </span>
+            Voce attiva
+          </div>
         </div>
       </section>
 
