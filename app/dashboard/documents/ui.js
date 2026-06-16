@@ -1,8 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-export function DocumentsDashboard() {
+const fallbackTenant = {
+  slug: "new-digital-app",
+  name: "New Digital App",
+  assistantName: "Mia.Ai",
+  spokenAssistantName: "Mia",
+  website: "https://www.newdigitalapp.com"
+};
+
+export function DocumentsDashboard({ tenant: tenantConfig = fallbackTenant }) {
+  const tenant = { ...fallbackTenant, ...tenantConfig };
+  const apiUrl = useMemo(
+    () => `/api/documents?tenantSlug=${encodeURIComponent(tenant.slug)}`,
+    [tenant.slug]
+  );
   const [documents, setDocuments] = useState([]);
   const [configured, setConfigured] = useState(true);
   const [error, setError] = useState("");
@@ -11,10 +24,10 @@ export function DocumentsDashboard() {
   const [importingSite, setImportingSite] = useState(false);
   const [deletingId, setDeletingId] = useState("");
   const [pin, setPin] = useState("");
-  const [websiteUrl, setWebsiteUrl] = useState("https://www.newdigitalapp.com");
+  const [websiteUrl, setWebsiteUrl] = useState(tenant.website || "https://www.newdigitalapp.com");
 
   async function loadDocuments() {
-    const response = await fetch("/api/documents", { cache: "no-store" });
+    const response = await fetch(apiUrl, { cache: "no-store" });
     const data = await response.json();
     setConfigured(Boolean(data.configured));
     setDocuments(data.documents || []);
@@ -25,7 +38,7 @@ export function DocumentsDashboard() {
   useEffect(() => {
     setPin(window.localStorage.getItem("dashboard_upload_pin") || "");
     loadDocuments();
-  }, []);
+  }, [apiUrl]);
 
   async function uploadDocument(event) {
     event.preventDefault();
@@ -41,6 +54,7 @@ export function DocumentsDashboard() {
     setUploading(true);
     const body = new FormData();
     body.append("action", "pdf");
+    body.append("tenantSlug", tenant.slug);
     body.append("file", file);
     body.append("pin", pin);
 
@@ -56,7 +70,7 @@ export function DocumentsDashboard() {
       }
 
       setStatus(
-        `${data.document.title} caricato: ${data.document.chunks} blocchi di conoscenza creati.`
+        `${data.document.title} caricato: ${data.document.chunks} blocchi di conoscenza creati per ${tenant.spokenAssistantName}.`
       );
       window.localStorage.setItem("dashboard_upload_pin", pin);
       event.currentTarget.reset();
@@ -76,6 +90,7 @@ export function DocumentsDashboard() {
 
     const body = new FormData();
     body.append("action", "website");
+    body.append("tenantSlug", tenant.slug);
     body.append("url", websiteUrl);
     body.append("pin", pin);
 
@@ -91,7 +106,7 @@ export function DocumentsDashboard() {
       }
 
       setStatus(
-        `${data.document.title} importato: ${data.document.chunks} blocchi di conoscenza creati.`
+        `${data.document.title} importato: ${data.document.chunks} blocchi di conoscenza creati per ${tenant.spokenAssistantName}.`
       );
       window.localStorage.setItem("dashboard_upload_pin", pin);
       await loadDocuments();
@@ -111,7 +126,7 @@ export function DocumentsDashboard() {
       const response = await fetch("/api/documents", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: source.id, pin })
+        body: JSON.stringify({ id: source.id, pin, tenantSlug: tenant.slug })
       });
       const data = await response.json();
 
@@ -119,7 +134,7 @@ export function DocumentsDashboard() {
         throw new Error(data.error || "Rimozione non riuscita.");
       }
 
-      setStatus(`${source.title} rimosso dalla memoria di Mia.`);
+      setStatus(`${source.title} rimosso dalla memoria di ${tenant.spokenAssistantName}.`);
       await loadDocuments();
     } catch (deleteError) {
       setError(deleteError.message);
@@ -137,14 +152,14 @@ export function DocumentsDashboard() {
   return (
     <main className="dashboard-shell">
       <section className="dashboard-header">
-        <a href="/" className="back-link">
-          Torna a Mia
+        <a href={tenant.slug === "new-digital-app" ? "/" : `/${tenant.slug}`} className="back-link">
+          Torna a {tenant.spokenAssistantName}
         </a>
         <div>
           <span className="eyebrow">Knowledge base</span>
-          <h1>Fonti New Digital App</h1>
+          <h1>Fonti {tenant.name}</h1>
           <p>
-            Carica PDF e importa pagine del sito: Mia li usera' come fonti quando risponde in chat.
+            Carica PDF e importa pagine del sito: {tenant.spokenAssistantName} li usera' come fonti quando risponde in chat.
           </p>
         </div>
       </section>
@@ -158,7 +173,7 @@ export function DocumentsDashboard() {
         ) : null}
 
         <form className="source-form" onSubmit={uploadDocument}>
-          <label htmlFor="file">PDF da far imparare a Mia</label>
+          <label htmlFor="file">PDF da far imparare a {tenant.spokenAssistantName}</label>
           <input
             aria-label="PIN dashboard"
             name="pin"
@@ -178,7 +193,7 @@ export function DocumentsDashboard() {
           <input
             id="website-url"
             onChange={(event) => setWebsiteUrl(event.target.value)}
-            placeholder="https://www.newdigitalapp.com"
+            placeholder={tenant.website || "https://www.newdigitalapp.com"}
             type="url"
             value={websiteUrl}
           />
@@ -216,7 +231,7 @@ export function DocumentsDashboard() {
           </div>
         ) : (
           <p className="empty-state">
-            Nessuna fonte caricata. Il primo PDF o sito diventera' la prima memoria reale di Mia.
+            Nessuna fonte caricata. Il primo PDF o sito diventera' la prima memoria reale di {tenant.spokenAssistantName}.
           </p>
         )}
       </section>
