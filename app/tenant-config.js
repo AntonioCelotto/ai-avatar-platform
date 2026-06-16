@@ -12,7 +12,7 @@ export const tenants = [
     welcomeMessage: "Ciao, sono Mia",
     inputPlaceholder: "Scrivi a Mia",
     avatarVideo: "/mia-avatar-video.mp4",
-    avatarPoster: "/mia-avatar.svg",
+    avatarPoster: "",
     brandMark: "MIA",
     orderFallbackText: "Ciao, vorrei informazioni sull'avatar AI di New Digital App.",
     suggestions: [
