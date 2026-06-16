@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Mia AI">
+  <rect width="512" height="512" rx="112" fill="#050505"/>
+  <rect x="28" y="28" width="456" height="456" rx="92" fill="none" stroke="#1b1b1b" stroke-width="18"/>
+  <path d="M134 366V146h61l61 101 61-101h61v220h-55V238l-49 80h-36l-49-80v128h-55Z" fill="#ffffff"/>
+  <circle cx="399" cy="126" r="18" fill="#ffffff" opacity="0.92"/>
+</svg>
