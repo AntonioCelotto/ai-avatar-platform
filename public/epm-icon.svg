@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="EPM AI">
+  <rect width="512" height="512" rx="112" fill="#0757d8"/>
+  <rect x="28" y="28" width="456" height="456" rx="92" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="18"/>
+  <path d="M164 366V146h186v50H220v36h112v48H220v36h136v50H164Z" fill="#ffffff"/>
+  <circle cx="382" cy="128" r="18" fill="#ffffff" opacity="0.92"/>
+</svg>
