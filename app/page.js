@@ -6,7 +6,7 @@ export default function Home() {
   const tenant = getTenantPublicConfig();
 
   return (
-    <main className="mobile-chat-shell">
+    <main className="mobile-chat-shell" style={tenant.theme}>
       <div className="aurora aurora--coral" />
       <div className="aurora aurora--cyan" />
       <section className="avatar-stage" aria-label={tenant.assistantName}>
