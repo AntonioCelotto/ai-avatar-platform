@@ -76,7 +76,7 @@ export const tenants = [
     whatsappPhone: "390000000000",
     welcomeMessage: "Ciao, sono EPM",
     inputPlaceholder: "Scrivi a EPM",
-    avatarVideo: "/mia-avatar-video.mp4",
+    avatarVideo: "/clients/demo-cliente-01/avatar.mp4",
     avatarPoster: "",
     brandMark: "EPM",
     orderFallbackText: "Ciao, vorrei informazioni sull'assistente AI di Demo Cliente 01.",
