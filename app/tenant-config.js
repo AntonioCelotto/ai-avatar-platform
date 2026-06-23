@@ -69,16 +69,16 @@ export const tenants = [
   {
     slug: "demo-cliente-01",
     name: "Demo Cliente 01",
-    assistantName: "EPM",
-    spokenAssistantName: "EPM",
+    assistantName: "Francesca",
+    spokenAssistantName: "Francesca",
     ownerName: "Referente Cliente",
     website: "https://example.com",
     whatsappPhone: "390000000000",
-    welcomeMessage: "Ciao, sono EPM",
-    inputPlaceholder: "Scrivi a EPM",
+    welcomeMessage: "Ciao, sono Francesca",
+    inputPlaceholder: "Scrivi a Francesca",
     avatarVideo: "/epm-avatar.mp4",
     avatarPoster: "",
-    brandMark: "EPM",
+    brandMark: "FRANCESCA",
     orderFallbackText: "Ciao, vorrei informazioni sull'assistente AI di Demo Cliente 01.",
     theme: {
       "--mia-coral": "#2dd4bf",
@@ -89,9 +89,9 @@ export const tenants = [
       "--signal": "#facc15"
     },
     suggestions: [
-      "Parliamo della mia esigenza",
-      "Aiutami a scegliere",
-      "Fammi una domanda"
+      "Facciamo due chiacchiere",
+      "Raccontami una storia",
+      "Facciamo un gioco"
     ],
     personality: {
       role: "assistente AI demo per un nuovo cliente",
