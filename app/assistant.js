@@ -18,6 +18,87 @@ const fallbackTenant = {
   ]
 };
 
+function getMemoryKey(tenantSlug) {
+  return `ai-avatar-memory:${tenantSlug}`;
+}
+
+function readLocalMemory(tenantSlug) {
+  if (typeof window === "undefined") return {};
+
+  try {
+    return JSON.parse(window.localStorage.getItem(getMemoryKey(tenantSlug)) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function writeLocalMemory(tenantSlug, memory) {
+  if (typeof window === "undefined") return;
+
+  try {
+    window.localStorage.setItem(getMemoryKey(tenantSlug), JSON.stringify(memory));
+  } catch {
+    // Local storage may be unavailable in some private browsing modes.
+  }
+}
+
+function pickMatch(text, patterns) {
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match?.[1]) return match[1].trim().replace(/[.!?]+$/g, "");
+  }
+  return "";
+}
+
+function capitalizeName(value) {
+  return value
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(" ");
+}
+
+function extractMemoryFromText(text, currentMemory = {}) {
+  const cleanText = String(text || "").trim();
+  const lowerText = cleanText.toLowerCase();
+  const updates = {};
+
+  const name = pickMatch(lowerText, [
+    /(?:mi chiamo|sono|il mio nome e'|il mio nome è)\s+([a-zàèéìòù]+(?:\s+[a-zàèéìòù]+)?)/i
+  ]);
+  if (name && name.length <= 32) updates.nome = capitalizeName(name);
+
+  const city = pickMatch(cleanText, [
+    /(?:vivo a|abito a|sono di)\s+([^,.!?]{2,40})/i
+  ]);
+  if (city) updates.citta = city;
+
+  const hobby = pickMatch(cleanText, [
+    /(?:mi piace|amo|adoro)\s+(?:fare\s+)?([^,.!?]{3,60})/i,
+    /(?:il mio hobby e'|il mio hobby è)\s+([^,.!?]{3,60})/i
+  ]);
+  if (hobby) updates.hobby = hobby;
+
+  const song = pickMatch(cleanText, [
+    /(?:la mia canzone preferita e'|la mia canzone preferita è|mi piace la canzone)\s+([^,.!?]{2,60})/i
+  ]);
+  if (song) updates.canzonePreferita = song;
+
+  const animal = pickMatch(cleanText, [
+    /(?:il mio animale preferito e'|il mio animale preferito è|mi piacciono i|mi piacciono le)\s+([^,.!?]{2,40})/i
+  ]);
+  if (animal) updates.animalePreferito = animal;
+
+  if (Object.keys(updates).length === 0) return currentMemory;
+
+  return {
+    ...currentMemory,
+    ...updates,
+    updatedAt: new Date().toISOString()
+  };
+}
+
 export function Assistant({ tenant: tenantConfig = fallbackTenant }) {
   const tenant = { ...fallbackTenant, ...tenantConfig };
   const audioRef = useRef(null);
@@ -40,9 +121,20 @@ export function Assistant({ tenant: tenantConfig = fallbackTenant }) {
   const [continuousVoice, setContinuousVoice] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const [clientMemory, setClientMemory] = useState({});
 
   const whatsappText = orderDraft || tenant.orderFallbackText;
   const whatsappUrl = `https://wa.me/${tenant.whatsappPhone}?text=${encodeURIComponent(whatsappText)}`;
+
+  useEffect(() => {
+    setClientMemory(readLocalMemory(tenant.slug));
+    setMessages([
+      {
+        role: "assistant",
+        content: tenant.welcomeMessage
+      }
+    ]);
+  }, [tenant.slug, tenant.welcomeMessage]);
 
   useEffect(() => {
     setCanUseSpeech(
@@ -210,6 +302,11 @@ export function Assistant({ tenant: tenantConfig = fallbackTenant }) {
 
     sendingRef.current = true;
     setVoiceEnabled(true);
+    const updatedMemory = extractMemoryFromText(cleanContent, clientMemory);
+    if (updatedMemory !== clientMemory) {
+      setClientMemory(updatedMemory);
+      writeLocalMemory(tenant.slug, updatedMemory);
+    }
     const nextMessages = [...messages, { role: "user", content: cleanContent }];
     setMessages(nextMessages);
     setInput("");
@@ -221,7 +318,8 @@ export function Assistant({ tenant: tenantConfig = fallbackTenant }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           tenantSlug: tenant.slug,
-          messages: nextMessages
+          messages: nextMessages,
+          clientMemory: updatedMemory
         })
       });
       const data = await response.json();
@@ -236,7 +334,9 @@ export function Assistant({ tenant: tenantConfig = fallbackTenant }) {
       if (data.orderDraft) setOrderDraft(data.orderDraft);
     } catch {
       const fallbackText =
-        "Non riesco a rispondere in questo momento. Puoi comunque inviare una richiesta su WhatsApp.";
+        tenant.slug === "demo-cliente-01"
+          ? "Sono qui con te. Facciamo un respiro tranquillo e poi mi racconti come stai."
+          : "Non riesco a rispondere in questo momento. Puoi comunque inviare una richiesta su WhatsApp.";
       setMessages((current) => [
         ...current,
         {
@@ -406,7 +506,9 @@ export function Assistant({ tenant: tenantConfig = fallbackTenant }) {
             ? "Riepilogo pronto per WhatsApp"
             : continuousVoice
               ? "Voce attiva."
-              : "Sono qui. Scrivi o attiva la voce quando vuoi iniziare."}
+              : tenant.slug === "demo-cliente-01" && clientMemory.nome
+                ? `Ciao ${clientMemory.nome}, sono qui quando vuoi parlare.`
+                : "Sono qui. Scrivi o attiva la voce quando vuoi iniziare."}
         </span>
       </div>
     </div>
