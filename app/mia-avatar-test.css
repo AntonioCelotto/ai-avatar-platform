@@ -186,3 +186,28 @@ html[data-mia-avatar-state="speaking"] .avatar-mouth {
     transform: translate(-50%, -50%) scaleX(0.86) scaleY(0.42);
   }
 }
+
+/* Francesca has a longer brand name: keep it elegant and inside small screens. */
+.mia-name-mark span {
+  max-width: calc(100vw - 32px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobile-chat-shell[style*="#7A9E7E"] .mia-name-mark span,
+.mobile-chat-shell[style*="#7a9e7e"] .mia-name-mark span {
+  font-size: clamp(24px, 7vw, 46px) !important;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  color: transparent;
+  background: linear-gradient(180deg, #fffdf8 0%, #f4e7d3 45%, #d9c6a8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-stroke: 0.5px rgba(255, 253, 248, 0.18);
+}
+
+.mobile-chat-shell[style*="#7A9E7E"] .mia-name-mark::after,
+.mobile-chat-shell[style*="#7a9e7e"] .mia-name-mark::after {
+  background: linear-gradient(90deg, rgba(244, 231, 211, 0), rgba(244, 231, 211, 0.8), rgba(244, 231, 211, 0));
+}
