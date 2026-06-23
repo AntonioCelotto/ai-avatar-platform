@@ -1,10 +1,20 @@
 import { defaultTenantSlug, getTenant } from "../../tenant-config";
+import { getFrancescaLibraryContext } from "../../data/francesca-library";
 import { findRelevantKnowledge } from "../../lib/supabase-server";
+
+function getExtraTenantContext(tenant) {
+  if (tenant.slug === "demo-cliente-01") {
+    return getFrancescaLibraryContext(90);
+  }
+
+  return "";
+}
 
 function buildContext(tenant) {
   const knowledge = tenant.knowledge
     .map((item) => `- ${item.title}: ${item.text}`)
     .join("\n");
+  const extraContext = getExtraTenantContext(tenant);
 
   return [
     `Azienda collegata: ${tenant.name}`,
@@ -16,8 +26,9 @@ function buildContext(tenant) {
     `Obiettivo esperienza: ${tenant.personality.experienceGoal}`,
     "Informazioni confermate:",
     knowledge,
+    extraContext ? `\nMateriale conversazionale dedicato:\n${extraContext}` : "",
     "Regole: rispondi in modo breve, concreto, umano e coinvolgente. Non elencare funzioni tecniche se l'utente non le chiede. Quando mancano dati specifici, dillo con naturalezza e accompagna verso il prossimo passo."
-  ].join("\n");
+  ].filter(Boolean).join("\n");
 }
 
 function fallbackReply(messages, tenant, extra = {}) {
@@ -25,9 +36,12 @@ function fallbackReply(messages, tenant, extra = {}) {
     [...messages].reverse().find((message) => message.role === "user")?.content || "";
   const orderDraft = `Nuova richiesta per ${tenant.name}:\n${lastUserMessage}`;
 
+  const reply = tenant.slug === "demo-cliente-01"
+    ? "Sono qui con te. Raccontami come stai oggi, oppure possiamo fare insieme un piccolo gioco o ricordare qualcosa di bello."
+    : "Sono qui. Raccontami cosa vuoi esplorare e ti rispondo in modo chiaro, senza trasformare ogni domanda in una vendita.";
+
   return {
-    reply:
-      "Sono qui. Raccontami cosa vuoi esplorare e ti rispondo in modo chiaro, senza trasformare ogni domanda in una vendita.",
+    reply,
     orderDraft,
     ...extra
   };
@@ -54,6 +68,7 @@ export async function POST(request) {
   const lastUserMessage =
     [...messages].reverse().find((message) => message.role === "user")?.content || "";
   const documentKnowledge = await findRelevantKnowledge(lastUserMessage, tenant.slug);
+  const isFrancesca = tenant.slug === "demo-cliente-01";
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 18000);
@@ -73,18 +88,23 @@ export async function POST(request) {
           `Sei ${tenant.spokenAssistantName}, ${tenant.personality.role}, con tono ${tenant.personality.tone}.`,
           `${tenant.ownerName} e' il proprietario/referente del progetto, ma non devi presumere che ogni visitatore sia ${tenant.ownerName}.`,
           `Chiama l'utente ${tenant.ownerName} solo se nella conversazione dice chiaramente di essere ${tenant.ownerName} o se sta parlando come proprietario del progetto. Altrimenti usa un tono neutro e non chiamarlo per nome.`,
-          `Non aprire le risposte parlando di ${tenant.name}, siti, app o avatar AI se l'utente non lo chiede. Queste informazioni sono contesto interno, non il centro di ogni risposta.`,
-          "Rispondi in italiano, in modo naturale, emozionale, professionale e facile da capire da smartphone.",
+          isFrancesca
+            ? "Questa esperienza e' dedicata a persone anziane: non comportarti come venditore, non parlare di siti, app, business o avatar AI. Fai compagnia, ascolta, proponi ricordi, storie, giochi semplici, curiosita' e conversazioni serene. Usa frasi brevi e una sola domanda alla volta."
+            : `Non aprire le risposte parlando di ${tenant.name}, siti, app o avatar AI se l'utente non lo chiede. Queste informazioni sono contesto interno, non il centro di ogni risposta.`,
+          isFrancesca
+            ? "Non dare diagnosi, non consigliare farmaci e non sostituire personale sanitario. Se emergono temi medici o di sicurezza, invita con dolcezza a parlarne con il personale del centro o con un medico."
+            : "Rispondi in italiano, in modo naturale, emozionale, professionale e facile da capire da smartphone.",
+          "Rispondi in italiano, in modo naturale, emozionale e facile da capire da smartphone.",
           "Mantieni le risposte compatte: di solito 2 o 3 frasi, salvo richiesta esplicita di dettagli.",
           "Devi sembrare una presenza intelligente ed esperienziale, non una brochure tecnica e non un venditore automatico.",
-          "Puoi rispondere a domande generali, idee, dubbi, curiosita', strategia, tecnologia, business e vita quotidiana usando conoscenza generale quando il contesto confermato non basta.",
-          "Non riportare ogni risposta verso siti, app o avatar AI. Fallo solo quando e' utile, quando l'utente lo chiede o quando dalla conversazione emerge un bisogno reale.",
-          "Evita di ripetere formule come 'posso fare' o liste di capacita'. Mostra valore con frasi vive, concrete e conversazionali.",
-          "Non spiegare spontaneamente che sai leggere PDF, siti o API. Se l'utente lo chiede, rispondi in modo chiaro.",
+          isFrancesca
+            ? "Se l'utente chiede un gioco, scegli un gioco di memoria o un indovinello. Se chiede compagnia, resta nel dialogo. Se racconta un ricordo, chiedi un dettaglio con delicatezza."
+            : "Puoi rispondere a domande generali, idee, dubbi, curiosita', strategia, tecnologia, business e vita quotidiana usando conoscenza generale quando il contesto confermato non basta.",
           "Se trovi contesto dalle fonti caricate, usalo prima della conoscenza generale.",
-          "Usa prima il contesto confermato. Puoi usare conoscenza generale per spiegare concetti AI, siti web, API, documenti e altri argomenti quando serve.",
           "Non promettere integrazioni gia' completate se sono ancora future.",
-          "Quando emerge chiaramente una richiesta commerciale, operativa o di contatto, proponi un riepilogo chiaro per WhatsApp. Non proporlo per ogni semplice domanda."
+          isFrancesca
+            ? "Non aggiungere riepiloghi commerciali o messaggi WhatsApp se non richiesti dal referente."
+            : "Quando emerge chiaramente una richiesta commerciale, operativa o di contatto, proponi un riepilogo chiaro per WhatsApp. Non proporlo per ogni semplice domanda."
         ].join("\n"),
         input: [
           {
@@ -92,7 +112,7 @@ export async function POST(request) {
             content: [
               {
                 type: "input_text",
-                text: `${buildContext(tenant)}\n\nContesto dalle fonti caricate:\n${documentKnowledge || "Nessuna fonte rilevante trovata."}\n\nConversazione recente:\n${transcript}\n\nRispondi con calore, presenza e personalita'. Se dalla conversazione emerge davvero una richiesta commerciale o operativa, alla fine aggiungi una sezione chiamata RIEPILOGO_ORDINE con testo pronto per WhatsApp. Se non emerge, non aggiungere il riepilogo.`
+                text: `${buildContext(tenant)}\n\nContesto dalle fonti caricate:\n${documentKnowledge || "Nessuna fonte rilevante trovata."}\n\nConversazione recente:\n${transcript}\n\nRispondi con calore, presenza e personalita'. ${isFrancesca ? "Per Francesca, usa la libreria conversazionale come ispirazione e fai una sola domanda alla volta." : "Se dalla conversazione emerge davvero una richiesta commerciale o operativa, alla fine aggiungi una sezione chiamata RIEPILOGO_ORDINE con testo pronto per WhatsApp. Se non emerge, non aggiungere il riepilogo."}`
               }
             ]
           }
@@ -125,7 +145,7 @@ export async function POST(request) {
 
   return Response.json({
     reply: replyPart.trim() || outputText,
-    orderDraft: orderPart?.replace(/^[:\s-]+/, "").trim(),
+    orderDraft: isFrancesca ? undefined : orderPart?.replace(/^[:\s-]+/, "").trim(),
     source: "openai"
   });
 }
