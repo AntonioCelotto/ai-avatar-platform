@@ -19,8 +19,16 @@ function buildMemoryContext(clientMemory = {}) {
     ["Animale preferito", clientMemory.animalePreferito]
   ].filter(([, value]) => value);
 
-  if (!entries.length) return "Nessuna memoria personale salvata.";
-  return entries.map(([label, value]) => `- ${label}: ${value}`).join("\n");
+  const emotional = Array.isArray(clientMemory.emotionalMemories)
+    ? clientMemory.emotionalMemories.slice(-4).map((item) => `- Ricordo emotivo: ${item.note}`)
+    : [];
+
+  if (!entries.length && !emotional.length) return "Nessuna memoria personale salvata.";
+
+  return [
+    ...entries.map(([label, value]) => `- ${label}: ${value}`),
+    ...emotional
+  ].join("\n");
 }
 
 function buildContext(tenant, clientMemory = {}) {
@@ -85,6 +93,7 @@ export async function POST(request) {
     [...messages].reverse().find((message) => message.role === "user")?.content || "";
   const documentKnowledge = await findRelevantKnowledge(lastUserMessage, tenant.slug);
   const isFrancesca = tenant.slug === "demo-cliente-01";
+  const userTurns = messages.filter((message) => message.role === "user").length;
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 18000);
@@ -108,8 +117,14 @@ export async function POST(request) {
             ? "Questa esperienza e' dedicata a persone anziane: fai compagnia, ascolta, proponi ricordi, storie, giochi semplici, curiosita' e conversazioni serene. Usa frasi brevi e una sola domanda alla volta."
             : `Non aprire le risposte parlando di ${tenant.name}, siti, app o avatar AI se l'utente non lo chiede. Queste informazioni sono contesto interno, non il centro di ogni risposta.`,
           isFrancesca
-            ? "Usa la memoria personale con delicatezza. Se conosci il nome, puoi salutare per nome ogni tanto. Se conosci hobby, citta', canzone o animale preferito, richiamali in modo naturale per far sentire la persona ricordata."
+            ? "Usa la memoria personale con delicatezza. Se conosci il nome, puoi salutare per nome ogni tanto. Se conosci hobby, citta', canzone, animale preferito o un ricordo emotivo, richiamali in modo naturale per far sentire la persona ricordata, senza insistere su temi tristi."
             : "Rispondi in italiano, in modo naturale, emozionale, professionale e facile da capire da smartphone.",
+          isFrancesca
+            ? "Modalita Animatrice: dopo almeno due messaggi dell'utente, se la conversazione e' ferma o l'utente risponde in modo breve, prendi una piccola iniziativa. Proponi una sola attivita' tra: gioco di memoria, indovinello, racconto breve, curiosita', ricordo d'infanzia o domanda su un interesse salvato. Deve sembrare naturale, non automatico."
+            : "Rispondi in italiano, in modo naturale, emozionale, professionale e facile da capire da smartphone.",
+          isFrancesca
+            ? `Numero messaggi utente in questa conversazione: ${userTurns}. Se sono almeno 2 puoi proporre con dolcezza una piccola attivita' se utile.`
+            : "",
           "Rispondi in italiano, in modo naturale, emozionale e facile da capire da smartphone.",
           "Mantieni le risposte compatte: di solito 2 o 3 frasi, salvo richiesta esplicita di dettagli.",
           "Devi sembrare una presenza intelligente ed esperienziale, non una brochure tecnica e non un venditore automatico.",
@@ -121,14 +136,14 @@ export async function POST(request) {
           isFrancesca
             ? "Non aggiungere riepiloghi commerciali o messaggi WhatsApp se non richiesti dal referente."
             : "Quando emerge chiaramente una richiesta commerciale, operativa o di contatto, proponi un riepilogo chiaro per WhatsApp. Non proporlo per ogni semplice domanda."
-        ].join("\n"),
+        ].filter(Boolean).join("\n"),
         input: [
           {
             role: "user",
             content: [
               {
                 type: "input_text",
-                text: `${buildContext(tenant, clientMemory)}\n\nContesto dalle fonti caricate:\n${documentKnowledge || "Nessuna fonte rilevante trovata."}\n\nConversazione recente:\n${transcript}\n\nRispondi con calore, presenza e personalita'. ${isFrancesca ? "Per Francesca, usa memoria e libreria conversazionale come ispirazione. Fai una sola domanda alla volta." : "Se dalla conversazione emerge davvero una richiesta commerciale o operativa, alla fine aggiungi una sezione chiamata RIEPILOGO_ORDINE con testo pronto per WhatsApp. Se non emerge, non aggiungere il riepilogo."}`
+                text: `${buildContext(tenant, clientMemory)}\n\nContesto dalle fonti caricate:\n${documentKnowledge || "Nessuna fonte rilevante trovata."}\n\nConversazione recente:\n${transcript}\n\nRispondi con calore, presenza e personalita'. ${isFrancesca ? "Per Francesca, usa memoria e libreria conversazionale come ispirazione. Fai una sola domanda alla volta. Se serve, attiva la modalita Animatrice con una proposta dolce e breve." : "Se dalla conversazione emerge davvero una richiesta commerciale o operativa, alla fine aggiungi una sezione chiamata RIEPILOGO_ORDINE con testo pronto per WhatsApp. Se non emerge, non aggiungere il riepilogo."}`
               }
             ]
           }
