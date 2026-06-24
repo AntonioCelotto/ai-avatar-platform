@@ -261,7 +261,7 @@ export function Assistant({ tenant: tenantConfig = fallbackTenant }) {
     try {
       stopVoiceInput(false);
       if (audioRef.current) audioRef.current.pause();
-      const audioUrl = `/api/speech?text=${encodeURIComponent(cleanText)}`;
+      const audioUrl = `/api/speech?text=${encodeURIComponent(cleanText)}&tenantSlug=${tenant.slug}`;
       const audio = new Audio(audioUrl);
       audioRef.current = audio;
       audio.onplaying = beginSpeaking;
