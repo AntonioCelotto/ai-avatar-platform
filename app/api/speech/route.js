@@ -14,11 +14,51 @@ function cleanSpeechInput(input) {
     .slice(0, 420);
 }
 
-async function generateSpeechResponse(input) {
-  if (!input) {
-    return Response.json({ error: "Missing text" }, { status: 400 });
+function getElevenLabsVoiceId(tenantSlug) {
+  if (tenantSlug === "demo-cliente-01") {
+    return process.env.ELEVENLABS_FRANCESCA_VOICE_ID || "EnMjgV8GaKfSk1f0AlV9";
   }
 
+  return process.env.ELEVENLABS_VOICE_ID || "";
+}
+
+async function generateElevenLabsSpeech(input, tenantSlug) {
+  const apiKey = process.env.ELEVENLABS_API_KEY;
+  const voiceId = getElevenLabsVoiceId(tenantSlug);
+
+  if (!apiKey || !voiceId) return null;
+
+  const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+    method: "POST",
+    headers: {
+      "xi-api-key": apiKey,
+      "Content-Type": "application/json",
+      Accept: "audio/mpeg"
+    },
+    body: JSON.stringify({
+      text: input,
+      model_id: process.env.ELEVENLABS_MODEL_ID || "eleven_multilingual_v2",
+      voice_settings: {
+        stability: 0.55,
+        similarity_boost: 0.82,
+        style: 0.18,
+        use_speaker_boost: true
+      }
+    })
+  });
+
+  if (!response.ok) return null;
+
+  return new Response(response.body, {
+    headers: {
+      "Content-Type": "audio/mpeg",
+      "Cache-Control": "no-store",
+      "X-Speech-Provider": "elevenlabs"
+    }
+  });
+}
+
+async function generateOpenAISpeech(input) {
   if (!process.env.OPENAI_API_KEY) {
     return Response.json({ error: "OpenAI key not configured" }, { status: 503 });
   }
@@ -49,17 +89,34 @@ async function generateSpeechResponse(input) {
   return new Response(response.body, {
     headers: {
       "Content-Type": "audio/mpeg",
-      "Cache-Control": "no-store"
+      "Cache-Control": "no-store",
+      "X-Speech-Provider": "openai"
     }
   });
 }
 
+async function generateSpeechResponse(input, tenantSlug = "") {
+  if (!input) {
+    return Response.json({ error: "Missing text" }, { status: 400 });
+  }
+
+  if (tenantSlug === "demo-cliente-01") {
+    const elevenLabsResponse = await generateElevenLabsSpeech(input, tenantSlug);
+    if (elevenLabsResponse) return elevenLabsResponse;
+  }
+
+  return generateOpenAISpeech(input);
+}
+
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
-  return generateSpeechResponse(cleanSpeechInput(searchParams.get("text")));
+  return generateSpeechResponse(
+    cleanSpeechInput(searchParams.get("text")),
+    searchParams.get("tenantSlug") || ""
+  );
 }
 
 export async function POST(request) {
   const payload = await request.json();
-  return generateSpeechResponse(cleanSpeechInput(payload.text));
+  return generateSpeechResponse(cleanSpeechInput(payload.text), payload.tenantSlug || "");
 }
