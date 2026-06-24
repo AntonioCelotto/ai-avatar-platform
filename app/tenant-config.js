@@ -76,7 +76,7 @@ export const tenants = [
     whatsappPhone: "390000000000",
     welcomeMessage: "Ciao, sono Francesca. Sono qui per fare due chiacchiere con te.",
     inputPlaceholder: "Scrivi a Francesca",
-    avatarVideo: "/epm-avatar.mp4",
+    avatarVideo: "/francesca-avatar.mp4",
     avatarPoster: "",
     brandMark: "FRANCESCA",
     orderFallbackText: "Messaggio da Francesca.",
