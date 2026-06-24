@@ -22,11 +22,18 @@ function getElevenLabsVoiceId(tenantSlug) {
   return process.env.ELEVENLABS_VOICE_ID || "";
 }
 
-async function generateElevenLabsSpeech(input, tenantSlug) {
+async function callElevenLabs(input, tenantSlug) {
   const apiKey = process.env.ELEVENLABS_API_KEY;
   const voiceId = getElevenLabsVoiceId(tenantSlug);
 
-  if (!apiKey || !voiceId) return null;
+  if (!apiKey || !voiceId) {
+    return {
+      ok: false,
+      reason: !apiKey ? "missing_elevenlabs_api_key" : "missing_voice_id",
+      hasApiKey: Boolean(apiKey),
+      voiceId
+    };
+  }
 
   const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
     method: "POST",
@@ -47,9 +54,37 @@ async function generateElevenLabsSpeech(input, tenantSlug) {
     })
   });
 
-  if (!response.ok) return null;
+  if (!response.ok) {
+    let body = "";
+    try {
+      body = await response.text();
+    } catch {
+      body = "";
+    }
 
-  return new Response(response.body, {
+    return {
+      ok: false,
+      reason: "elevenlabs_http_error",
+      status: response.status,
+      body: body.slice(0, 500),
+      hasApiKey: true,
+      voiceId
+    };
+  }
+
+  return {
+    ok: true,
+    response,
+    voiceId,
+    hasApiKey: true
+  };
+}
+
+async function generateElevenLabsSpeech(input, tenantSlug) {
+  const result = await callElevenLabs(input, tenantSlug);
+  if (!result.ok) return null;
+
+  return new Response(result.response.body, {
     headers: {
       "Content-Type": "audio/mpeg",
       "Cache-Control": "no-store",
@@ -95,6 +130,30 @@ async function generateOpenAISpeech(input) {
   });
 }
 
+async function generateSpeechDebug(input, tenantSlug = "") {
+  const elevenLabsResult = await callElevenLabs(input || "Ciao sono Francesca", tenantSlug);
+
+  return Response.json({
+    tenantSlug,
+    inputPresent: Boolean(input),
+    elevenLabs: elevenLabsResult.ok
+      ? {
+          ok: true,
+          provider: "elevenlabs",
+          voiceId: elevenLabsResult.voiceId,
+          hasApiKey: elevenLabsResult.hasApiKey
+        }
+      : {
+          ok: false,
+          reason: elevenLabsResult.reason,
+          status: elevenLabsResult.status,
+          body: elevenLabsResult.body,
+          voiceId: elevenLabsResult.voiceId,
+          hasApiKey: elevenLabsResult.hasApiKey
+        }
+  });
+}
+
 async function generateSpeechResponse(input, tenantSlug = "") {
   if (!input) {
     return Response.json({ error: "Missing text" }, { status: 400 });
@@ -110,10 +169,14 @@ async function generateSpeechResponse(input, tenantSlug = "") {
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
-  return generateSpeechResponse(
-    cleanSpeechInput(searchParams.get("text")),
-    searchParams.get("tenantSlug") || ""
-  );
+  const input = cleanSpeechInput(searchParams.get("text"));
+  const tenantSlug = searchParams.get("tenantSlug") || "";
+
+  if (searchParams.get("debug") === "1") {
+    return generateSpeechDebug(input, tenantSlug);
+  }
+
+  return generateSpeechResponse(input, tenantSlug);
 }
 
 export async function POST(request) {
