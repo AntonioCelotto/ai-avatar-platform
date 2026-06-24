@@ -10,11 +10,25 @@ function getExtraTenantContext(tenant) {
   return "";
 }
 
-function buildContext(tenant) {
+function buildMemoryContext(clientMemory = {}) {
+  const entries = [
+    ["Nome", clientMemory.nome],
+    ["Citta'", clientMemory.citta],
+    ["Hobby", clientMemory.hobby],
+    ["Canzone preferita", clientMemory.canzonePreferita],
+    ["Animale preferito", clientMemory.animalePreferito]
+  ].filter(([, value]) => value);
+
+  if (!entries.length) return "Nessuna memoria personale salvata.";
+  return entries.map(([label, value]) => `- ${label}: ${value}`).join("\n");
+}
+
+function buildContext(tenant, clientMemory = {}) {
   const knowledge = tenant.knowledge
     .map((item) => `- ${item.title}: ${item.text}`)
     .join("\n");
   const extraContext = getExtraTenantContext(tenant);
+  const memoryContext = tenant.slug === "demo-cliente-01" ? buildMemoryContext(clientMemory) : "";
 
   return [
     `Azienda collegata: ${tenant.name}`,
@@ -26,6 +40,7 @@ function buildContext(tenant) {
     `Obiettivo esperienza: ${tenant.personality.experienceGoal}`,
     "Informazioni confermate:",
     knowledge,
+    memoryContext ? `\nMemoria personale dell'utente:\n${memoryContext}` : "",
     extraContext ? `\nMateriale conversazionale dedicato:\n${extraContext}` : "",
     "Regole: rispondi in modo breve, concreto, umano e coinvolgente. Non elencare funzioni tecniche se l'utente non le chiede. Quando mancano dati specifici, dillo con naturalezza e accompagna verso il prossimo passo."
   ].filter(Boolean).join("\n");
@@ -56,6 +71,7 @@ export async function POST(request) {
   }
 
   const messages = Array.isArray(payload.messages) ? payload.messages : [];
+  const clientMemory = payload.clientMemory && typeof payload.clientMemory === "object" ? payload.clientMemory : {};
 
   if (!process.env.OPENAI_API_KEY) {
     return Response.json(fallbackReply(messages, tenant, { source: "fallback_no_key" }));
@@ -89,10 +105,10 @@ export async function POST(request) {
           `${tenant.ownerName} e' il proprietario/referente del progetto, ma non devi presumere che ogni visitatore sia ${tenant.ownerName}.`,
           `Chiama l'utente ${tenant.ownerName} solo se nella conversazione dice chiaramente di essere ${tenant.ownerName} o se sta parlando come proprietario del progetto. Altrimenti usa un tono neutro e non chiamarlo per nome.`,
           isFrancesca
-            ? "Questa esperienza e' dedicata a persone anziane: non comportarti come venditore, non parlare di siti, app, business o avatar AI. Fai compagnia, ascolta, proponi ricordi, storie, giochi semplici, curiosita' e conversazioni serene. Usa frasi brevi e una sola domanda alla volta."
+            ? "Questa esperienza e' dedicata a persone anziane: fai compagnia, ascolta, proponi ricordi, storie, giochi semplici, curiosita' e conversazioni serene. Usa frasi brevi e una sola domanda alla volta."
             : `Non aprire le risposte parlando di ${tenant.name}, siti, app o avatar AI se l'utente non lo chiede. Queste informazioni sono contesto interno, non il centro di ogni risposta.`,
           isFrancesca
-            ? "Non dare diagnosi, non consigliare farmaci e non sostituire personale sanitario. Se emergono temi medici o di sicurezza, invita con dolcezza a parlarne con il personale del centro o con un medico."
+            ? "Usa la memoria personale con delicatezza. Se conosci il nome, puoi salutare per nome ogni tanto. Se conosci hobby, citta', canzone o animale preferito, richiamali in modo naturale per far sentire la persona ricordata."
             : "Rispondi in italiano, in modo naturale, emozionale, professionale e facile da capire da smartphone.",
           "Rispondi in italiano, in modo naturale, emozionale e facile da capire da smartphone.",
           "Mantieni le risposte compatte: di solito 2 o 3 frasi, salvo richiesta esplicita di dettagli.",
@@ -112,7 +128,7 @@ export async function POST(request) {
             content: [
               {
                 type: "input_text",
-                text: `${buildContext(tenant)}\n\nContesto dalle fonti caricate:\n${documentKnowledge || "Nessuna fonte rilevante trovata."}\n\nConversazione recente:\n${transcript}\n\nRispondi con calore, presenza e personalita'. ${isFrancesca ? "Per Francesca, usa la libreria conversazionale come ispirazione e fai una sola domanda alla volta." : "Se dalla conversazione emerge davvero una richiesta commerciale o operativa, alla fine aggiungi una sezione chiamata RIEPILOGO_ORDINE con testo pronto per WhatsApp. Se non emerge, non aggiungere il riepilogo."}`
+                text: `${buildContext(tenant, clientMemory)}\n\nContesto dalle fonti caricate:\n${documentKnowledge || "Nessuna fonte rilevante trovata."}\n\nConversazione recente:\n${transcript}\n\nRispondi con calore, presenza e personalita'. ${isFrancesca ? "Per Francesca, usa memoria e libreria conversazionale come ispirazione. Fai una sola domanda alla volta." : "Se dalla conversazione emerge davvero una richiesta commerciale o operativa, alla fine aggiungi una sezione chiamata RIEPILOGO_ORDINE con testo pronto per WhatsApp. Se non emerge, non aggiungere il riepilogo."}`
               }
             ]
           }
