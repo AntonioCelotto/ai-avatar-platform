@@ -25,10 +25,32 @@ const categoryMap = {
   "demo-cliente-01": "Centro Anziani"
 };
 
+const voiceMap = {
+  "new-digital-app": "OpenAI",
+  "demo-cliente-01": "ElevenLabs"
+};
+
 const statusMap = {
   "new-digital-app": "Stabile",
   "demo-cliente-01": "Stabile"
 };
+
+const productModules = [
+  ["Multi tenant", "Ogni cliente ha nome, avatar, voce, colori e prompt separati."],
+  ["Video avatar", "Supporto per video dedicati caricati nella cartella pubblica."],
+  ["Voce AI", "OpenAI per voci standard, ElevenLabs per voci clonate."],
+  ["Memoria locale", "Ricordo nome, hobby, preferenze e memoria emotiva."],
+  ["Documenti", "Base pronta per PDF, FAQ, cataloghi e documentazione cliente."],
+  ["Dashboard", "Prima interfaccia per controllare clienti e stato piattaforma."]
+];
+
+const nextActions = [
+  "Collegare clienti al database Supabase",
+  "Creare form Nuovo Cliente",
+  "Salvare configurazione avatar senza modificare codice",
+  "Gestire upload video e documenti dalla dashboard",
+  "Aggiungere statistiche conversazioni"
+];
 
 export default function PlatformDashboard() {
   return (
@@ -57,7 +79,8 @@ export default function PlatformDashboard() {
             <p className="platform-kicker">Versione 2.0 in costruzione</p>
             <h1>NDA Avatar Platform</h1>
             <p>
-              La base SaaS per creare, configurare e vendere avatar AI personalizzati per ogni settore.
+              La base SaaS per creare, configurare e vendere avatar AI personalizzati per ogni settore,
+              senza toccare ogni volta il codice.
             </p>
           </div>
           <a className="platform-primary" href="#nuovo-cliente">+ Nuovo Cliente</a>
@@ -71,6 +94,40 @@ export default function PlatformDashboard() {
               <small>{stat.trend}</small>
             </article>
           ))}
+        </section>
+
+        <section className="platform-grid-two">
+          <article className="platform-section" id="dashboard">
+            <div className="platform-section-head">
+              <div>
+                <p className="platform-kicker">Stato prodotto</p>
+                <h2>Base stabile</h2>
+              </div>
+              <mark className="platform-status">Live</mark>
+            </div>
+            <div className="platform-module-grid">
+              {productModules.map(([title, text]) => (
+                <div className="platform-mini-card" key={title}>
+                  <strong>{title}</strong>
+                  <p>{text}</p>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <article className="platform-section">
+            <div className="platform-section-head">
+              <div>
+                <p className="platform-kicker">Prossime azioni</p>
+                <h2>Roadmap operativa</h2>
+              </div>
+            </div>
+            <ol className="platform-action-list">
+              {nextActions.map((action) => (
+                <li key={action}>{action}</li>
+              ))}
+            </ol>
+          </article>
         </section>
 
         <section className="platform-section" id="clienti">
@@ -99,7 +156,7 @@ export default function PlatformDashboard() {
                 </span>
                 <span>{categoryMap[tenant.slug] || "Generico"}</span>
                 <span>{tenant.spokenAssistantName}</span>
-                <span>{tenant.slug === "demo-cliente-01" ? "ElevenLabs" : "OpenAI"}</span>
+                <span>{voiceMap[tenant.slug] || "OpenAI"}</span>
                 <span><mark>{statusMap[tenant.slug] || "Bozza"}</mark></span>
                 <a href={tenant.slug === "new-digital-app" ? "/" : `/${tenant.slug}`}>Apri</a>
               </div>
@@ -113,6 +170,7 @@ export default function PlatformDashboard() {
               <p className="platform-kicker">Wizard</p>
               <h2>Nuovo Cliente</h2>
             </div>
+            <span className="platform-soft-label">Prossimo sviluppo</span>
           </div>
 
           <div className="platform-wizard">
