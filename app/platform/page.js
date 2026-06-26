@@ -1,12 +1,6 @@
 import { tenants } from "../tenant-config";
+import { isSupabaseConfigured, listAvatarClients } from "../lib/supabase-server";
 import "./platform.css";
-
-const stats = [
-  { label: "Clienti attivi", value: tenants.length.toString(), trend: "Base stabile" },
-  { label: "Avatar creati", value: tenants.length.toString(), trend: "MIA + Francesca" },
-  { label: "Conversazioni", value: "Live", trend: "Chat operative" },
-  { label: "Documenti", value: "PDF", trend: "Knowledge attiva" }
-];
 
 const modules = [
   "Dashboard",
@@ -20,21 +14,6 @@ const modules = [
   "Impostazioni"
 ];
 
-const categoryMap = {
-  "new-digital-app": "Business",
-  "demo-cliente-01": "Centro Anziani"
-};
-
-const voiceMap = {
-  "new-digital-app": "OpenAI",
-  "demo-cliente-01": "ElevenLabs"
-};
-
-const statusMap = {
-  "new-digital-app": "Stabile",
-  "demo-cliente-01": "Stabile"
-};
-
 const productModules = [
   ["Multi tenant", "Ogni cliente ha nome, avatar, voce, colori e prompt separati."],
   ["Video avatar", "Supporto per video dedicati caricati nella cartella pubblica."],
@@ -45,14 +24,69 @@ const productModules = [
 ];
 
 const nextActions = [
-  "Collegare clienti al database Supabase",
   "Creare form Nuovo Cliente",
   "Salvare configurazione avatar senza modificare codice",
   "Gestire upload video e documenti dalla dashboard",
-  "Aggiungere statistiche conversazioni"
+  "Aggiungere statistiche conversazioni",
+  "Attivare scheda cliente completa"
 ];
 
-export default function PlatformDashboard() {
+function fallbackClients() {
+  return tenants.map((tenant) => ({
+    id: tenant.slug,
+    slug: tenant.slug,
+    company_name: tenant.name,
+    category: tenant.slug === "demo-cliente-01" ? "Centro Anziani" : "Business",
+    status: "active",
+    avatar_name: tenant.assistantName,
+    spoken_avatar_name: tenant.spokenAssistantName,
+    avatar_video_url: tenant.avatarVideo,
+    voice_provider: tenant.slug === "demo-cliente-01" ? "elevenlabs" : "openai",
+    voice_label: tenant.slug === "demo-cliente-01" ? "Francesca RSA" : "OpenAI Marin",
+    brand_mark: tenant.brandMark,
+    features: tenant.slug === "demo-cliente-01"
+      ? { memory: true, emotionalMemory: true, elevenlabs: true, animatorMode: true }
+      : { memory: true, documents: true, whatsapp: true }
+  }));
+}
+
+async function getPlatformClients() {
+  if (!isSupabaseConfigured()) {
+    return { clients: fallbackClients(), source: "tenant-config" };
+  }
+
+  try {
+    const clients = await listAvatarClients();
+    return {
+      clients: clients?.length ? clients : fallbackClients(),
+      source: clients?.length ? "supabase" : "tenant-config"
+    };
+  } catch {
+    return { clients: fallbackClients(), source: "tenant-config" };
+  }
+}
+
+function getClientUrl(client) {
+  return client.slug === "new-digital-app" ? "/" : `/${client.slug}`;
+}
+
+function getStatusLabel(status) {
+  if (status === "active") return "Online";
+  if (status === "draft") return "Bozza";
+  if (status === "paused") return "Pausa";
+  return "Archivio";
+}
+
+export default async function PlatformDashboard() {
+  const { clients, source } = await getPlatformClients();
+  const activeClients = clients.filter((client) => client.status === "active").length;
+  const stats = [
+    { label: "Clienti attivi", value: activeClients.toString(), trend: source === "supabase" ? "Da Supabase" : "Fallback" },
+    { label: "Avatar creati", value: clients.length.toString(), trend: "Multi cliente" },
+    { label: "Conversazioni", value: "Live", trend: "Chat operative" },
+    { label: "Documenti", value: "PDF", trend: "Knowledge attiva" }
+  ];
+
   return (
     <main className="platform-shell">
       <aside className="platform-sidebar">
@@ -82,6 +116,7 @@ export default function PlatformDashboard() {
               La base SaaS per creare, configurare e vendere avatar AI personalizzati per ogni settore,
               senza toccare ogni volta il codice.
             </p>
+            <span className="platform-source">Sorgente dati: {source === "supabase" ? "Supabase" : "tenant-config fallback"}</span>
           </div>
           <a className="platform-primary" href="#nuovo-cliente">+ Nuovo Cliente</a>
         </header>
@@ -148,17 +183,17 @@ export default function PlatformDashboard() {
               <span>Stato</span>
               <span>Link</span>
             </div>
-            {tenants.map((tenant) => (
-              <div className="platform-row" key={tenant.slug}>
+            {clients.map((client) => (
+              <div className="platform-row" key={client.slug}>
                 <span>
-                  <strong>{tenant.name}</strong>
-                  <small>{tenant.slug}</small>
+                  <strong>{client.company_name}</strong>
+                  <small>{client.slug}</small>
                 </span>
-                <span>{categoryMap[tenant.slug] || "Generico"}</span>
-                <span>{tenant.spokenAssistantName}</span>
-                <span>{voiceMap[tenant.slug] || "OpenAI"}</span>
-                <span><mark>{statusMap[tenant.slug] || "Bozza"}</mark></span>
-                <a href={tenant.slug === "new-digital-app" ? "/" : `/${tenant.slug}`}>Apri</a>
+                <span>{client.category || "Generico"}</span>
+                <span>{client.spoken_avatar_name || client.avatar_name}</span>
+                <span>{client.voice_label || client.voice_provider || "OpenAI"}</span>
+                <span><mark>{getStatusLabel(client.status)}</mark></span>
+                <a href={getClientUrl(client)}>Apri</a>
               </div>
             ))}
           </div>
