@@ -44,6 +44,14 @@ async function supabaseFetch(path, options = {}) {
   return response.json();
 }
 
+export async function listAvatarClients() {
+  if (!isSupabaseConfigured()) return [];
+
+  return supabaseFetch(
+    "/rest/v1/avatar_clients?select=id,slug,company_name,category,status,website,whatsapp_phone,avatar_name,spoken_avatar_name,avatar_video_url,voice_provider,voice_label,brand_mark,features,created_at,updated_at&order=created_at.asc"
+  );
+}
+
 export function chunkText(text, maxLength = 1200) {
   const cleanText = String(text || "").replace(/\s+/g, " ").trim();
   if (!cleanText) return [];
