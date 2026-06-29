@@ -52,6 +52,84 @@ export async function listAvatarClients() {
   );
 }
 
+export async function getAvatarClientBySlug(slug = DEFAULT_TENANT_SLUG) {
+  if (!isSupabaseConfigured()) return null;
+  const safeSlug = encodeURIComponent(slug);
+  const rows = await supabaseFetch(
+    `/rest/v1/avatar_clients?slug=eq.${safeSlug}&select=id,slug,company_name,category,status,website,avatar_name,spoken_avatar_name&limit=1`
+  );
+  return rows?.[0] || null;
+}
+
+export async function listAvatarDocuments(clientId) {
+  if (!isSupabaseConfigured() || !clientId) return [];
+  return supabaseFetch(
+    `/rest/v1/avatar_documents?client_id=eq.${clientId}&select=id,title,file_name,file_type,file_url,storage_path,status,metadata,created_at,updated_at&order=created_at.desc&limit=100`
+  );
+}
+
+export async function insertAvatarDocument({
+  clientId,
+  title,
+  fileName,
+  fileType,
+  fileUrl,
+  storagePath,
+  extractedText,
+  status = "ready",
+  metadata = {}
+}) {
+  const rows = await supabaseFetch("/rest/v1/avatar_documents", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Prefer: "return=representation"
+    },
+    body: JSON.stringify({
+      client_id: clientId,
+      title,
+      file_name: fileName,
+      file_type: fileType,
+      file_url: fileUrl,
+      storage_path: storagePath,
+      extracted_text: extractedText,
+      status,
+      metadata
+    })
+  });
+
+  return rows?.[0];
+}
+
+export async function insertAvatarKnowledgeSource({
+  clientId,
+  sourceType,
+  title,
+  sourceUrl,
+  content,
+  status = "active",
+  metadata = {}
+}) {
+  const rows = await supabaseFetch("/rest/v1/avatar_client_knowledge_sources", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Prefer: "return=representation"
+    },
+    body: JSON.stringify({
+      client_id: clientId,
+      source_type: sourceType,
+      title,
+      source_url: sourceUrl,
+      content,
+      status,
+      metadata
+    })
+  });
+
+  return rows?.[0];
+}
+
 export function chunkText(text, maxLength = 1200) {
   const cleanText = String(text || "").replace(/\s+/g, " ").trim();
   if (!cleanText) return [];
