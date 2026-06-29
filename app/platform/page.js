@@ -3,32 +3,42 @@ import { isSupabaseConfigured, listAvatarClients } from "../lib/supabase-server"
 import "./platform.css";
 
 const modules = [
-  "Dashboard",
-  "Clienti",
-  "Avatar",
-  "Libreria AI",
-  "Documenti",
-  "Voci",
-  "Video Avatar",
-  "Statistiche",
-  "Impostazioni"
+  ["Dashboard", "🏠"],
+  ["Clienti", "👥"],
+  ["Persone Digitali", "👤"],
+  ["DNA Studio", "🧬"],
+  ["Brain Studio", "🧠"],
+  ["Emotion Engine", "❤️"],
+  ["Knowledge", "📄"],
+  ["Launch Center", "🚀"],
+  ["Analytics", "📊"],
+  ["Billing", "💳"],
+  ["Marketplace", "🛒"],
+  ["Settings", "⚙️"]
+];
+
+const quickActions = [
+  ["Crea Persona Digitale", "Configura un nuovo avatar con AI Builder", "✨"],
+  ["Launch Center", "Controlla pubblicazione, dominio, QR e WhatsApp", "🚀"],
+  ["DNA Studio", "Modella empatia, tecnica, calore e vendita", "🧬"],
+  ["Marketplace", "Scegli Brain, voci, avatar e integrazioni", "🛒"]
 ];
 
 const productModules = [
-  ["Multi tenant", "Ogni cliente ha nome, avatar, voce, colori e prompt separati."],
-  ["Video avatar", "Supporto per video dedicati caricati nella cartella pubblica."],
-  ["Voce AI", "OpenAI per voci standard, ElevenLabs per voci clonate."],
-  ["Memoria locale", "Ricordo nome, hobby, preferenze e memoria emotiva."],
-  ["Documenti", "Base pronta per PDF, FAQ, cataloghi e documentazione cliente."],
-  ["Dashboard", "Prima interfaccia per controllare clienti e stato piattaforma."]
+  ["Digital Identity", "Ogni cliente ha una persona digitale con identità, voce, DNA e cervello."],
+  ["Brain Engine", "Business Brain, RSA Brain e futuri cervelli verticali per ogni settore."],
+  ["Emotion Engine", "Memoria emotiva, supporto proattivo e riconoscimento degli stati emotivi."],
+  ["Launch Center", "Checklist di pubblicazione per dominio, SSL, WhatsApp, QR, API e analytics."],
+  ["Mobile First", "Interfaccia pensata prima per smartphone e poi per desktop."],
+  ["SaaS Core", "Clienti, profili, voci, documenti, analytics e abbonamenti su Supabase."]
 ];
 
 const nextActions = [
-  "Creare form Nuovo Cliente",
-  "Salvare configurazione avatar senza modificare codice",
-  "Gestire upload video e documenti dalla dashboard",
-  "Aggiungere statistiche conversazioni",
-  "Attivare scheda cliente completa"
+  "Creare form Nuovo Cliente mobile-first",
+  "Costruire scheda Persona Digitale",
+  "Rendere operativo il Launch Center",
+  "Aggiungere DNA Studio con slider grandi",
+  "Collegare upload video, documenti e QR Code"
 ];
 
 function fallbackClients() {
@@ -77,30 +87,38 @@ function getStatusLabel(status) {
   return "Archivio";
 }
 
+function getClientIcon(client) {
+  if (client.category?.toLowerCase().includes("anziani")) return "❤️";
+  if (client.category?.toLowerCase().includes("hotel")) return "🏨";
+  if (client.category?.toLowerCase().includes("business")) return "💼";
+  return "👤";
+}
+
 export default async function PlatformDashboard() {
   const { clients, source } = await getPlatformClients();
   const activeClients = clients.filter((client) => client.status === "active").length;
   const stats = [
-    { label: "Clienti attivi", value: activeClients.toString(), trend: source === "supabase" ? "Da Supabase" : "Fallback" },
-    { label: "Avatar creati", value: clients.length.toString(), trend: "Multi cliente" },
-    { label: "Conversazioni", value: "Live", trend: "Chat operative" },
-    { label: "Documenti", value: "PDF", trend: "Knowledge attiva" }
+    { label: "Clienti", value: activeClients.toString(), trend: source === "supabase" ? "Supabase" : "Fallback" },
+    { label: "Persone Digitali", value: clients.length.toString(), trend: "Online" },
+    { label: "Launch", value: "Beta", trend: "Checklist" },
+    { label: "Ricavi", value: "€ 0", trend: "Billing ready" }
   ];
 
   return (
-    <main className="platform-shell">
+    <main className="platform-shell platform-shell--mobile-first">
       <aside className="platform-sidebar">
         <div className="platform-logo">
-          <span>NDA</span>
+          <span>A1</span>
           <div>
-            <strong>Avatar Platform</strong>
-            <small>New Digital App</small>
+            <strong>AvatarOne</strong>
+            <small>by New Digital App</small>
           </div>
         </div>
 
         <nav className="platform-nav" aria-label="Menu piattaforma">
-          {modules.map((module, index) => (
+          {modules.map(([module, icon], index) => (
             <a className={index === 0 ? "is-active" : ""} href={`#${module.toLowerCase().replaceAll(" ", "-")}`} key={module}>
+              <span>{icon}</span>
               {module}
             </a>
           ))}
@@ -108,20 +126,27 @@ export default async function PlatformDashboard() {
       </aside>
 
       <section className="platform-main">
-        <header className="platform-hero">
+        <header className="platform-mobile-topbar">
           <div>
-            <p className="platform-kicker">Versione 2.0 in costruzione</p>
-            <h1>NDA Avatar Platform</h1>
+            <span>AvatarOne</span>
+            <strong>Studio</strong>
+          </div>
+          <a href="#nuovo-cliente">＋</a>
+        </header>
+
+        <section className="platform-hero platform-hero--app">
+          <div>
+            <p className="platform-kicker">Mobile First SaaS</p>
+            <h1>AvatarOne</h1>
             <p>
-              La base SaaS per creare, configurare e vendere avatar AI personalizzati per ogni settore,
-              senza toccare ogni volta il codice.
+              Crea, gestisci e pubblica Persone Digitali da smartphone, tablet o desktop.
             </p>
             <span className="platform-source">Sorgente dati: {source === "supabase" ? "Supabase" : "tenant-config fallback"}</span>
           </div>
-          <a className="platform-primary" href="#nuovo-cliente">+ Nuovo Cliente</a>
-        </header>
+          <a className="platform-primary platform-primary--large" href="#nuovo-cliente">✨ Crea Persona Digitale</a>
+        </section>
 
-        <section className="platform-stats" aria-label="Statistiche principali">
+        <section className="platform-stats platform-stats--mobile" aria-label="Statistiche principali">
           {stats.map((stat) => (
             <article className="platform-card" key={stat.label}>
               <span>{stat.label}</span>
@@ -131,12 +156,54 @@ export default async function PlatformDashboard() {
           ))}
         </section>
 
+        <section className="platform-quick-actions" aria-label="Azioni rapide">
+          {quickActions.map(([title, text, icon]) => (
+            <a className="platform-action-card" href="#nuovo-cliente" key={title}>
+              <span>{icon}</span>
+              <strong>{title}</strong>
+              <small>{text}</small>
+            </a>
+          ))}
+        </section>
+
+        <section className="platform-section" id="clienti">
+          <div className="platform-section-head">
+            <div>
+              <p className="platform-kicker">CRM Clienti</p>
+              <h2>Persone Digitali attive</h2>
+            </div>
+            <button type="button">Filtri</button>
+          </div>
+
+          <div className="platform-client-grid">
+            {clients.map((client) => (
+              <article className="platform-client-card" key={client.slug}>
+                <div className="platform-client-head">
+                  <div className="platform-client-avatar">{getClientIcon(client)}</div>
+                  <mark>{getStatusLabel(client.status)}</mark>
+                </div>
+                <h3>{client.company_name}</h3>
+                <p>{client.spoken_avatar_name || client.avatar_name}</p>
+                <div className="platform-client-meta">
+                  <span>{client.category || "Generico"}</span>
+                  <span>{client.voice_label || client.voice_provider || "OpenAI"}</span>
+                </div>
+                <div className="platform-client-launch">
+                  <span>Launch</span>
+                  <strong>{client.status === "active" ? "75%" : "25%"}</strong>
+                </div>
+                <a href={getClientUrl(client)}>Apri Persona</a>
+              </article>
+            ))}
+          </div>
+        </section>
+
         <section className="platform-grid-two">
           <article className="platform-section" id="dashboard">
             <div className="platform-section-head">
               <div>
-                <p className="platform-kicker">Stato prodotto</p>
-                <h2>Base stabile</h2>
+                <p className="platform-kicker">Core</p>
+                <h2>Digital Human OS</h2>
               </div>
               <mark className="platform-status">Live</mark>
             </div>
@@ -150,71 +217,47 @@ export default async function PlatformDashboard() {
             </div>
           </article>
 
-          <article className="platform-section">
+          <article className="platform-section" id="launch-center">
             <div className="platform-section-head">
               <div>
-                <p className="platform-kicker">Prossime azioni</p>
-                <h2>Roadmap operativa</h2>
+                <p className="platform-kicker">Deploy</p>
+                <h2>Launch Center</h2>
               </div>
             </div>
-            <ol className="platform-action-list">
-              {nextActions.map((action) => (
-                <li key={action}>{action}</li>
+            <div className="platform-launch-list">
+              {["Avatar", "Voce", "Brain", "Knowledge", "Memoria", "Dominio", "WhatsApp", "QR Code"].map((item, index) => (
+                <div className="platform-launch-item" key={item}>
+                  <span className={index < 5 ? "is-green" : index < 7 ? "is-yellow" : "is-red"} />
+                  <strong>{item}</strong>
+                  <small>{index < 5 ? "Pronto" : index < 7 ? "Da collegare" : "Da generare"}</small>
+                </div>
               ))}
-            </ol>
+            </div>
           </article>
-        </section>
-
-        <section className="platform-section" id="clienti">
-          <div className="platform-section-head">
-            <div>
-              <p className="platform-kicker">Clienti</p>
-              <h2>Avatar attivi</h2>
-            </div>
-            <button type="button">Esporta lista</button>
-          </div>
-
-          <div className="platform-table">
-            <div className="platform-row platform-row--head">
-              <span>Cliente</span>
-              <span>Categoria</span>
-              <span>Avatar</span>
-              <span>Voce</span>
-              <span>Stato</span>
-              <span>Link</span>
-            </div>
-            {clients.map((client) => (
-              <div className="platform-row" key={client.slug}>
-                <span>
-                  <strong>{client.company_name}</strong>
-                  <small>{client.slug}</small>
-                </span>
-                <span>{client.category || "Generico"}</span>
-                <span>{client.spoken_avatar_name || client.avatar_name}</span>
-                <span>{client.voice_label || client.voice_provider || "OpenAI"}</span>
-                <span><mark>{getStatusLabel(client.status)}</mark></span>
-                <a href={getClientUrl(client)}>Apri</a>
-              </div>
-            ))}
-          </div>
         </section>
 
         <section className="platform-section" id="nuovo-cliente">
           <div className="platform-section-head">
             <div>
-              <p className="platform-kicker">Wizard</p>
-              <h2>Nuovo Cliente</h2>
+              <p className="platform-kicker">AvatarOne Creator</p>
+              <h2>Nuova Persona Digitale</h2>
             </div>
             <span className="platform-soft-label">Prossimo sviluppo</span>
           </div>
 
+          <div className="platform-creator-card">
+            <label htmlFor="creatorPrompt">Descrivi cosa vuoi creare</label>
+            <textarea id="creatorPrompt" placeholder="Esempio: voglio un assistente per una RSA con voce femminile, memoria emotiva e giochi cognitivi." />
+            <button type="button">✨ Crea con AI</button>
+          </div>
+
           <div className="platform-wizard">
             {[
-              ["1", "Dati azienda", "Nome cliente, categoria, logo, dominio."],
-              ["2", "Avatar", "Nome assistente, video, poster, colori."],
+              ["1", "Azienda", "Nome, categoria, referente e sito."],
+              ["2", "Identità", "Nome, ruolo, DNA, tono e stile."],
               ["3", "Voce", "OpenAI, ElevenLabs o voce clonata."],
-              ["4", "Conoscenza", "PDF, FAQ, sito web e documenti."],
-              ["5", "Pubblica", "Genera link e attiva il cliente."]
+              ["4", "Knowledge", "PDF, FAQ, sito web e documenti."],
+              ["5", "Launch", "Dominio, QR, WhatsApp, SSL e pubblicazione."]
             ].map(([number, title, text]) => (
               <article className="platform-step" key={number}>
                 <span>{number}</span>
