@@ -306,7 +306,12 @@ export function Assistant({ tenant: tenantConfig = fallbackTenant }) {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tenantSlug: tenant.slug, messages: nextMessages, clientMemory: updatedMemory }),
+        body: JSON.stringify({
+          tenantSlug: tenant.slug,
+          messages: nextMessages,
+          clientMemory: updatedMemory,
+          customTenant: tenant.slug.startsWith("custom-") ? tenant : undefined
+        }),
         signal: chatAbortRef.current.signal
       });
       if (!response.ok) throw new Error(`Chat request failed: ${response.status}`);
