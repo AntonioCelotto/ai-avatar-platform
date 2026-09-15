@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Assistant } from "../../assistant";
 import { AvatarVideo } from "../../avatar-video";
+import CustomAssistant from "./custom-assistant";
 
 const STORAGE_KEY = "avatarone:custom-avatars";
 
@@ -76,7 +76,7 @@ export default function CustomAvatar({ slug }) {
         </div>
       </section>
       <section className="assistant-workspace" aria-label={`Chat con ${tenant.assistantName}`}>
-        <Assistant tenant={tenant} />
+        <CustomAssistant tenant={tenant} />
       </section>
     </main>
   );
