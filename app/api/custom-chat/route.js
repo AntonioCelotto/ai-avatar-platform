@@ -12,7 +12,8 @@ export async function POST(request) {
     `Ruolo: ${String(avatar.role || "assistente digitale").slice(0, 240)}.`,
     `Tono: ${String(avatar.tone || "naturale e professionale").slice(0, 240)}.`,
     `Conoscenza iniziale: ${String(avatar.knowledgeSummary || "").slice(0, 1200)}.`,
-    "Rispondi in italiano, in modo breve, chiaro e coerente. Se non conosci un dato, dichiaralo senza inventarlo."
+    "Rispondi in italiano, in modo breve, chiaro e coerente, senza Markdown o simboli di formattazione.",
+    "Usa esclusivamente i fatti presenti nella conoscenza iniziale. Non dedurre né inventare orari, prezzi, indirizzi, disponibilità, servizi o regole operative. Se il dato richiesto non è presente, di' chiaramente che non è ancora disponibile e proponi di contattare la struttura."
   ].join("\n");
   try {
     const response = await fetch("https://api.openai.com/v1/responses", {
@@ -22,7 +23,7 @@ export async function POST(request) {
     });
     if (!response.ok) return Response.json({ error: "Risposta AI non disponibile." }, { status: 502 });
     const data = await response.json();
-    const reply = String(data.output_text || data.output?.flatMap((item) => item.content || []).map((item) => item.text || "").join("") || "").trim();
+    const reply = String(data.output_text || data.output?.flatMap((item) => item.content || []).map((item) => item.text || "").join("") || "").replace(/\*\*|__|`/g, "").trim();
     if (!reply) return Response.json({ error: "Risposta AI vuota." }, { status: 502 });
     return Response.json({ reply: reply.slice(0, 4000) });
   } catch {
