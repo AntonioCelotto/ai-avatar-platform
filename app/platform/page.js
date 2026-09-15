@@ -81,6 +81,12 @@ function getClientUrl(client) {
   return client.slug === "new-digital-app" ? "/" : `/${client.slug}`;
 }
 
+function getKnowledgeUrl(client) {
+  return client.slug === "new-digital-app"
+    ? "/dashboard/documents"
+    : `/${client.slug}/dashboard/documents`;
+}
+
 function getStatusLabel(status) {
   if (status === "active") return "Online";
   if (status === "draft") return "Bozza";
@@ -202,7 +208,7 @@ export default async function PlatformDashboard() {
                   <Link className="platform-open-button" href={getClientUrl(client)} target="_blank">
                     Apri e prova {client.spoken_avatar_name || client.avatar_name} <span>↗</span>
                   </Link>
-                  <Link className="platform-manage-link" href={`/platform/knowledge?tenant=${encodeURIComponent(client.slug)}`}>
+                  <Link className="platform-manage-link" href={getKnowledgeUrl(client)}>
                     Gestisci conoscenza
                   </Link>
                 </div>

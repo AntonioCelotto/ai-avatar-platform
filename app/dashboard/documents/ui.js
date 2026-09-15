@@ -152,9 +152,12 @@ export function DocumentsDashboard({ tenant: tenantConfig = fallbackTenant }) {
   return (
     <main className="dashboard-shell">
       <section className="dashboard-header">
-        <a href={tenant.slug === "new-digital-app" ? "/" : `/${tenant.slug}`} className="back-link">
-          Torna a {tenant.spokenAssistantName}
-        </a>
+        <div className="dashboard-back-links">
+          <a href="/platform" className="back-link">← Dashboard AvatarOne</a>
+          <a href={tenant.slug === "new-digital-app" ? "/" : `/${tenant.slug}`} className="back-link">
+            Apri {tenant.spokenAssistantName} ↗
+          </a>
+        </div>
         <div>
           <span className="eyebrow">Knowledge base</span>
           <h1>Fonti {tenant.name}</h1>

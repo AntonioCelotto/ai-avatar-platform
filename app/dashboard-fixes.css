@@ -79,3 +79,85 @@
   opacity: 0.35;
   cursor: default;
 }
+
+/* Knowledge dashboards use the same full-width Apple-inspired workspace. */
+.dashboard-shell {
+  width: 100%;
+  min-width: 100vw;
+  min-height: 100svh;
+  justify-self: stretch;
+  align-self: stretch;
+  gap: 22px;
+  padding: clamp(22px, 4vw, 58px);
+  background:
+    radial-gradient(circle at 82% 4%, rgba(98, 153, 255, .2), transparent 28%),
+    radial-gradient(circle at 30% 28%, rgba(188, 155, 255, .13), transparent 25%),
+    #f5f5f7;
+  color: #1d1d1f;
+  color-scheme: light;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter, sans-serif;
+}
+
+.dashboard-header,
+.dashboard-controls,
+.document-list {
+  width: min(1120px, 100%);
+  margin-inline: auto;
+}
+
+.dashboard-header {
+  gap: 22px;
+  padding: clamp(26px, 4vw, 48px);
+  border: 1px solid rgba(255, 255, 255, .9);
+  border-radius: 30px;
+  background: linear-gradient(125deg, #e8f2ff, #f3edff 55%, #ffeef7);
+  box-shadow: 0 18px 50px rgba(30, 45, 75, .1);
+}
+
+.dashboard-header h1 {
+  color: #1d1d1f;
+  font-size: clamp(36px, 5vw, 62px);
+  letter-spacing: -.05em;
+}
+
+.dashboard-header p,
+.dashboard-shell > .empty-state {
+  color: #6e6e73;
+}
+
+.dashboard-back-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dashboard-shell .back-link {
+  color: #0071e3;
+}
+
+.dashboard-controls,
+.document-list {
+  border-color: rgba(29, 29, 31, .1);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, .86);
+  padding: clamp(20px, 3vw, 32px);
+  box-shadow: 0 14px 42px rgba(30, 45, 75, .08);
+}
+
+.source-form input {
+  border-color: rgba(29, 29, 31, .12);
+  border-radius: 13px;
+}
+
+.source-form button,
+.document-actions button {
+  border-radius: 999px;
+  background: #0071e3;
+}
+
+@media (max-width: 640px) {
+  .dashboard-shell { padding: 16px; }
+  .dashboard-header { padding: 25px 20px; border-radius: 24px; }
+  .dashboard-back-links { display: grid; }
+}
