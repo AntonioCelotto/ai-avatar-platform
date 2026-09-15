@@ -1,6 +1,8 @@
 const SANDBOX_AVATAR_ID = "65f9e3c9-d48b-4118-b73a-4ae2e3cbb8f0";
 const SANDBOX_CONTEXT_ID = "158f5d55-2d4f-11f1-8d28-066a7fa2e369";
 
+export const dynamic = "force-dynamic";
+
 export async function POST() {
   const apiKey = process.env.LIVEAVATAR_API_KEY;
   if (!apiKey) return Response.json({ error: "LIVEAVATAR_API_KEY non configurata su questo ambiente." }, { status: 503 });
