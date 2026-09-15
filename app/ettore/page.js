@@ -1,4 +1,5 @@
 import CustomAssistant from "../avatar/[slug]/custom-assistant";
+import LiveAvatarTest from "./live-avatar-test";
 
 const tenant = {
   slug: "ettore",
@@ -21,8 +22,7 @@ export default function EttorePage() {
   return <main className="mobile-chat-shell" style={tenant.theme}>
     <section className="avatar-stage" aria-label="Ettore">
       <div className="avatar-frame" aria-label="Avatar Ettore">
-        <img className="custom-avatar-image" alt="Avatar Ettore" src={tenant.avatarPoster} />
-        <div className="mia-name-mark" aria-hidden="true"><span>{tenant.brandMark}</span></div>
+        <LiveAvatarTest />
       </div>
     </section>
     <section className="assistant-workspace" aria-label="Chat con Ettore"><CustomAssistant tenant={tenant} /></section>
