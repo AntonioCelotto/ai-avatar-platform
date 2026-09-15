@@ -36,6 +36,14 @@ export default function CustomAssistant({ tenant }) {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(data.reply);
         utterance.lang = "it-IT";
+        const voices = window.speechSynthesis.getVoices();
+        const selected = tenant.voice === "browser-female"
+          ? voices.find((item) => /elsa|isabella|female/i.test(item.name))
+          : voices.find((item) => item.lang?.startsWith("it"));
+        if (selected) utterance.voice = selected;
+        utterance.onstart = () => { document.documentElement.dataset.miaAvatarState = "speaking"; };
+        utterance.onend = () => { document.documentElement.dataset.miaAvatarState = "idle"; };
+        utterance.onerror = () => { document.documentElement.dataset.miaAvatarState = "idle"; };
         window.speechSynthesis.speak(utterance);
       }
     } catch {
