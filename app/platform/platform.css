@@ -352,6 +352,16 @@
 .platform-creator-card textarea { min-height: 112px; resize: vertical; border-style: solid; border-width: 1px; border-radius: 17px; padding: 16px; font: inherit; line-height: 1.45; outline: none; }
 .platform-creator-card textarea:focus { border-color: var(--apple-blue); box-shadow: 0 0 0 4px rgba(0,113,227,.1); }
 .platform-creator-card button { align-self: stretch; min-width: 150px; border: 0; padding-inline: 22px; font-weight: 700; }
+.platform-creator-card button:disabled { cursor: wait; opacity: .65; }
+.platform-local-label { color: var(--apple-muted); font-size: 11px; text-align: center; }
+.creator-message { margin: 13px 2px 0; font-size: 13px; }
+.creator-message--error { color: #b42318; }
+.creator-result { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-top: 16px; padding: 18px 20px; border: 1px solid #bde5ca; border-radius: 18px; background: #f1fbf4; }
+.creator-result div span, .creator-result div strong, .creator-result div small { display: block; }
+.creator-result div span { color: #188038; font-size: 12px; font-weight: 750; }
+.creator-result div strong { margin-top: 4px; color: var(--apple-ink); font-size: 20px; }
+.creator-result div small { margin-top: 2px; color: var(--apple-muted); }
+.creator-result a { padding: 12px 17px; border-radius: 999px; background: var(--apple-blue); color: #fff; font-size: 13px; font-weight: 700; text-align: center; }
 .platform-soft-label { padding: 7px 11px; border-radius: 999px; background: #efe8ff; color: var(--apple-purple); font-size: 11px; font-weight: 720; }
 .platform-wizard { margin-top: 22px; }
 .platform-step { border-style: solid; border-width: 1px; border-radius: 18px; padding: 17px; }
@@ -386,4 +396,5 @@
   .platform-wizard { grid-template-columns: 1fr; }
   .platform-creator-card { grid-template-columns: 1fr; }
   .platform-creator-card button { min-height: 50px; }
+  .creator-result { align-items: stretch; flex-direction: column; }
 }
