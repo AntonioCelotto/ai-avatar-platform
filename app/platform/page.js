@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { tenants } from "../tenant-config";
 import { isSupabaseConfigured, listAvatarClients } from "../lib/supabase-server";
+import { AvatarCreator, CreatedAvatarCards } from "./avatar-creator";
 import "./platform.css";
 
 const modules = [
@@ -214,6 +215,7 @@ export default async function PlatformDashboard() {
                 </div>
               </article>
             ))}
+            <CreatedAvatarCards />
           </div>
         </section>
 
@@ -264,11 +266,7 @@ export default async function PlatformDashboard() {
             <span className="platform-soft-label">Creator Beta</span>
           </div>
 
-          <div className="platform-creator-card">
-            <label htmlFor="creatorPrompt">Descrivi cosa vuoi creare</label>
-            <textarea id="creatorPrompt" placeholder="Esempio: voglio un assistente per una RSA con voce femminile, memoria emotiva e giochi cognitivi." />
-            <button type="button">✨ Crea con AI</button>
-          </div>
+          <AvatarCreator />
 
           <div className="platform-wizard">
             {[
