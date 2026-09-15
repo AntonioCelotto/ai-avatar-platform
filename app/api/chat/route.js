@@ -71,14 +71,24 @@ function fallbackReply(messages, tenant, extra = {}) {
 }
 
 export async function POST(request) {
-  const payload = await request.json();
+  let payload;
+  try {
+    payload = await request.json();
+  } catch {
+    return Response.json({ error: "Invalid JSON payload" }, { status: 400 });
+  }
   const tenant = getTenant(payload.tenantSlug || defaultTenantSlug);
 
   if (!tenant) {
     return Response.json({ error: "Tenant not found" }, { status: 404 });
   }
 
-  const messages = Array.isArray(payload.messages) ? payload.messages : [];
+  const messages = Array.isArray(payload.messages)
+    ? payload.messages
+        .filter((message) => message && ["user", "assistant"].includes(message.role))
+        .map((message) => ({ ...message, content: String(message.content || "").slice(0, 4000) }))
+        .slice(-12)
+    : [];
   const clientMemory = payload.clientMemory && typeof payload.clientMemory === "object" ? payload.clientMemory : {};
 
   if (!process.env.OPENAI_API_KEY) {

@@ -139,6 +139,8 @@ export function Assistant({ tenant: tenantConfig = fallbackTenant }) {
   const lastAutoSentRef = useRef("");
   const sendingRef = useRef(false);
   const lipSyncFrameRef = useRef(null);
+  const speechAbortRef = useRef(null);
+  const chatAbortRef = useRef(null);
   const [messages, setMessages] = useState([{ role: "assistant", content: tenant.welcomeMessage }]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -162,6 +164,8 @@ export function Assistant({ tenant: tenantConfig = fallbackTenant }) {
     setCanUseSpeech("SpeechRecognition" in window || "webkitSpeechRecognition" in window);
     return () => {
       continuousVoiceRef.current = false;
+      speechAbortRef.current?.abort();
+      chatAbortRef.current?.abort();
       stopLipSync();
       delete document.documentElement.dataset.miaAvatarState;
       if (recognitionRef.current) {
@@ -178,17 +182,6 @@ export function Assistant({ tenant: tenantConfig = fallbackTenant }) {
     const avatarState = speaking ? "speaking" : listening ? "listening" : loading ? "thinking" : continuousVoice ? "ready" : "idle";
     document.documentElement.dataset.miaAvatarState = avatarState;
   }, [continuousVoice, listening, loading, speaking]);
-
-  useEffect(() => {
-    const cleanInput = input.trim();
-    if (cleanInput.length < 2 || loading || listening || sendingRef.current) return;
-    const timer = window.setTimeout(() => {
-      if (lastAutoSentRef.current === cleanInput) return;
-      lastAutoSentRef.current = cleanInput;
-      sendMessage(cleanInput);
-    }, 1400);
-    return () => window.clearTimeout(timer);
-  }, [input, loading, listening]);
 
   function cleanSpeechText(text) {
     return String(text || "")
@@ -260,17 +253,30 @@ export function Assistant({ tenant: tenantConfig = fallbackTenant }) {
     if (!cleanText) return;
     try {
       stopVoiceInput(false);
-      if (audioRef.current) audioRef.current.pause();
-      const audioUrl = `/api/speech?text=${encodeURIComponent(cleanText)}&tenantSlug=${tenant.slug}`;
+      speechAbortRef.current?.abort();
+      speechAbortRef.current = new AbortController();
+      if (audioRef.current) {
+        audioRef.current.pause();
+        if (audioRef.current.src?.startsWith("blob:")) URL.revokeObjectURL(audioRef.current.src);
+      }
+      const response = await fetch("/api/speech", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: cleanText, tenantSlug: tenant.slug }),
+        signal: speechAbortRef.current.signal
+      });
+      if (!response.ok) throw new Error(`Speech request failed: ${response.status}`);
+      const audioUrl = URL.createObjectURL(await response.blob());
       const audio = new Audio(audioUrl);
       audioRef.current = audio;
       audio.onplaying = beginSpeaking;
-      audio.onended = finishSpeaking;
-      audio.onerror = finishSpeaking;
+      audio.onended = () => { URL.revokeObjectURL(audioUrl); finishSpeaking(); };
+      audio.onerror = () => { URL.revokeObjectURL(audioUrl); finishSpeaking(); };
       setSpeaking(false);
       stopLipSync();
       await audio.play();
-    } catch {
+    } catch (error) {
+      if (error?.name === "AbortError") return;
       stopLipSync();
       setSpeaking(false);
       speakWithBrowser(cleanText, true);
@@ -292,12 +298,18 @@ export function Assistant({ tenant: tenantConfig = fallbackTenant }) {
     setInput("");
     setLoading(true);
 
+    let timeout;
     try {
+      chatAbortRef.current?.abort();
+      chatAbortRef.current = new AbortController();
+      timeout = window.setTimeout(() => chatAbortRef.current?.abort(), 25000);
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tenantSlug: tenant.slug, messages: nextMessages, clientMemory: updatedMemory })
+        body: JSON.stringify({ tenantSlug: tenant.slug, messages: nextMessages, clientMemory: updatedMemory }),
+        signal: chatAbortRef.current.signal
       });
+      if (!response.ok) throw new Error(`Chat request failed: ${response.status}`);
       const data = await response.json();
       const reply = data.reply || "Ho ricevuto il messaggio, ma non ho generato una risposta completa.";
       setMessages((current) => [...current, { role: "assistant", content: reply }]);
@@ -310,6 +322,7 @@ export function Assistant({ tenant: tenantConfig = fallbackTenant }) {
       setMessages((current) => [...current, { role: "assistant", content: fallbackText }]);
       speakReply(fallbackText, true);
     } finally {
+      if (timeout) window.clearTimeout(timeout);
       sendingRef.current = false;
       setLoading(false);
     }
@@ -406,6 +419,7 @@ export function Assistant({ tenant: tenantConfig = fallbackTenant }) {
             <span className="voice-label">{continuousVoice ? "Stop" : "Parla"}</span>
           </button>
           <input aria-label="Messaggio" onChange={(event) => setInput(event.target.value)} placeholder={tenant.inputPlaceholder} value={input} />
+          <button aria-label="Invia messaggio" className="send-button" disabled={loading || !input.trim()} type="submit">Invia</button>
         </form>
         <a aria-label="Apri WhatsApp" className="whatsapp-link" href={whatsappUrl} rel="noreferrer" target="_blank">
           <span className="whatsapp-icon" aria-hidden="true">W</span>

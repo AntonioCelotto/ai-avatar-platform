@@ -180,6 +180,11 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
-  const payload = await request.json();
+  let payload;
+  try {
+    payload = await request.json();
+  } catch {
+    return Response.json({ error: "Invalid JSON payload" }, { status: 400 });
+  }
   return generateSpeechResponse(cleanSpeechInput(payload.text), payload.tenantSlug || "");
 }
