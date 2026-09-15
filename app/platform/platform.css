@@ -293,6 +293,7 @@
 .platform-nav a span { width: 23px; text-align: center; }
 .platform-nav a:hover { background: rgba(255, 255, 255, .7); color: var(--apple-ink); }
 .platform-nav a.is-active { background: #fff; color: var(--apple-blue); box-shadow: 0 3px 14px rgba(0, 0, 0, .06); }
+.platform-mobile-topbar { display: none; }
 .platform-main { width: 100%; max-width: none; margin: 0; padding: 34px clamp(22px, 4vw, 64px) 70px; }
 .platform-hero { position: relative; overflow: hidden; min-height: 330px; align-items: flex-end; padding: clamp(30px, 5vw, 66px); border-color: rgba(255,255,255,.9); border-radius: 34px; background: radial-gradient(circle at 88% 20%, rgba(255,255,255,.78), transparent 22%), linear-gradient(125deg, #e8f2ff 0%, #f3edff 52%, #ffeef7 100%); box-shadow: 0 18px 50px rgba(30,45,75,.1); }
 .platform-hero::after { content: "✦"; position: absolute; right: 7%; top: 4%; color: rgba(0,113,227,.14); font-size: clamp(110px, 16vw, 230px); line-height: 1; }
@@ -306,8 +307,12 @@
 .platform-card, .platform-section, .platform-action-card { border-color: rgba(255,255,255,.9); background: rgba(255,255,255,.82); color: var(--apple-ink); box-shadow: 0 18px 50px rgba(30,45,75,.09); backdrop-filter: blur(20px); }
 .platform-card span, .platform-card small, .platform-action-card small { color: var(--apple-muted); }
 .platform-card strong { color: var(--apple-ink); }
-.platform-action-card { color: var(--apple-ink); }
+.platform-quick-actions { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 2px; }
+.platform-action-card { min-height: 134px; display: grid; align-content: start; gap: 6px; padding: 21px; border-radius: 22px; color: var(--apple-ink); transition: transform .2s ease, box-shadow .2s ease; }
+.platform-action-card:hover { transform: translateY(-3px); box-shadow: 0 24px 55px rgba(30,45,75,.14); }
 .platform-action-card > span { color: var(--apple-blue); }
+.platform-action-card strong { margin-top: 5px; font-size: 15px; line-height: 1.25; }
+.platform-action-card small { font-size: 12px; line-height: 1.4; }
 .platform-section h2 { color: var(--apple-ink); letter-spacing: -.035em; }
 .platform-section button { min-height: 38px; padding: 0 16px; background: #ededf0; color: var(--apple-ink); box-shadow: none; }
 .platform-client-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
@@ -328,15 +333,47 @@
 .platform-open-button { min-height: 46px; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 14px; background: var(--apple-blue); color: #fff; font-weight: 700; }
 .platform-open-button:hover { background: #0057b8; }
 .platform-manage-link { text-align: center; color: var(--apple-blue); font-size: 13px; font-weight: 630; }
+.platform-grid-two { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(320px, .7fr); gap: 18px; }
+.platform-module-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .platform-mini-card, .platform-launch-item, .platform-step { border-color: var(--apple-line); background: #fff; color: var(--apple-ink); }
+.platform-mini-card { padding: 17px; border-style: solid; border-width: 1px; border-radius: 16px; }
 .platform-mini-card p, .platform-step p, .platform-launch-item small { color: var(--apple-muted); }
+.platform-mini-card p { margin: 7px 0 0; font-size: 13px; line-height: 1.45; }
+.platform-launch-list { display: grid; gap: 8px; }
+.platform-launch-item { display: grid; grid-template-columns: 10px 1fr auto; align-items: center; gap: 10px; padding: 12px 14px; border-style: solid; border-width: 1px; border-radius: 15px; }
+.platform-launch-item > span { width: 8px; height: 8px; border-radius: 50%; }
+.platform-launch-item .is-green { background: #30d158; }
+.platform-launch-item .is-yellow { background: #ff9f0a; }
+.platform-launch-item .is-red { background: #ff453a; }
+.platform-launch-item small { font-size: 11px; }
+.platform-creator-card { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; }
+.platform-creator-card label { grid-column: 1 / -1; color: var(--apple-ink); font-size: 14px; font-weight: 700; }
 .platform-creator-card textarea { border-color: var(--apple-line); background: #fff; color: var(--apple-ink); }
+.platform-creator-card textarea { min-height: 112px; resize: vertical; border-style: solid; border-width: 1px; border-radius: 17px; padding: 16px; font: inherit; line-height: 1.45; outline: none; }
+.platform-creator-card textarea:focus { border-color: var(--apple-blue); box-shadow: 0 0 0 4px rgba(0,113,227,.1); }
+.platform-creator-card button { align-self: stretch; min-width: 150px; border: 0; padding-inline: 22px; font-weight: 700; }
 .platform-soft-label { padding: 7px 11px; border-radius: 999px; background: #efe8ff; color: var(--apple-purple); font-size: 11px; font-weight: 720; }
+.platform-wizard { margin-top: 22px; }
+.platform-step { border-style: solid; border-width: 1px; border-radius: 18px; padding: 17px; }
+.platform-step span { background: #e8f2ff; color: var(--apple-blue); }
+.platform-step h3 { color: var(--apple-ink); font-size: 15px; }
+.platform-step p { font-size: 12px; }
+
+.platform-shell h1,
+.platform-shell h2,
+.platform-shell h3,
+.platform-shell strong,
+.platform-shell button { font-family: inherit; }
 
 @media (max-width: 1050px) {
   .platform-shell { grid-template-columns: 1fr; }
   .platform-sidebar { display: none; }
   .platform-main { padding: 18px 16px 52px; }
+  .platform-mobile-topbar { display: flex; align-items: center; justify-content: space-between; padding: 7px 4px 18px; }
+  .platform-mobile-topbar span, .platform-mobile-topbar strong { display: block; }
+  .platform-mobile-topbar span { color: var(--apple-muted); font-size: 11px; }
+  .platform-mobile-topbar strong { color: var(--apple-ink); font-size: 16px; }
+  .platform-mobile-topbar > a { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; background: var(--apple-blue); color: #fff; font-size: 21px; }
   .platform-hero { min-height: 300px; align-items: flex-start; flex-direction: column; border-radius: 27px; }
   .platform-stats, .platform-quick-actions { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .platform-grid-two { grid-template-columns: 1fr; }
@@ -347,4 +384,6 @@
   .platform-primary { width: 100%; }
   .platform-client-grid, .platform-quick-actions, .platform-module-grid { grid-template-columns: 1fr; }
   .platform-wizard { grid-template-columns: 1fr; }
+  .platform-creator-card { grid-template-columns: 1fr; }
+  .platform-creator-card button { min-height: 50px; }
 }
