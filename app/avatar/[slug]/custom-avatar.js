@@ -41,8 +41,8 @@ export default function CustomAvatar({ slug }) {
     spokenAssistantName: avatar.name,
     welcomeMessage: avatar.welcomeMessage,
     inputPlaceholder: `Scrivi a ${avatar.name}`,
-    avatarVideo: "/mia-avatar-video.mp4",
-    avatarPoster: "",
+    avatarVideo: avatar.videoDataUrl || avatar.videoUrl || "/mia-avatar-video.mp4",
+    avatarPoster: avatar.imageDataUrl || avatar.imageUrl || "",
     brandMark: avatar.name.toUpperCase().slice(0, 12),
     whatsappPhone: "393457980259",
     orderFallbackText: `Ciao, vorrei informazioni da ${avatar.name}.`,
@@ -50,6 +50,8 @@ export default function CustomAvatar({ slug }) {
     role: avatar.role,
     tone: avatar.tone,
     knowledgeSummary: avatar.knowledgeSummary,
+    voice: avatar.voice || "browser-it",
+    mediaMode: avatar.mediaMode || "placeholder",
     personality: {
       role: avatar.role,
       tone: avatar.tone,
@@ -71,7 +73,9 @@ export default function CustomAvatar({ slug }) {
       <div className="aurora aurora--cyan" />
       <section className="avatar-stage" aria-label={tenant.assistantName}>
         <div className="avatar-frame" aria-label={`Avatar ${tenant.spokenAssistantName}`}>
-          <AvatarVideo label={`Avatar video ${tenant.spokenAssistantName}`} src={tenant.avatarVideo} />
+          {tenant.mediaMode === "image" && tenant.avatarPoster
+            ? <img className="custom-avatar-image" alt={`Avatar ${tenant.spokenAssistantName}`} src={tenant.avatarPoster} />
+            : <AvatarVideo label={`Avatar video ${tenant.spokenAssistantName}`} poster={tenant.avatarPoster} src={tenant.avatarVideo} />}
           <div className="mia-name-mark" aria-hidden="true"><span>{tenant.brandMark}</span></div>
         </div>
       </section>
