@@ -764,3 +764,26 @@ a {
     justify-content: flex-start;
   }
 }
+.custom-avatar-missing {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #f5f5f7;
+  color: #1d1d1f;
+}
+
+.custom-avatar-missing section {
+  width: min(100%, 520px);
+  padding: 36px;
+  border: 1px solid rgba(0, 0, 0, .08);
+  border-radius: 28px;
+  background: #fff;
+  box-shadow: 0 18px 50px rgba(30, 45, 75, .1);
+  text-align: center;
+}
+
+.custom-avatar-missing span { color: #0071e3; font-size: 12px; font-weight: 750; }
+.custom-avatar-missing h1 { margin: 10px 0; font-size: clamp(32px, 7vw, 52px); letter-spacing: -.045em; }
+.custom-avatar-missing p { margin: 0 0 22px; color: #6e6e73; }
+.custom-avatar-missing a { display: inline-block; padding: 12px 18px; border-radius: 999px; background: #0071e3; color: #fff; font-weight: 700; }
