@@ -4,23 +4,47 @@ const SANDBOX_CONTEXT_ID = "158f5d55-2d4f-11f1-8d28-066a7fa2e369";
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
+async function requestLiveAvatar(path, apiKey, options = {}) {
+  const response = await fetch(`https://api.liveavatar.com${path}`, {
+    ...options,
+    headers: {
+      "X-API-KEY": apiKey,
+      ...(options.body ? { "Content-Type": "application/json" } : {}),
+      ...options.headers
+    },
+    cache: "no-store"
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data?.message || `LiveAvatar non disponibile (${response.status}).`);
+    error.status = response.status;
+    throw error;
+  }
+  return data;
+}
+
 export async function POST() {
   const apiKey = process.env.LIVEAVATAR_API_KEY;
   if (!apiKey) return Response.json({ error: "LIVEAVATAR_API_KEY non configurata su questo ambiente." }, { status: 503 });
 
   try {
-    const response = await fetch("https://api.liveavatar.com/v2/embeddings", {
+    const customAvatarId = process.env.LIVEAVATAR_AVATAR_ID?.trim();
+    const customContextId = process.env.LIVEAVATAR_CONTEXT_ID?.trim();
+    const sandbox = !customAvatarId || !customContextId;
+    const contextId = sandbox ? SANDBOX_CONTEXT_ID : customContextId;
+    const avatarId = customAvatarId || SANDBOX_AVATAR_ID;
+    const data = await requestLiveAvatar("/v2/embeddings", apiKey, {
       method: "POST",
-      headers: { "X-API-KEY": apiKey, "Content-Type": "application/json" },
-      body: JSON.stringify({ avatar_id: SANDBOX_AVATAR_ID, context_id: SANDBOX_CONTEXT_ID, is_sandbox: true }),
-      cache: "no-store"
+      body: JSON.stringify({ avatar_id: avatarId, context_id: contextId, is_sandbox: sandbox })
     });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok || !data?.data?.url) {
-      return Response.json({ error: data?.message || `LiveAvatar non disponibile (${response.status}).` }, { status: response.status || 502 });
-    }
-    return Response.json({ url: data.data.url, sandbox: true });
-  } catch {
-    return Response.json({ error: "Impossibile collegarsi a LiveAvatar." }, { status: 502 });
+    if (!data?.data?.url) throw new Error("LiveAvatar non ha restituito il collegamento alla sessione.");
+    return Response.json({
+      url: data.data.url,
+      sandbox,
+      mode: sandbox ? "sandbox" : "ettore",
+      message: sandbox ? "Demo LiveAvatar attiva con avatar e contesto di prova." : "Ettore Live è attivo con il contesto New Digital App."
+    });
+  } catch (error) {
+    return Response.json({ error: error?.message || "Impossibile collegarsi a LiveAvatar." }, { status: error?.status || 502 });
   }
 }
