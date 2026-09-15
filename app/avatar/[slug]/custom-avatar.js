@@ -1,0 +1,83 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { Assistant } from "../../assistant";
+import { AvatarVideo } from "../../avatar-video";
+
+const STORAGE_KEY = "avatarone:custom-avatars";
+
+export default function CustomAvatar({ slug }) {
+  const [avatar, setAvatar] = useState(undefined);
+
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || "[]");
+      setAvatar(Array.isArray(saved) ? saved.find((item) => item.slug === slug) || null : null);
+    } catch {
+      setAvatar(null);
+    }
+  }, [slug]);
+
+  if (avatar === undefined) return null;
+
+  if (!avatar) {
+    return (
+      <main className="custom-avatar-missing">
+        <section>
+          <span>AvatarOne Creator</span>
+          <h1>Avatar non trovato</h1>
+          <p>Questo avatar è salvato nel browser in cui è stato creato.</p>
+          <Link href="/platform#nuovo-cliente">Torna alla dashboard</Link>
+        </section>
+      </main>
+    );
+  }
+
+  const tenant = {
+    slug: avatar.slug,
+    name: avatar.companyName,
+    assistantName: avatar.name,
+    spokenAssistantName: avatar.name,
+    welcomeMessage: avatar.welcomeMessage,
+    inputPlaceholder: `Scrivi a ${avatar.name}`,
+    avatarVideo: "/mia-avatar-video.mp4",
+    avatarPoster: "",
+    brandMark: avatar.name.toUpperCase().slice(0, 12),
+    whatsappPhone: "393457980259",
+    orderFallbackText: `Ciao, vorrei informazioni da ${avatar.name}.`,
+    suggestions: avatar.suggestions,
+    role: avatar.role,
+    tone: avatar.tone,
+    knowledgeSummary: avatar.knowledgeSummary,
+    personality: {
+      role: avatar.role,
+      tone: avatar.tone,
+      experienceGoal: "Aiutare l'utente in modo chiaro, utile e coerente con il progetto."
+    },
+    theme: {
+      "--mia-coral": avatar.accent,
+      "--mia-coral-strong": avatar.accent,
+      "--mia-cyan": "#64e9f7",
+      "--accent": avatar.accent,
+      "--accent-strong": avatar.accent,
+      "--signal": "#64e9f7"
+    }
+  };
+
+  return (
+    <main className="mobile-chat-shell" style={tenant.theme}>
+      <div className="aurora aurora--coral" />
+      <div className="aurora aurora--cyan" />
+      <section className="avatar-stage" aria-label={tenant.assistantName}>
+        <div className="avatar-frame" aria-label={`Avatar ${tenant.spokenAssistantName}`}>
+          <AvatarVideo label={`Avatar video ${tenant.spokenAssistantName}`} src={tenant.avatarVideo} />
+          <div className="mia-name-mark" aria-hidden="true"><span>{tenant.brandMark}</span></div>
+        </div>
+      </section>
+      <section className="assistant-workspace" aria-label={`Chat con ${tenant.assistantName}`}>
+        <Assistant tenant={tenant} />
+      </section>
+    </main>
+  );
+}
