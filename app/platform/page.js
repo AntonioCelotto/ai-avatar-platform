@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { tenants } from "../tenant-config";
 import { isSupabaseConfigured, listAvatarClients } from "../lib/supabase-server";
 import "./platform.css";
@@ -136,12 +137,12 @@ export default async function PlatformDashboard() {
 
         <section className="platform-hero platform-hero--app">
           <div>
-            <p className="platform-kicker">Mobile First SaaS</p>
-            <h1>AvatarOne</h1>
+            <p className="platform-kicker">New Digital App · AI Studio</p>
+            <h1>Crea persone digitali.<br /><span>Semplicemente.</span></h1>
             <p>
               Crea, gestisci e pubblica Persone Digitali da smartphone, tablet o desktop.
             </p>
-            <span className="platform-source">Sorgente dati: {source === "supabase" ? "Supabase" : "tenant-config fallback"}</span>
+            <span className="platform-source">Sistema {source === "supabase" ? "collegato" : "locale"} · Operativo</span>
           </div>
           <a className="platform-primary platform-primary--large" href="#nuovo-cliente">✨ Crea Persona Digitale</a>
         </section>
@@ -169,8 +170,8 @@ export default async function PlatformDashboard() {
         <section className="platform-section" id="clienti">
           <div className="platform-section-head">
             <div>
-              <p className="platform-kicker">CRM Clienti</p>
-              <h2>Persone Digitali attive</h2>
+              <p className="platform-kicker">Il tuo AI Team</p>
+              <h2>Persone digitali attive</h2>
             </div>
             <button type="button">Filtri</button>
           </div>
@@ -182,8 +183,13 @@ export default async function PlatformDashboard() {
                   <div className="platform-client-avatar">{getClientIcon(client)}</div>
                   <mark>{getStatusLabel(client.status)}</mark>
                 </div>
-                <h3>{client.company_name}</h3>
-                <p>{client.spoken_avatar_name || client.avatar_name}</p>
+                <div className="platform-client-title">
+                  <span>AI</span>
+                  <div>
+                    <h3>{client.spoken_avatar_name || client.avatar_name}</h3>
+                    <p>{client.company_name}</p>
+                  </div>
+                </div>
                 <div className="platform-client-meta">
                   <span>{client.category || "Generico"}</span>
                   <span>{client.voice_label || client.voice_provider || "OpenAI"}</span>
@@ -192,7 +198,14 @@ export default async function PlatformDashboard() {
                   <span>Launch</span>
                   <strong>{client.status === "active" ? "75%" : "25%"}</strong>
                 </div>
-                <a href={getClientUrl(client)}>Apri Persona</a>
+                <div className="platform-client-actions">
+                  <Link className="platform-open-button" href={getClientUrl(client)} target="_blank">
+                    Apri e prova {client.spoken_avatar_name || client.avatar_name} <span>↗</span>
+                  </Link>
+                  <Link className="platform-manage-link" href={`/platform/knowledge?tenant=${encodeURIComponent(client.slug)}`}>
+                    Gestisci conoscenza
+                  </Link>
+                </div>
               </article>
             ))}
           </div>
@@ -240,9 +253,9 @@ export default async function PlatformDashboard() {
           <div className="platform-section-head">
             <div>
               <p className="platform-kicker">AvatarOne Creator</p>
-              <h2>Nuova Persona Digitale</h2>
+              <h2>Nuova persona digitale</h2>
             </div>
-            <span className="platform-soft-label">Prossimo sviluppo</span>
+            <span className="platform-soft-label">Creator Beta</span>
           </div>
 
           <div className="platform-creator-card">

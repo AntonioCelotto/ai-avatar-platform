@@ -266,3 +266,81 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* AvatarOne 2.0 — light, calm interface inspired by Apple product surfaces. */
+.platform-shell {
+  --apple-blue: #0071e3;
+  --apple-purple: #7c3aed;
+  --apple-ink: #1d1d1f;
+  --apple-muted: #6e6e73;
+  --apple-line: rgba(29, 29, 31, 0.1);
+  grid-template-columns: 252px minmax(0, 1fr);
+  background: radial-gradient(circle at 82% 4%, rgba(98, 153, 255, .2), transparent 27%), radial-gradient(circle at 42% 30%, rgba(188, 155, 255, .13), transparent 25%), #f5f5f7;
+  color: var(--apple-ink);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter, sans-serif;
+}
+.platform-sidebar { position: sticky; top: 0; height: 100svh; padding: 26px 18px; border-color: var(--apple-line); background: rgba(246, 246, 248, .76); backdrop-filter: saturate(180%) blur(24px); }
+.platform-logo { margin: 0 8px 30px; }
+.platform-logo > span { width: 44px; height: 44px; border: 0; border-radius: 13px; color: #fff; background: linear-gradient(145deg, var(--apple-blue), var(--apple-purple)); box-shadow: 0 8px 22px rgba(0, 113, 227, .24); }
+.platform-logo strong { color: var(--apple-ink); font-size: 17px; }
+.platform-logo small { color: var(--apple-muted); font-size: 11px; }
+.platform-nav { gap: 4px; }
+.platform-nav a { display: flex; align-items: center; gap: 10px; min-height: 42px; padding: 0 12px; border: 0; border-radius: 11px; color: #4b4b50; font-size: 14px; }
+.platform-nav a span { width: 23px; text-align: center; }
+.platform-nav a:hover { background: rgba(255, 255, 255, .7); color: var(--apple-ink); }
+.platform-nav a.is-active { background: #fff; color: var(--apple-blue); box-shadow: 0 3px 14px rgba(0, 0, 0, .06); }
+.platform-main { max-width: 1500px; margin: 0 auto; padding: 34px clamp(22px, 4vw, 64px) 70px; }
+.platform-hero { position: relative; overflow: hidden; min-height: 330px; align-items: flex-end; padding: clamp(30px, 5vw, 66px); border-color: rgba(255,255,255,.9); border-radius: 34px; background: radial-gradient(circle at 88% 20%, rgba(255,255,255,.78), transparent 22%), linear-gradient(125deg, #e8f2ff 0%, #f3edff 52%, #ffeef7 100%); box-shadow: 0 18px 50px rgba(30,45,75,.1); }
+.platform-hero::after { content: "✦"; position: absolute; right: 7%; top: 4%; color: rgba(0,113,227,.14); font-size: clamp(110px, 16vw, 230px); line-height: 1; }
+.platform-hero > * { position: relative; z-index: 1; }
+.platform-kicker { color: var(--apple-blue); }
+.platform-hero h1 { max-width: 790px; color: var(--apple-ink); font-size: clamp(42px, 5.5vw, 78px); line-height: .99; letter-spacing: -.055em; }
+.platform-hero h1 span { background: linear-gradient(90deg, var(--apple-blue), var(--apple-purple)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.platform-hero p:not(.platform-kicker) { color: #515156; font-size: clamp(17px, 1.6vw, 21px); letter-spacing: -.015em; }
+.platform-source { color: var(--apple-muted); font-size: 12px; }
+.platform-primary, .platform-section button, .platform-creator-card button { border-radius: 999px; background: var(--apple-blue); color: #fff; box-shadow: 0 9px 24px rgba(0,113,227,.2); }
+.platform-card, .platform-section, .platform-action-card { border-color: rgba(255,255,255,.9); background: rgba(255,255,255,.82); color: var(--apple-ink); box-shadow: 0 18px 50px rgba(30,45,75,.09); backdrop-filter: blur(20px); }
+.platform-card span, .platform-card small, .platform-action-card small { color: var(--apple-muted); }
+.platform-card strong { color: var(--apple-ink); }
+.platform-action-card { color: var(--apple-ink); }
+.platform-action-card > span { color: var(--apple-blue); }
+.platform-section h2 { color: var(--apple-ink); letter-spacing: -.035em; }
+.platform-section button { min-height: 38px; padding: 0 16px; background: #ededf0; color: var(--apple-ink); box-shadow: none; }
+.platform-client-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.platform-client-card { position: relative; overflow: hidden; padding: 24px; border: 1px solid var(--apple-line); border-radius: 24px; background: #fff; box-shadow: 0 8px 26px rgba(30,45,75,.06); }
+.platform-client-card::before { content: ""; position: absolute; inset: 0 0 auto; height: 5px; background: linear-gradient(90deg, var(--apple-blue), var(--apple-purple)); }
+.platform-client-head { display: flex; align-items: center; justify-content: space-between; }
+.platform-client-avatar { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 13px; background: #f2f6ff; }
+.platform-client-head mark, .platform-status { padding: 6px 10px; border-radius: 999px; background: #e8f8ee; color: #188038; font-size: 11px; font-weight: 750; }
+.platform-client-title { display: flex; align-items: center; gap: 12px; margin: 20px 0 16px; }
+.platform-client-title > span { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 50%; background: linear-gradient(145deg,#edf5ff,#f3eaff); color: var(--apple-blue); font-weight: 800; }
+.platform-client-title h3 { margin: 0; color: var(--apple-ink); font-size: 25px; letter-spacing: -.03em; }
+.platform-client-title p { margin: 3px 0 0; color: var(--apple-muted); }
+.platform-client-meta { display: flex; flex-wrap: wrap; gap: 7px; }
+.platform-client-meta span { padding: 6px 10px; border-radius: 999px; background: #f5f5f7; color: #5a5a60; font-size: 11px; }
+.platform-client-launch { display: flex; justify-content: space-between; margin: 20px 0 12px; color: var(--apple-muted); font-size: 12px; }
+.platform-client-launch strong { color: var(--apple-ink); }
+.platform-client-actions { display: grid; gap: 9px; }
+.platform-open-button { min-height: 46px; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 14px; background: var(--apple-blue); color: #fff; font-weight: 700; }
+.platform-open-button:hover { background: #0057b8; }
+.platform-manage-link { text-align: center; color: var(--apple-blue); font-size: 13px; font-weight: 630; }
+.platform-mini-card, .platform-launch-item, .platform-step { border-color: var(--apple-line); background: #fff; color: var(--apple-ink); }
+.platform-mini-card p, .platform-step p, .platform-launch-item small { color: var(--apple-muted); }
+.platform-creator-card textarea { border-color: var(--apple-line); background: #fff; color: var(--apple-ink); }
+.platform-soft-label { padding: 7px 11px; border-radius: 999px; background: #efe8ff; color: var(--apple-purple); font-size: 11px; font-weight: 720; }
+
+@media (max-width: 1050px) {
+  .platform-shell { grid-template-columns: 1fr; }
+  .platform-sidebar { display: none; }
+  .platform-main { padding: 18px 16px 52px; }
+  .platform-hero { min-height: 300px; align-items: flex-start; flex-direction: column; border-radius: 27px; }
+  .platform-stats, .platform-quick-actions { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .platform-grid-two { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .platform-hero { padding: 28px 23px; }
+  .platform-hero h1 { font-size: 43px; }
+  .platform-primary { width: 100%; }
+  .platform-client-grid, .platform-quick-actions, .platform-module-grid { grid-template-columns: 1fr; }
+  .platform-wizard { grid-template-columns: 1fr; }
+}
