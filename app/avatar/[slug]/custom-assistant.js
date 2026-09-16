@@ -24,7 +24,9 @@ export default function CustomAssistant({ tenant }) {
             companyName: tenant.name,
             role: tenant.role,
             tone: tenant.tone,
-            knowledgeSummary: tenant.knowledgeSummary
+            knowledgeSummary: tenant.knowledgeSummary,
+            knowledgeUrl: tenant.knowledgeUrl,
+            websiteKnowledge: tenant.websiteKnowledge
           },
           messages: next
         })
