@@ -25,7 +25,7 @@ async function requestLiveAvatar(path, apiKey, options = {}) {
 
 export async function POST() {
   const apiKey = process.env.LIVEAVATAR_API_KEY;
-  if (!apiKey) return Response.json({ error: "LIVEAVATAR_API_KEY non configurata su questo ambiente." }, { status: 503 });
+  if (!apiKey) return Response.json({ error: "Il collegamento vocale LiveAvatar non è ancora attivo su questa pubblicazione." }, { status: 503 });
 
   try {
     const customAvatarId = process.env.LIVEAVATAR_AVATAR_ID?.trim();
