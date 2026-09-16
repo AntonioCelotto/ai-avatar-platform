@@ -50,6 +50,8 @@ export default function CustomAvatar({ slug }) {
     role: avatar.role,
     tone: avatar.tone,
     knowledgeSummary: avatar.knowledgeSummary,
+    knowledgeUrl: avatar.knowledgeUrl || "",
+    websiteKnowledge: avatar.websiteKnowledge || "",
     voice: avatar.voice || "browser-it",
     mediaMode: avatar.mediaMode || "placeholder",
     personality: {
