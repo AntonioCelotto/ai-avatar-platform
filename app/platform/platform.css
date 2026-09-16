@@ -243,6 +243,14 @@
   line-height: 1.45;
 }
 
+.creator-website-status {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #0a7a42;
+  font-size: 13px;
+  font-weight: 800;
+}
+
 @media (max-width: 980px) {
   .platform-shell {
     grid-template-columns: 1fr;
