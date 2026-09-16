@@ -20,6 +20,8 @@ export function AvatarCreator() {
   const [knowledgeNotes, setKnowledgeNotes] = useState("");
   const [consent, setConsent] = useState(false);
   const [created, setCreated] = useState(null);
+  const [publishLoading, setPublishLoading] = useState(false);
+  const [websiteStatus, setWebsiteStatus] = useState("");
   const preview = useMemo(() => ({ image: media.imageDataUrl || imageUrl.trim(), video: media.videoDataUrl || videoUrl.trim() }), [imageUrl, media, videoUrl]);
   const updateDraft = (field, value) => setDraft((current) => ({ ...current, [field]: value }));
 
@@ -43,10 +45,25 @@ export function AvatarCreator() {
     const voices = speechSynthesis.getVoices(); const preferred = voice === "browser-female" ? voices.find((item) => /elsa|isabella|female/i.test(item.name)) : voices.find((item) => item.lang?.startsWith("it")); if (preferred) utterance.voice = preferred; speechSynthesis.speak(utterance);
   }
 
-  function publishAvatar() {
+  async function publishAvatar() {
     if (!consent) return setError("Conferma di avere i diritti per utilizzare immagine, video e voce.");
-    const completed = { ...draft, imageDataUrl: media.imageDataUrl, imageUrl: imageUrl.trim(), imageName: media.imageName, videoDataUrl: media.videoDataUrl, videoUrl: videoUrl.trim(), videoName: media.videoName, voice, knowledgeUrl: knowledgeUrl.trim(), knowledgeSummary: knowledgeNotes.trim() || draft.knowledgeSummary, mediaMode: preview.video ? "video" : preview.image ? "image" : "placeholder", syncMode: preview.video ? "speaking-loop" : "still-image", publishedAt: new Date().toISOString() };
-    try { saveAvatar(completed); setCreated(completed); setError(""); } catch { setError("Il file è troppo grande per il salvataggio locale. Inserisci un URL pubblico."); }
+    setPublishLoading(true); setError(""); setWebsiteStatus("");
+    try {
+      let websiteKnowledge = "";
+      let verifiedKnowledgeUrl = "";
+      if (knowledgeUrl.trim()) {
+        setWebsiteStatus("Sto leggendo il sito…");
+        const response = await fetch("/api/avatar-creator", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "website", url: knowledgeUrl.trim() }) });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Non riesco a leggere il sito indicato.");
+        websiteKnowledge = data.website.text;
+        verifiedKnowledgeUrl = data.website.url;
+        setWebsiteStatus(`Sito importato: ${data.website.hostname}`);
+      }
+      const completed = { ...draft, imageDataUrl: media.imageDataUrl, imageUrl: imageUrl.trim(), imageName: media.imageName, videoDataUrl: media.videoDataUrl, videoUrl: videoUrl.trim(), videoName: media.videoName, voice, knowledgeUrl: verifiedKnowledgeUrl, websiteKnowledge, knowledgeSummary: knowledgeNotes.trim() || draft.knowledgeSummary, mediaMode: preview.video ? "video" : preview.image ? "image" : "placeholder", syncMode: preview.video ? "speaking-loop" : "still-image", publishedAt: new Date().toISOString() };
+      saveAvatar(completed); setCreated(completed);
+    } catch (publishError) { setError(publishError.message || "Pubblicazione non riuscita."); }
+    finally { setPublishLoading(false); }
   }
 
   return <div className="creator-flow">
@@ -56,8 +73,8 @@ export function AvatarCreator() {
       <CreatorBlock number="1" title="Azienda e identità" text="Controlla la configurazione proposta dall’AI."><div className="creator-fields"><Field label="Nome avatar" value={draft.name} onChange={(v) => updateDraft("name", v)} /><Field label="Azienda" value={draft.companyName} onChange={(v) => updateDraft("companyName", v)} /><Field label="Categoria" value={draft.category} onChange={(v) => updateDraft("category", v)} /><label>Colore<input type="color" value={draft.accent} onChange={(e) => updateDraft("accent", e.target.value)} /></label><Field area wide label="Ruolo" value={draft.role} onChange={(v) => updateDraft("role", v)} /><Field area wide label="Tono" value={draft.tone} onChange={(v) => updateDraft("tone", v)} /></div></CreatorBlock>
       <CreatorBlock number="2" title="Immagine e video" text="Carica file leggeri per il test oppure usa URL pubblici."><div className="creator-media-grid"><label className="creator-upload">Foto avatar<input accept="image/jpeg,image/png,image/webp" type="file" onChange={(e) => selectMedia(e, "image")} /><small>{media.imageName || "JPG, PNG o WebP · max 1,5 MB"}</small></label><label className="creator-upload">Video avatar<input accept="video/mp4,video/webm" type="file" onChange={(e) => selectMedia(e, "video")} /><small>{media.videoName || "MP4 o WebM · max 3 MB"}</small></label><Field label="URL immagine" placeholder="https://…/avatar.jpg" value={imageUrl} onChange={setImageUrl} /><Field label="URL video" placeholder="https://…/avatar.mp4" value={videoUrl} onChange={setVideoUrl} /></div><div className="creator-preview">{preview.video ? <video autoPlay loop muted playsInline src={preview.video} /> : preview.image ? <img alt={`Anteprima ${draft.name}`} src={preview.image} /> : <div>{draft.name.slice(0, 1)}</div>}<span>{preview.video ? "Video pronto: si attiva quando parla" : preview.image ? "Foto pronta: lip-sync da generare" : "Aggiungi foto o video"}</span></div></CreatorBlock>
       <CreatorBlock number="3" title="Voce" text="Scegli e ascolta la voce prima della pubblicazione."><div className="creator-inline"><select aria-label="Voce avatar" value={voice} onChange={(e) => setVoice(e.target.value)}><option value="browser-it">Voce italiana del dispositivo</option><option value="browser-female">Voce italiana femminile</option><option value="openai">OpenAI Voice · collegata</option><option value="elevenlabs">ElevenLabs / voce clonata · da collegare</option></select><button type="button" onClick={testVoice}>▶ Prova voce</button></div></CreatorBlock>
-      <CreatorBlock number="4" title="Knowledge" text="Aggiungi sito e informazioni certe. PDF e scansione sito saranno collegati al database."><div className="creator-fields"><Field wide label="Sito web" placeholder="https://www.azienda.it" value={knowledgeUrl} onChange={setKnowledgeUrl} /><Field area wide label="Conoscenza iniziale" value={knowledgeNotes} onChange={setKnowledgeNotes} /><label className="creator-upload creator-wide">Documenti PDF<input accept="application/pdf" multiple type="file" disabled /><small>Si attiva con il salvataggio cloud/Supabase.</small></label></div></CreatorBlock>
-      <CreatorBlock number="5" title="Test e pubblicazione" text="Il movimento base usa un video; il lip-sync facciale professionale richiede HeyGen."><div className="creator-status-grid"><span className="is-ready">Identità</span><span className={preview.image || preview.video ? "is-ready" : ""}>Media</span><span className="is-ready">Voce</span><span className={knowledgeNotes ? "is-ready" : ""}>Knowledge</span><span>Lip-sync HeyGen</span></div><label className="creator-consent"><input checked={consent} type="checkbox" onChange={(e) => setConsent(e.target.checked)} /> Confermo di avere l’autorizzazione a utilizzare immagine, video e voce caricati.</label><button className="creator-publish" type="button" onClick={publishAvatar}>Pubblica avatar di prova</button></CreatorBlock>
+      <CreatorBlock number="4" title="Knowledge" text="Aggiungi il sito ufficiale: verrà letto e collegato esclusivamente a questo avatar."><div className="creator-fields"><Field wide label="Sito web" placeholder="https://www.azienda.it" value={knowledgeUrl} onChange={(value) => { setKnowledgeUrl(value); setWebsiteStatus(""); }} /><Field area wide label="Conoscenza iniziale" value={knowledgeNotes} onChange={setKnowledgeNotes} />{websiteStatus ? <p className="creator-website-status">✓ {websiteStatus}</p> : null}<label className="creator-upload creator-wide">Documenti PDF<input accept="application/pdf" multiple type="file" disabled /><small>Il caricamento PDF sarà attivato con il salvataggio cloud.</small></label></div></CreatorBlock>
+      <CreatorBlock number="5" title="Test e pubblicazione" text="Prima della pubblicazione controlliamo identità, media, voce e sito."><div className="creator-status-grid"><span className="is-ready">Identità</span><span className={preview.image || preview.video ? "is-ready" : ""}>Media</span><span className="is-ready">Voce</span><span className={knowledgeUrl.trim() || knowledgeNotes ? "is-ready" : ""}>Knowledge</span><span>Lip-sync LiveAvatar</span></div><label className="creator-consent"><input checked={consent} type="checkbox" onChange={(e) => setConsent(e.target.checked)} /> Confermo di avere l’autorizzazione a utilizzare immagine, video e voce caricati.</label><button className="creator-publish" disabled={publishLoading} type="button" onClick={publishAvatar}>{publishLoading ? "Importazione e pubblicazione…" : "Pubblica avatar di prova"}</button></CreatorBlock>
     </div> : null}
     {created ? <div className="creator-result"><div><span>✓ Avatar pubblicato</span><strong>{created.name}</strong><small>{created.companyName}</small></div><a href={`/avatar/${created.slug}`} target="_blank">Apri e prova {created.name} ↗</a></div> : null}
   </div>;
