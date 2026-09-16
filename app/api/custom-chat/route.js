@@ -12,8 +12,11 @@ export async function POST(request) {
     `Ruolo: ${String(avatar.role || "assistente digitale").slice(0, 240)}.`,
     `Tono: ${String(avatar.tone || "naturale e professionale").slice(0, 240)}.`,
     `Conoscenza iniziale: ${String(avatar.knowledgeSummary || "").slice(0, 1200)}.`,
+    `Sito ufficiale collegato: ${String(avatar.knowledgeUrl || "Nessun sito collegato").slice(0, 500)}.`,
+    `Contenuto verificato del sito di questo avatar: ${String(avatar.websiteKnowledge || "Nessun contenuto del sito importato").slice(0, 14000)}.`,
     "Rispondi in italiano, in modo breve, chiaro e coerente, senza Markdown o simboli di formattazione.",
-    "Usa esclusivamente i fatti presenti nella conoscenza iniziale. Non dedurre né inventare orari, prezzi, indirizzi, disponibilità, servizi o regole operative. Se il dato richiesto non è presente, di' chiaramente che non è ancora disponibile e proponi di contattare la struttura."
+    "Usa esclusivamente i fatti presenti nella conoscenza iniziale e nel contenuto verificato del sito di questo avatar. Non utilizzare informazioni di New Digital App o di altri clienti, salvo che siano presenti esplicitamente nelle fonti di questo avatar.",
+    "Non dedurre né inventare orari, prezzi, indirizzi, disponibilità, servizi o regole operative. Se il dato richiesto non è presente, di' chiaramente che non è ancora disponibile e proponi di contattare la struttura."
   ].join("\n");
   try {
     const response = await fetch("https://api.openai.com/v1/responses", {
