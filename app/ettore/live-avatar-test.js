@@ -25,6 +25,6 @@ export default function LiveAvatarTest() {
   return <div className="liveavatar-cover">
     <img className="custom-avatar-image" alt="Avatar Ettore" src="/generated/ettore-avatar.svg" />
     <div className="mia-name-mark" aria-hidden="true"><span>ETTORE</span></div>
-    <div className="liveavatar-start"><strong>Ettore LiveAvatar</strong><span>Prova voce, ascolto e labiale in tempo reale. Finché non viene caricato il volto personalizzato, LiveAvatar mostra il suo avatar dimostrativo.</span><button disabled={loading} onClick={start} type="button">{loading ? "Collegamento…" : "Avvia avatar parlante"}</button>{error ? <small>{error}</small> : null}</div>
+    <div className="liveavatar-start"><strong>Parla con Ettore</strong><span>Avvia la conversazione vocale con movimento e labiale sincronizzato.</span><button disabled={loading} onClick={start} type="button">{loading ? "Collegamento…" : "Avvia conversazione"}</button>{error ? <small>{error}</small> : null}</div>
   </div>;
 }
