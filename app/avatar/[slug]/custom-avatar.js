@@ -7,17 +7,36 @@ import CustomAssistant from "./custom-assistant";
 
 const STORAGE_KEY = "avatarone:custom-avatars";
 
-export default function CustomAvatar({ slug }) {
-  const [avatar, setAvatar] = useState(undefined);
+export default function CustomAvatar({ slug, initialAvatar }) {
+  const [avatar, setAvatar] = useState(() => initialAvatar ? {
+    slug: initialAvatar.slug,
+    companyName: initialAvatar.company_name,
+    category: initialAvatar.category,
+    name: initialAvatar.spoken_avatar_name || initialAvatar.avatar_name,
+    imageUrl: initialAvatar.avatar_poster_url || "",
+    videoUrl: initialAvatar.avatar_video_url || "",
+    mediaMode: initialAvatar.media_mode,
+    voice: initialAvatar.voice_provider,
+    role: initialAvatar.personality?.role || "assistente digitale",
+    tone: initialAvatar.personality?.tone || "naturale e professionale",
+    welcomeMessage: initialAvatar.welcome_message,
+    suggestions: initialAvatar.suggestions || [],
+    knowledgeSummary: initialAvatar.notes || "",
+    knowledgeUrl: initialAvatar.website || "",
+    websiteKnowledge: initialAvatar.website_knowledge || "",
+    accent: initialAvatar.theme?.accent || "#0071e3",
+    cloud: true
+  } : undefined);
 
   useEffect(() => {
+    if (initialAvatar) return;
     try {
       const saved = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || "[]");
       setAvatar(Array.isArray(saved) ? saved.find((item) => item.slug === slug) || null : null);
     } catch {
       setAvatar(null);
     }
-  }, [slug]);
+  }, [initialAvatar, slug]);
 
   if (avatar === undefined) return null;
 
@@ -27,7 +46,7 @@ export default function CustomAvatar({ slug }) {
         <section>
           <span>AvatarOne Creator</span>
           <h1>Avatar non trovato</h1>
-          <p>Questo avatar è salvato nel browser in cui è stato creato.</p>
+          <p>Questo avatar non è ancora disponibile nel cloud.</p>
           <Link href="/platform#nuovo-cliente">Torna alla dashboard</Link>
         </section>
       </main>
