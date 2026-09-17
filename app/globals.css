@@ -788,9 +788,10 @@ a {
 .custom-avatar-missing p { margin: 0 0 22px; color: #6e6e73; }
 .custom-avatar-missing a { display: inline-block; padding: 12px 18px; border-radius: 999px; background: #0071e3; color: #fff; font-weight: 700; }
 .custom-avatar-initial { display: grid; place-items: center; background: var(--accent); color: #fff; font-size: 22px; font-weight: 800; }
-.custom-composer { grid-template-columns: minmax(0, 1fr) auto; }
+.custom-composer { grid-template-columns: auto minmax(0, 1fr) auto; }
 .custom-send-button { min-width: 82px; border: 0; border-radius: 6px; background: var(--accent); color: #fff; font-weight: 800; }
-.custom-avatar-image { width: 100%; height: 100%; display: block; object-fit: cover; object-position: center 12%; }
+.custom-avatar-image { width: 100%; height: 100%; display: block; object-fit: contain; object-position: center top; background: #05090b; }
+.custom-avatar-placeholder { width: 100%; height: 100%; display: grid; place-items: center; background: linear-gradient(145deg,#0c2027,#071014); color: var(--accent); font-size: clamp(84px,18vw,190px); font-weight: 900; }
 .hotel-quark-shell { background: radial-gradient(circle at 16% 12%, rgba(217,194,141,.18), transparent 34%), #07110f; }
 .hotel-quark-shell .avatar-frame { border-color: rgba(217,194,141,.25); }
 .hotel-quark-shell .mia-name-mark span { color: rgba(255,255,255,.78); letter-spacing: .05em; }
