@@ -40,10 +40,36 @@ export function AvatarCreator() {
     catch (fileError) { setError(fileError.message); }
   }
 
-  function testVoice() {
-    if (!draft || !("speechSynthesis" in window)) return setError("La prova voce non è disponibile in questo browser.");
-    speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(`Ciao, sono ${draft.name}. Questa è la mia voce di prova.`); utterance.lang = "it-IT";
-    const voices = speechSynthesis.getVoices(); const preferred = voice === "browser-female" ? voices.find((item) => /elsa|isabella|female/i.test(item.name)) : voices.find((item) => item.lang?.startsWith("it")); if (preferred) utterance.voice = preferred; speechSynthesis.speak(utterance);
+  async function testVoice() {
+    if (!draft) return;
+    setError("");
+    const text = `Ciao, sono ${draft.name}. Questa è la mia voce di prova.`;
+    if (voice.startsWith("openai:")) {
+      try {
+        const response = await fetch("/api/speech", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text, provider: "openai", voiceId: voice.split(":")[1] })
+        });
+        if (!response.ok) throw new Error("Prova voce non disponibile.");
+        const audioUrl = URL.createObjectURL(await response.blob());
+        const audio = new Audio(audioUrl);
+        audio.onended = () => URL.revokeObjectURL(audioUrl);
+        audio.onerror = () => URL.revokeObjectURL(audioUrl);
+        await audio.play();
+        return;
+      } catch {
+        return setError("Non riesco a riprodurre questa voce. Riprova.");
+      }
+    }
+    if (!("speechSynthesis" in window)) return setError("La prova voce non è disponibile in questo browser.");
+    speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "it-IT";
+    const voices = speechSynthesis.getVoices();
+    const preferred = voice === "browser-female" ? voices.find((item) => /elsa|isabella|female/i.test(item.name)) : voices.find((item) => item.lang?.startsWith("it"));
+    if (preferred) utterance.voice = preferred;
+    speechSynthesis.speak(utterance);
   }
 
   async function publishAvatar() {
