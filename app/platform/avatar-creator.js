@@ -61,7 +61,11 @@ export function AvatarCreator() {
         setWebsiteStatus(`Sito importato: ${data.website.hostname}`);
       }
       const completed = { ...draft, imageDataUrl: media.imageDataUrl, imageUrl: imageUrl.trim(), imageName: media.imageName, videoDataUrl: media.videoDataUrl, videoUrl: videoUrl.trim(), videoName: media.videoName, voice, knowledgeUrl: verifiedKnowledgeUrl, websiteKnowledge, knowledgeSummary: knowledgeNotes.trim() || draft.knowledgeSummary, mediaMode: preview.video ? "video" : preview.image ? "image" : "placeholder", syncMode: preview.video ? "speaking-loop" : "still-image", publishedAt: new Date().toISOString() };
-      saveAvatar(completed); setCreated(completed);
+      setWebsiteStatus("Salvataggio sicuro nel cloud…");
+      const cloudResponse = await fetch("/api/avatar-creator", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "publish", avatar: completed }) });
+      const cloudData = await cloudResponse.json();
+      if (!cloudResponse.ok) throw new Error(cloudData.error || "Pubblicazione cloud non riuscita.");
+      saveAvatar(cloudData.avatar); setCreated(cloudData.avatar); setWebsiteStatus("Avatar salvato nel cloud");
     } catch (publishError) { setError(publishError.message || "Pubblicazione non riuscita."); }
     finally { setPublishLoading(false); }
   }
@@ -83,8 +87,8 @@ export function AvatarCreator() {
 function CreatorBlock({ number, title, text, children }) { return <section className="creator-block"><div className="creator-block-head"><span>{number}</span><div><h3>{title}</h3><p>{text}</p></div></div>{children}</section>; }
 function Field({ area, label, onChange, placeholder, value, wide }) { return <label className={wide ? "creator-wide" : ""}>{label}{area ? <textarea rows="4" value={value} onChange={(e) => onChange(e.target.value)} /> : <input placeholder={placeholder} value={value} onChange={(e) => onChange(e.target.value)} />}</label>; }
 
-export function CreatedAvatarCards() {
+export function CreatedAvatarCards({ excludedSlugs = [] }) {
   const [avatars, setAvatars] = useState([]);
   useEffect(() => { const refresh = () => setAvatars(readAvatars()); refresh(); addEventListener("avatarone:avatars-changed", refresh); addEventListener("storage", refresh); return () => { removeEventListener("avatarone:avatars-changed", refresh); removeEventListener("storage", refresh); }; }, []);
-  return avatars.map((avatar) => <article className="platform-client-card" key={avatar.slug}><div className="platform-client-head"><div className="platform-client-avatar">✨</div><mark>Test</mark></div><div className="platform-client-title"><span>AI</span><div><h3>{avatar.name}</h3><p>{avatar.companyName}</p></div></div><div className="platform-client-meta"><span>{avatar.category}</span><span>{avatar.voice === "elevenlabs" ? "ElevenLabs" : "Voce AI"}</span></div><div className="platform-client-launch"><span>{avatar.mediaMode === "video" ? "Video dinamico" : avatar.mediaMode === "image" ? "Immagine" : "Creator Beta"}</span><strong>Pronto</strong></div><div className="platform-client-actions"><a className="platform-open-button" href={`/avatar/${avatar.slug}`} target="_blank">Apri e prova {avatar.name} <span>↗</span></a><span className="platform-local-label">Salvato su questo dispositivo</span></div></article>);
+  return avatars.filter((avatar) => !excludedSlugs.includes(avatar.slug)).map((avatar) => <article className="platform-client-card" key={avatar.slug}><div className="platform-client-head"><div className="platform-client-avatar">✨</div><mark>{avatar.cloud ? "Cloud" : "Test"}</mark></div><div className="platform-client-title"><span>AI</span><div><h3>{avatar.name}</h3><p>{avatar.companyName}</p></div></div><div className="platform-client-meta"><span>{avatar.category}</span><span>{avatar.voice === "elevenlabs" ? "ElevenLabs" : "Voce AI"}</span></div><div className="platform-client-launch"><span>{avatar.mediaMode === "video" ? "Video dinamico" : avatar.mediaMode === "image" ? "Immagine" : "Creator Beta"}</span><strong>Pronto</strong></div><div className="platform-client-actions"><a className="platform-open-button" href={`/avatar/${avatar.slug}`} target="_blank">Apri e prova {avatar.name} <span>↗</span></a><span className="platform-local-label">{avatar.cloud ? "Salvato nel cloud" : "Salvato su questo dispositivo"}</span></div></article>);
 }

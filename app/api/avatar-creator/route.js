@@ -42,6 +42,64 @@ async function importWebsite(value) {
 
 export async function POST(request) {
   let payload; try { payload = await request.json(); } catch { return Response.json({ error: "Richiesta non valida." }, { status: 400 }); }
+  if (payload?.action === "publish") {
+    if (!isSupabaseConfigured()) return Response.json({ error: "Archivio cloud non configurato." }, { status: 503 });
+    const avatar = payload.avatar && typeof payload.avatar === "object" ? payload.avatar : null;
+    if (!avatar?.slug || !avatar?.name || !avatar?.companyName) return Response.json({ error: "Configurazione avatar incompleta." }, { status: 400 });
+    try {
+      const [uploadedImage, uploadedVideo] = await Promise.all([
+        avatar.imageDataUrl ? uploadAvatarMedia({ dataUrl: avatar.imageDataUrl, fileName: avatar.imageName, slug: avatar.slug, kind: "image" }) : "",
+        avatar.videoDataUrl ? uploadAvatarMedia({ dataUrl: avatar.videoDataUrl, fileName: avatar.videoName, slug: avatar.slug, kind: "video" }) : ""
+      ]);
+      const saved = await upsertAvatarClient({
+        slug: avatar.slug,
+        company_name: String(avatar.companyName).slice(0, 120),
+        category: String(avatar.category || "Assistente digitale").slice(0, 80),
+        status: "active",
+        website: avatar.knowledgeUrl || null,
+        avatar_name: String(avatar.name).slice(0, 50),
+        spoken_avatar_name: String(avatar.name).slice(0, 50),
+        avatar_poster_url: uploadedImage || avatar.imageUrl || null,
+        avatar_video_url: uploadedVideo || avatar.videoUrl || null,
+        media_mode: avatar.mediaMode || "placeholder",
+        voice_provider: String(avatar.voice || "browser-it").startsWith("browser") ? "browser" : avatar.voice,
+        voice_label: avatar.voice || "Voce italiana",
+        brand_mark: String(avatar.name).toUpperCase().slice(0, 12),
+        welcome_message: String(avatar.welcomeMessage || "").slice(0, 1000),
+        input_placeholder: `Scrivi a ${String(avatar.name).slice(0, 50)}`,
+        suggestions: Array.isArray(avatar.suggestions) ? avatar.suggestions.slice(0, 6) : [],
+        personality: {
+          role: String(avatar.role || "assistente digitale").slice(0, 500),
+          tone: String(avatar.tone || "naturale e professionale").slice(0, 500)
+        },
+        theme: { accent: /^#[0-9a-f]{6}$/i.test(avatar.accent || "") ? avatar.accent : "#0071e3" },
+        notes: String(avatar.knowledgeSummary || "").slice(0, 10000),
+        features: { cloud: true, website: Boolean(avatar.knowledgeUrl), documents: false }
+      });
+      if (!saved?.id) throw new Error("Salvataggio cloud non completato.");
+      if (avatar.websiteKnowledge || avatar.knowledgeSummary) {
+        await insertAvatarKnowledgeSource({
+          clientId: saved.id,
+          sourceType: avatar.websiteKnowledge ? "website" : "text",
+          title: avatar.websiteKnowledge ? new URL(avatar.knowledgeUrl).hostname : "Conoscenza iniziale",
+          sourceUrl: avatar.knowledgeUrl || null,
+          content: avatar.websiteKnowledge || avatar.knowledgeSummary,
+          status: "active",
+          metadata: { importedBy: "avatarone-creator" }
+        });
+      }
+      return Response.json({ ok: true, avatar: {
+        ...avatar,
+        imageDataUrl: "",
+        videoDataUrl: "",
+        imageUrl: saved.avatar_poster_url || "",
+        videoUrl: saved.avatar_video_url || "",
+        cloud: true
+      }});
+    } catch (error) {
+      return Response.json({ error: error.message || "Pubblicazione cloud non riuscita." }, { status: 500 });
+    }
+  }
   if (payload?.action === "website") {
     try {
       const website = await importWebsite(payload.url);
@@ -55,3 +113,9 @@ export async function POST(request) {
   try { const response = await fetch("https://api.openai.com/v1/responses", { method: "POST", signal: controller.signal, headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ model: process.env.OPENAI_MODEL || "gpt-5.2", instructions: "Sei il configuratore AvatarOne di New Digital App. Rispondi solo con JSON valido, senza markdown, usando: name, companyName, category, role, tone, welcomeMessage, suggestions (3 frasi), knowledgeSummary, accent (colore esadecimale). Scrivi in italiano. In knowledgeSummary inserisci esclusivamente fatti presenti nella richiesta dell'utente: non inventare orari, prezzi, indirizzi, servizi o regole operative.", input: prompt }) }); if (!response.ok) return Response.json({ error: "Il motore AI non ha completato la configurazione." }, { status: 502 }); const data = await response.json(); const output = data.output_text || data.output?.flatMap((item) => item.content || []).map((item) => item.text || "").join("") || ""; const parsed = parseJson(output); if (!parsed) return Response.json({ error: "Configurazione AI non valida. Riprova con una descrizione più semplice." }, { status: 502 }); return Response.json({ avatar: normalizeAvatar(parsed, prompt) }); }
   catch (error) { return Response.json({ error: error?.name === "AbortError" ? "Creazione scaduta. Riprova." : "Creazione non riuscita." }, { status: 502 }); } finally { clearTimeout(timeout); }
 }
+import {
+  insertAvatarKnowledgeSource,
+  isSupabaseConfigured,
+  uploadAvatarMedia,
+  upsertAvatarClient
+} from "../../lib/supabase-server";

@@ -215,7 +215,7 @@ export default async function PlatformDashboard() {
                 </div>
               </article>
             ))}
-            <CreatedAvatarCards />
+            <CreatedAvatarCards excludedSlugs={clients.map((client) => client.slug)} />
           </div>
         </section>
 

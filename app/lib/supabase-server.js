@@ -5,6 +5,7 @@ const supabaseUrl =
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 
 export const KNOWLEDGE_BUCKET = "knowledge-documents";
+export const AVATAR_MEDIA_BUCKET = "avatar-media";
 export const DEFAULT_TENANT_SLUG = defaultTenantSlug;
 
 export function isSupabaseConfigured() {
@@ -56,9 +57,42 @@ export async function getAvatarClientBySlug(slug = DEFAULT_TENANT_SLUG) {
   if (!isSupabaseConfigured()) return null;
   const safeSlug = encodeURIComponent(slug);
   const rows = await supabaseFetch(
-    `/rest/v1/avatar_clients?slug=eq.${safeSlug}&select=id,slug,company_name,category,status,website,avatar_name,spoken_avatar_name&limit=1`
+    `/rest/v1/avatar_clients?slug=eq.${safeSlug}&select=id,slug,company_name,category,status,website,whatsapp_phone,avatar_name,spoken_avatar_name,avatar_poster_url,avatar_video_url,media_mode,voice_provider,voice_id,voice_label,liveavatar_avatar_id,brand_mark,welcome_message,input_placeholder,suggestions,theme,personality,notes,features,created_at,updated_at&limit=1`
   );
   return rows?.[0] || null;
+}
+
+export async function upsertAvatarClient(avatar) {
+  const rows = await supabaseFetch("/rest/v1/avatar_clients?on_conflict=slug", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Prefer: "resolution=merge-duplicates,return=representation"
+    },
+    body: JSON.stringify(avatar)
+  });
+  return rows?.[0] || null;
+}
+
+function decodeDataUrl(dataUrl) {
+  const match = String(dataUrl || "").match(/^data:([^;,]+);base64,(.+)$/);
+  if (!match) return null;
+  return { mimeType: match[1], buffer: Buffer.from(match[2], "base64") };
+}
+
+export async function uploadAvatarMedia({ dataUrl, fileName, slug, kind }) {
+  const decoded = decodeDataUrl(dataUrl);
+  if (!decoded) return "";
+  const extension = decoded.mimeType.split("/")[1]?.replace("jpeg", "jpg") || (kind === "video" ? "mp4" : "jpg");
+  const safeName = String(fileName || `${kind}.${extension}`).replace(/[^a-zA-Z0-9_.-]+/g, "-").toLowerCase();
+  const storagePath = `${slug}/${kind}-${Date.now()}-${safeName}`;
+  const response = await fetch(getSupabaseUrl(`/storage/v1/object/${AVATAR_MEDIA_BUCKET}/${storagePath}`), {
+    method: "POST",
+    headers: getHeaders({ "Content-Type": decoded.mimeType, "x-upsert": "true" }),
+    body: decoded.buffer
+  });
+  if (!response.ok) throw new Error(`Caricamento ${kind} non riuscito.`);
+  return `${supabaseUrl.replace(/\/$/, "")}/storage/v1/object/public/${AVATAR_MEDIA_BUCKET}/${storagePath}`;
 }
 
 export async function listAvatarDocuments(clientId) {
