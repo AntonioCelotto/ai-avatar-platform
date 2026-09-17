@@ -47,9 +47,10 @@ export async function POST(request) {
     const avatar = payload.avatar && typeof payload.avatar === "object" ? payload.avatar : null;
     if (!avatar?.slug || !avatar?.name || !avatar?.companyName) return Response.json({ error: "Configurazione avatar incompleta." }, { status: 400 });
     try {
-      const [uploadedImage, uploadedVideo] = await Promise.all([
+      const [uploadedImage, uploadedVideo, uploadedVoice] = await Promise.all([
         avatar.imageDataUrl ? uploadAvatarMedia({ dataUrl: avatar.imageDataUrl, fileName: avatar.imageName, slug: avatar.slug, kind: "image" }) : "",
-        avatar.videoDataUrl ? uploadAvatarMedia({ dataUrl: avatar.videoDataUrl, fileName: avatar.videoName, slug: avatar.slug, kind: "video" }) : ""
+        avatar.videoDataUrl ? uploadAvatarMedia({ dataUrl: avatar.videoDataUrl, fileName: avatar.videoName, slug: avatar.slug, kind: "video" }) : "",
+        avatar.voiceDataUrl ? uploadAvatarMedia({ dataUrl: avatar.voiceDataUrl, fileName: avatar.voiceName, slug: avatar.slug, kind: "voice" }) : ""
       ]);
       const saved = await upsertAvatarClient({
         slug: avatar.slug,
@@ -57,12 +58,14 @@ export async function POST(request) {
         category: String(avatar.category || "Assistente digitale").slice(0, 80),
         status: "active",
         website: avatar.knowledgeUrl || null,
+        whatsapp_phone: String(avatar.whatsappPhone || "").replace(/\D/g, "").slice(0, 20) || null,
         avatar_name: String(avatar.name).slice(0, 50),
         spoken_avatar_name: String(avatar.name).slice(0, 50),
         avatar_poster_url: uploadedImage || avatar.imageUrl || null,
         avatar_video_url: uploadedVideo || avatar.videoUrl || null,
         media_mode: avatar.mediaMode || "placeholder",
-        voice_provider: String(avatar.voice || "browser-it").startsWith("browser") ? "browser" : avatar.voice,
+        voice_provider: String(avatar.voice || "openai:marin").split(":")[0],
+        voice_id: String(avatar.voice || "").includes(":") ? String(avatar.voice).split(":")[1] : null,
         voice_label: avatar.voice || "Voce italiana",
         brand_mark: String(avatar.name).toUpperCase().slice(0, 12),
         welcome_message: String(avatar.welcomeMessage || "").slice(0, 1000),
@@ -74,7 +77,7 @@ export async function POST(request) {
         },
         theme: { accent: /^#[0-9a-f]{6}$/i.test(avatar.accent || "") ? avatar.accent : "#0071e3" },
         notes: String(avatar.knowledgeSummary || "").slice(0, 10000),
-        features: { cloud: true, website: Boolean(avatar.knowledgeUrl), documents: false }
+        features: { cloud: true, website: Boolean(avatar.knowledgeUrl), documents: false, voiceSampleUrl: uploadedVoice || "" }
       });
       if (!saved?.id) throw new Error("Salvataggio cloud non completato.");
       if (avatar.websiteKnowledge || avatar.knowledgeSummary) {
@@ -92,6 +95,7 @@ export async function POST(request) {
         ...avatar,
         imageDataUrl: "",
         videoDataUrl: "",
+        voiceDataUrl: "",
         imageUrl: saved.avatar_poster_url || "",
         videoUrl: saved.avatar_video_url || "",
         cloud: true
