@@ -62,6 +62,14 @@ export async function getAvatarClientBySlug(slug = DEFAULT_TENANT_SLUG) {
   return rows?.[0] || null;
 }
 
+export async function getAvatarKnowledgeText(clientId) {
+  if (!isSupabaseConfigured() || !clientId) return "";
+  const rows = await supabaseFetch(
+    `/rest/v1/avatar_client_knowledge_sources?client_id=eq.${clientId}&status=eq.active&select=content&order=updated_at.desc&limit=12`
+  );
+  return (rows || []).map((row) => String(row.content || "").trim()).filter(Boolean).join("\n\n").slice(0, 14000);
+}
+
 export async function upsertAvatarClient(avatar) {
   const rows = await supabaseFetch("/rest/v1/avatar_clients?on_conflict=slug", {
     method: "POST",
