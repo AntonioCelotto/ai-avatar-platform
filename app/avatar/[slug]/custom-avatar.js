@@ -17,6 +17,8 @@ export default function CustomAvatar({ slug, initialAvatar }) {
     videoUrl: initialAvatar.avatar_video_url || "",
     mediaMode: initialAvatar.media_mode,
     voice: initialAvatar.voice_provider,
+    voiceId: initialAvatar.voice_id || "",
+    whatsappPhone: initialAvatar.whatsapp_phone || "",
     role: initialAvatar.personality?.role || "assistente digitale",
     tone: initialAvatar.personality?.tone || "naturale e professionale",
     welcomeMessage: initialAvatar.welcome_message,
@@ -60,10 +62,10 @@ export default function CustomAvatar({ slug, initialAvatar }) {
     spokenAssistantName: avatar.name,
     welcomeMessage: avatar.welcomeMessage,
     inputPlaceholder: `Scrivi a ${avatar.name}`,
-    avatarVideo: avatar.videoDataUrl || avatar.videoUrl || "/mia-avatar-video.mp4",
+    avatarVideo: avatar.videoDataUrl || avatar.videoUrl || "",
     avatarPoster: avatar.imageDataUrl || avatar.imageUrl || "",
     brandMark: avatar.name.toUpperCase().slice(0, 12),
-    whatsappPhone: "393457980259",
+    whatsappPhone: avatar.whatsappPhone || "",
     orderFallbackText: `Ciao, vorrei informazioni da ${avatar.name}.`,
     suggestions: avatar.suggestions,
     role: avatar.role,
@@ -71,7 +73,8 @@ export default function CustomAvatar({ slug, initialAvatar }) {
     knowledgeSummary: avatar.knowledgeSummary,
     knowledgeUrl: avatar.knowledgeUrl || "",
     websiteKnowledge: avatar.websiteKnowledge || "",
-    voice: avatar.voice || "browser-it",
+    voice: avatar.voice || "openai",
+    voiceId: avatar.voiceId || "",
     mediaMode: avatar.mediaMode || "placeholder",
     personality: {
       role: avatar.role,
@@ -94,9 +97,11 @@ export default function CustomAvatar({ slug, initialAvatar }) {
       <div className="aurora aurora--cyan" />
       <section className="avatar-stage" aria-label={tenant.assistantName}>
         <div className="avatar-frame" aria-label={`Avatar ${tenant.spokenAssistantName}`}>
-          {tenant.mediaMode === "image" && tenant.avatarPoster
-            ? <img className="custom-avatar-image" alt={`Avatar ${tenant.spokenAssistantName}`} src={tenant.avatarPoster} />
-            : <AvatarVideo label={`Avatar video ${tenant.spokenAssistantName}`} poster={tenant.avatarPoster} src={tenant.avatarVideo} />}
+          {tenant.mediaMode === "video" && tenant.avatarVideo
+            ? <AvatarVideo label={`Avatar video ${tenant.spokenAssistantName}`} poster={tenant.avatarPoster} src={tenant.avatarVideo} />
+            : tenant.avatarPoster
+              ? <img className="custom-avatar-image" alt={`Avatar ${tenant.spokenAssistantName}`} src={tenant.avatarPoster} />
+              : <div className="custom-avatar-placeholder" aria-label="Immagine avatar non disponibile">{tenant.spokenAssistantName.slice(0, 1)}</div>}
           <div className="mia-name-mark" aria-hidden="true"><span>{tenant.brandMark}</span></div>
         </div>
       </section>
