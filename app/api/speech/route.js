@@ -15,7 +15,7 @@ function cleanSpeechInput(input) {
 }
 
 function getElevenLabsVoiceId(tenantSlug) {
-  if (tenantSlug === "demo-cliente-01") {
+  if (tenantSlug === "demo-cliente-01" || provider === "elevenlabs") {
     return process.env.ELEVENLABS_FRANCESCA_VOICE_ID || "EnMjgV8GaKfSk1f0AlV9";
   }
 
@@ -93,7 +93,7 @@ async function generateElevenLabsSpeech(input, tenantSlug) {
   });
 }
 
-async function generateOpenAISpeech(input) {
+async function generateOpenAISpeech(input, requestedVoice = "") {
   if (!process.env.OPENAI_API_KEY) {
     return Response.json({ error: "OpenAI key not configured" }, { status: 503 });
   }
@@ -106,7 +106,7 @@ async function generateOpenAISpeech(input) {
     },
     body: JSON.stringify({
       model: process.env.OPENAI_TTS_MODEL || "gpt-4o-mini-tts",
-      voice: process.env.OPENAI_TTS_VOICE || "marin",
+      voice: ["alloy", "ash", "ballad", "coral", "echo", "fable", "nova", "onyx", "sage", "shimmer", "verse", "marin", "cedar"].includes(requestedVoice) ? requestedVoice : (process.env.OPENAI_TTS_VOICE || "marin"),
       input,
       instructions:
         "Voce femminile italiana naturale, calda e professionale. Parla come un'assistente digitale elegante, con ritmo fluido e senza leggere simboli o formattazioni.",
@@ -154,7 +154,7 @@ async function generateSpeechDebug(input, tenantSlug = "") {
   });
 }
 
-async function generateSpeechResponse(input, tenantSlug = "") {
+async function generateSpeechResponse(input, tenantSlug = "", provider = "", voiceId = "") {
   if (!input) {
     return Response.json({ error: "Missing text" }, { status: 400 });
   }
@@ -164,7 +164,7 @@ async function generateSpeechResponse(input, tenantSlug = "") {
     if (elevenLabsResponse) return elevenLabsResponse;
   }
 
-  return generateOpenAISpeech(input);
+  return generateOpenAISpeech(input, voiceId);
 }
 
 export async function GET(request) {
@@ -186,5 +186,5 @@ export async function POST(request) {
   } catch {
     return Response.json({ error: "Invalid JSON payload" }, { status: 400 });
   }
-  return generateSpeechResponse(cleanSpeechInput(payload.text), payload.tenantSlug || "");
+  return generateSpeechResponse(cleanSpeechInput(payload.text), payload.tenantSlug || "", payload.provider || "", payload.voiceId || "");
 }
