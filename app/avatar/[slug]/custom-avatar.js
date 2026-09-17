@@ -23,7 +23,7 @@ export default function CustomAvatar({ slug, initialAvatar }) {
     suggestions: initialAvatar.suggestions || [],
     knowledgeSummary: initialAvatar.notes || "",
     knowledgeUrl: initialAvatar.website || "",
-    websiteKnowledge: "",
+    websiteKnowledge: initialAvatar.website_knowledge || "",
     accent: initialAvatar.theme?.accent || "#0071e3",
     cloud: true
   } : undefined);
