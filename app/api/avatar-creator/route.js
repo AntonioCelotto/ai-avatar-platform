@@ -41,6 +41,7 @@ async function importWebsite(value) {
 }
 
 export async function POST(request) {
+  if (!isAdminRequest(request)) return Response.json({ error: "Accesso amministratore richiesto." }, { status: 401 });
   let payload; try { payload = await request.json(); } catch { return Response.json({ error: "Richiesta non valida." }, { status: 400 }); }
   if (payload?.action === "publish") {
     if (!isSupabaseConfigured()) return Response.json({ error: "Archivio cloud non configurato." }, { status: 503 });
@@ -123,3 +124,4 @@ import {
   uploadAvatarMedia,
   upsertAvatarClient
 } from "../../lib/supabase-server";
+import { isAdminRequest } from "../../lib/admin-auth";
