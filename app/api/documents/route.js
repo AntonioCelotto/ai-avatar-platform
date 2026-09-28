@@ -13,6 +13,7 @@ import {
 
 export const maxDuration = 60;
 import { defaultTenantSlug, getTenant } from "../../tenant-config";
+import { isAdminRequest } from "../../lib/admin-auth";
 
 async function extractPdfText(buffer) {
   const pdfParse = (await import("pdf-parse/lib/pdf-parse.js")).default;
@@ -35,7 +36,8 @@ function cleanHtmlText(html) {
     .trim();
 }
 
-function assertValidPin(pin) {
+function assertValidPin(pin, request) {
+  if (isAdminRequest(request)) return null;
   if (!process.env.DASHBOARD_UPLOAD_PIN) {
     return Response.json(
       {
@@ -82,6 +84,7 @@ async function importWebsiteSource(url) {
 }
 
 export async function GET(request) {
+  if (!isAdminRequest(request)) return Response.json({ error: "Accesso richiesto." }, { status: 401 });
   if (!isSupabaseConfigured()) {
     return Response.json({
       configured: false,
@@ -115,7 +118,7 @@ export async function POST(request) {
 
   if (request.headers.get("content-type")?.includes("application/json")) {
     const payload = await request.json();
-    const pinError = assertValidPin(String(payload.pin || ""));
+    const pinError = assertValidPin(String(payload.pin || ""), request);
     if (pinError) return pinError;
 
     const tenantSlug = getTenantSlug(payload.tenantSlug);
@@ -191,7 +194,7 @@ export async function POST(request) {
   const file = formData.get("file");
   const pin = String(formData.get("pin") || "");
   const tenantSlug = getTenantSlug(formData.get("tenantSlug"));
-  const pinError = assertValidPin(pin);
+  const pinError = assertValidPin(pin, request);
 
   if (pinError) return pinError;
 
@@ -305,7 +308,7 @@ export async function DELETE(request) {
   }
 
   const payload = await request.json();
-  const pinError = assertValidPin(String(payload.pin || ""));
+  const pinError = assertValidPin(String(payload.pin || ""), request);
   if (pinError) return pinError;
 
   if (!payload.id) {
