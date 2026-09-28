@@ -51,17 +51,56 @@ export function DocumentsDashboard({ tenant: tenantConfig = fallbackTenant }) {
       return;
     }
 
-    setUploading(true);
-    const body = new FormData();
-    body.append("action", "pdf");
-    body.append("tenantSlug", tenant.slug);
-    body.append("file", file);
-    body.append("pin", pin);
+    if (file.size > 10 * 1024 * 1024) {
+      setError("PDF troppo grande. Il limite è 10 MB.");
+      return;
+    }
 
+    setUploading(true);
     try {
+      const prepareResponse = await fetch("/api/documents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "create_pdf_upload",
+          tenantSlug: tenant.slug,
+          fileName: file.name,
+          fileType: file.type,
+          fileSize: file.size,
+          pin
+        })
+      });
+      const prepareData = await prepareResponse.json();
+
+      if (!prepareResponse.ok) {
+        throw new Error(prepareData.error || "Preparazione caricamento non riuscita.");
+      }
+
+      const uploadBody = new FormData();
+      uploadBody.append("cacheControl", "3600");
+      uploadBody.append("", file);
+      const uploadResponse = await fetch(prepareData.signedUrl, {
+        method: "PUT",
+        headers: { "x-upsert": "false" },
+        body: uploadBody
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error("Invio del PDF a Supabase non riuscito.");
+      }
+
       const response = await fetch("/api/documents", {
         method: "POST",
-        body
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "process_pdf_upload",
+          tenantSlug: tenant.slug,
+          fileName: file.name,
+          fileType: file.type,
+          fileSize: file.size,
+          storagePath: prepareData.storagePath,
+          pin
+        })
       });
       const data = await response.json();
 
