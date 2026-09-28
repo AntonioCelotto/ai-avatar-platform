@@ -81,6 +81,7 @@
   }
 
   .mia-name-mark {
+    display: block !important;
     top: 44px;
   }
 
