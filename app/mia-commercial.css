@@ -82,10 +82,15 @@
 
   .mia-name-mark {
     display: block !important;
+    z-index: 20 !important;
     top: 44px;
   }
 
   .mia-name-mark span {
+    color: #fff !important;
+    background: none !important;
+    -webkit-text-fill-color: #fff;
+    text-shadow: 0 10px 30px rgba(0, 0, 0, 0.48);
     font-size: clamp(44px, 15vw, 68px);
   }
 
