@@ -7,7 +7,7 @@ const mediaStyle = {
   height: "100%",
   display: "block",
   objectFit: "cover",
-  objectPosition: "center 8%",
+  objectPosition: "center 35%",
   filter: "saturate(1.03) contrast(1.02)",
   background: "#050505"
 };
