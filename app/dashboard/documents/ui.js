@@ -42,10 +42,11 @@ export function DocumentsDashboard({ tenant: tenantConfig = fallbackTenant }) {
 
   async function uploadDocument(event) {
     event.preventDefault();
+    const form = event.currentTarget;
     setError("");
     setStatus("");
 
-    const file = event.currentTarget.elements.file.files?.[0];
+    const file = form.elements.file.files?.[0];
     if (!file) {
       setError("Seleziona un PDF da caricare.");
       return;
@@ -112,7 +113,7 @@ export function DocumentsDashboard({ tenant: tenantConfig = fallbackTenant }) {
         `${data.document.title} caricato: ${data.document.chunks} blocchi di conoscenza creati per ${tenant.spokenAssistantName}.`
       );
       window.localStorage.setItem("dashboard_upload_pin", pin);
-      event.currentTarget.reset();
+      form.reset();
       await loadDocuments();
     } catch (uploadError) {
       setError(uploadError.message);
