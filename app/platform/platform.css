@@ -27,6 +27,19 @@ body:has(.knowledge-shell) {
   overflow: visible !important;
 }
 
+/* Knowledge Center has no desktop sidebar: keep its only child in a full-width
+   column instead of the 252px sidebar track used by the main dashboard. */
+.platform-shell--single {
+  grid-template-columns: minmax(0, 1fr) !important;
+  min-width: 0;
+}
+
+.platform-main--centered {
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
+}
+
 .platform-sidebar {
   min-height: 100svh;
   border-right: 1px solid rgba(255, 255, 255, 0.08);
