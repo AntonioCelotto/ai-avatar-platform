@@ -1,6 +1,8 @@
 import {
   chunkText,
+  createKnowledgeSignedUpload,
   deleteKnowledgeSource,
+  downloadKnowledgeFile,
   ensureDefaultVenue,
   insertKnowledgeChunks,
   insertKnowledgeSource,
@@ -8,6 +10,8 @@ import {
   listKnowledgeSources,
   uploadKnowledgeFile
 } from "../../lib/supabase-server";
+
+export const maxDuration = 60;
 import { defaultTenantSlug, getTenant } from "../../tenant-config";
 
 async function extractPdfText(buffer) {
@@ -107,6 +111,79 @@ export async function POST(request) {
       },
       { status: 503 }
     );
+  }
+
+  if (request.headers.get("content-type")?.includes("application/json")) {
+    const payload = await request.json();
+    const pinError = assertValidPin(String(payload.pin || ""));
+    if (pinError) return pinError;
+
+    const tenantSlug = getTenantSlug(payload.tenantSlug);
+    const fileName = String(payload.fileName || "documento.pdf");
+    const fileType = String(payload.fileType || "application/pdf");
+    const fileSize = Number(payload.fileSize || 0);
+
+    if (!fileName.toLowerCase().endsWith(".pdf") || (fileType && fileType !== "application/pdf")) {
+      return Response.json({ error: "Per ora accettiamo solo PDF." }, { status: 400 });
+    }
+
+    if (fileSize > 10 * 1024 * 1024) {
+      return Response.json({ error: "PDF troppo grande. Limite: 10 MB." }, { status: 400 });
+    }
+
+    if (payload.action === "create_pdf_upload") {
+      try {
+        const upload = await createKnowledgeSignedUpload({ fileName, tenantSlug });
+        return Response.json({ ok: true, ...upload });
+      } catch (error) {
+        return Response.json({ error: error.message }, { status: 500 });
+      }
+    }
+
+    if (payload.action === "process_pdf_upload") {
+      const storagePath = String(payload.storagePath || "");
+      if (!storagePath.startsWith(`${tenantSlug}/`)) {
+        return Response.json({ error: "Percorso del documento non valido." }, { status: 400 });
+      }
+
+      try {
+        const [venueId, buffer] = await Promise.all([
+          ensureDefaultVenue(tenantSlug),
+          downloadKnowledgeFile(storagePath)
+        ]);
+        const extractedText = await extractPdfText(buffer);
+        if (!extractedText) {
+          return Response.json(
+            { error: "Non sono riuscito a leggere testo nel PDF." },
+            { status: 422 }
+          );
+        }
+
+        const source = await insertKnowledgeSource({
+          venueId,
+          title: fileName,
+          sourceType: "document",
+          storagePath,
+          extractedText
+        });
+        const chunks = chunkText(extractedText);
+        await insertKnowledgeChunks({ sourceId: source.id, chunks });
+
+        return Response.json({
+          ok: true,
+          document: {
+            id: source.id,
+            title: source.title,
+            chunks: chunks.length,
+            characters: extractedText.length
+          }
+        });
+      } catch (error) {
+        return Response.json({ error: error.message }, { status: 500 });
+      }
+    }
+
+    return Response.json({ error: "Azione non valida." }, { status: 400 });
   }
 
   const formData = await request.formData();
