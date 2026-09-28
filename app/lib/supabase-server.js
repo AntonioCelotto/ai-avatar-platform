@@ -6,6 +6,7 @@ const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 
 export const KNOWLEDGE_BUCKET = "knowledge-documents";
 export const AVATAR_MEDIA_BUCKET = "avatar-media";
+export const AVATAR_VOICE_BUCKET = "avatar-voice-samples";
 export const DEFAULT_TENANT_SLUG = defaultTenantSlug;
 
 export function isSupabaseConfigured() {
@@ -49,7 +50,7 @@ export async function listAvatarClients() {
   if (!isSupabaseConfigured()) return [];
 
   return supabaseFetch(
-    "/rest/v1/avatar_clients?select=id,slug,company_name,category,status,website,whatsapp_phone,avatar_name,spoken_avatar_name,avatar_video_url,voice_provider,voice_label,brand_mark,features,created_at,updated_at&order=created_at.asc"
+    "/rest/v1/avatar_clients?select=id,slug,company_name,category,status,website,whatsapp_phone,avatar_name,spoken_avatar_name,avatar_poster_url,avatar_video_url,media_mode,liveavatar_avatar_id,voice_provider,voice_id,voice_label,brand_mark,features,created_at,updated_at&order=created_at.asc"
   );
 }
 
@@ -82,6 +83,24 @@ export async function upsertAvatarClient(avatar) {
   return rows?.[0] || null;
 }
 
+export async function updateAvatarClient(slug, changes) {
+  const rows = await supabaseFetch(`/rest/v1/avatar_clients?slug=eq.${encodeURIComponent(slug)}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", Prefer: "return=representation" },
+    body: JSON.stringify(changes)
+  });
+  return rows?.[0] || null;
+}
+
+export async function deleteAvatarClient(slug) {
+  const client = await getAvatarClientBySlug(slug);
+  if (!client?.id) return false;
+  await supabaseFetch(`/rest/v1/avatar_client_knowledge_sources?client_id=eq.${client.id}`, { method: "DELETE", headers: { Prefer: "return=minimal" } });
+  await supabaseFetch(`/rest/v1/avatar_documents?client_id=eq.${client.id}`, { method: "DELETE", headers: { Prefer: "return=minimal" } });
+  await supabaseFetch(`/rest/v1/avatar_clients?id=eq.${client.id}`, { method: "DELETE", headers: { Prefer: "return=minimal" } });
+  return true;
+}
+
 function decodeDataUrl(dataUrl) {
   const match = String(dataUrl || "").match(/^data:([^;,]+);base64,(.+)$/);
   if (!match) return null;
@@ -94,13 +113,14 @@ export async function uploadAvatarMedia({ dataUrl, fileName, slug, kind }) {
   const extension = decoded.mimeType.split("/")[1]?.replace("jpeg", "jpg") || (kind === "video" ? "mp4" : "jpg");
   const safeName = String(fileName || `${kind}.${extension}`).replace(/[^a-zA-Z0-9_.-]+/g, "-").toLowerCase();
   const storagePath = `${slug}/${kind}-${Date.now()}-${safeName}`;
-  const response = await fetch(getSupabaseUrl(`/storage/v1/object/${AVATAR_MEDIA_BUCKET}/${storagePath}`), {
+  const bucket = kind === "voice" ? AVATAR_VOICE_BUCKET : AVATAR_MEDIA_BUCKET;
+  const response = await fetch(getSupabaseUrl(`/storage/v1/object/${bucket}/${storagePath}`), {
     method: "POST",
     headers: getHeaders({ "Content-Type": decoded.mimeType, "x-upsert": "true" }),
     body: decoded.buffer
   });
   if (!response.ok) throw new Error(`Caricamento ${kind} non riuscito.`);
-  return `${supabaseUrl.replace(/\/$/, "")}/storage/v1/object/public/${AVATAR_MEDIA_BUCKET}/${storagePath}`;
+  return kind === "voice" ? storagePath : `${supabaseUrl.replace(/\/$/, "")}/storage/v1/object/public/${AVATAR_MEDIA_BUCKET}/${storagePath}`;
 }
 
 export async function listAvatarDocuments(clientId) {
@@ -108,6 +128,35 @@ export async function listAvatarDocuments(clientId) {
   return supabaseFetch(
     `/rest/v1/avatar_documents?client_id=eq.${clientId}&select=id,title,file_name,file_type,file_url,storage_path,status,metadata,created_at,updated_at&order=created_at.desc&limit=100`
   );
+}
+
+export async function createAvatarKnowledgeSignedUpload({ fileName, clientSlug }) {
+  const safeSlug = String(clientSlug || "avatar").replace(/[^a-zA-Z0-9_.-]+/g, "-").toLowerCase();
+  const safeName = String(fileName || "documento.pdf").replace(/[^a-zA-Z0-9_.-]+/g, "-").toLowerCase();
+  const storagePath = `avatar-clients/${safeSlug}/${Date.now()}-${safeName}`;
+  const response = await fetch(getSupabaseUrl(`/storage/v1/object/upload/sign/${KNOWLEDGE_BUCKET}/${storagePath}`), {
+    method: "POST",
+    headers: getHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify({})
+  });
+  const data = await response.json();
+  if (!response.ok || !data?.url) throw new Error(data?.message || data?.error || "Impossibile preparare il caricamento.");
+  return { storagePath, signedUrl: `${supabaseUrl.replace(/\/$/, "")}/storage/v1${data.url}` };
+}
+
+export async function deleteAvatarDocument(documentId, clientId) {
+  const rows = await supabaseFetch(`/rest/v1/avatar_documents?id=eq.${encodeURIComponent(documentId)}&client_id=eq.${clientId}&select=title`, {
+    method: "DELETE",
+    headers: { Prefer: "return=representation" }
+  });
+  const title = rows?.[0]?.title;
+  if (title) {
+    await supabaseFetch(`/rest/v1/avatar_client_knowledge_sources?client_id=eq.${clientId}&title=eq.${encodeURIComponent(title)}`, {
+      method: "DELETE",
+      headers: { Prefer: "return=minimal" }
+    });
+  }
+  return Boolean(rows?.length);
 }
 
 export async function insertAvatarDocument({
