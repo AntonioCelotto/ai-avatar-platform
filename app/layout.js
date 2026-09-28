@@ -4,6 +4,7 @@ import "./mia-polished.css";
 import "./mia-fixes.css";
 import "./mia-avatar-test.css";
 import "./dashboard-fixes.css";
+import "./mia-commercial.css";
 import { PwaInstaller } from "./pwa-installer";
 
 export const metadata = {

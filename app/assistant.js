@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { avatarSrc } from "./avatar-data";
 
 const fallbackTenant = {
   slug: "new-digital-app",
@@ -390,12 +389,11 @@ export function Assistant({ tenant: tenantConfig = fallbackTenant }) {
   return (
     <div className="assistant-panel">
       <header className="assistant-header">
-        <img alt="" className="avatar-photo" src={avatarSrc} />
         <div className="assistant-title">
-          <strong>{tenant.assistantName}</strong>
-          {continuousVoice ? <span>Voce attiva</span> : null}
+          <strong>Parla o scrivi a {tenant.spokenAssistantName || tenant.assistantName}</strong>
+          <span>{continuousVoice ? "Conversazione vocale attiva" : "Scegli come iniziare"}</span>
         </div>
-        <span className="assistant-status">{continuousVoice ? "Voce" : speaking ? "Parlo" : listening ? "Ascolto" : "Online"}</span>
+        <span className="assistant-status">{speaking ? "Sto parlando" : listening ? "Ti ascolto" : loading ? "Sto pensando" : "Pronta"}</span>
       </header>
 
       <div className="messages" aria-live="polite">
@@ -414,12 +412,12 @@ export function Assistant({ tenant: tenantConfig = fallbackTenant }) {
 
       <div className="action-dock">
         <form className="composer" onSubmit={(event) => { event.preventDefault(); sendMessage(input); }}>
-          <button aria-label="Attiva voce continua" className={`icon-button ${continuousVoice ? "is-listening" : ""}`} disabled={!canUseSpeech || (loading && !continuousVoice)} onClick={toggleContinuousVoice} title={canUseSpeech ? "Attiva o ferma la voce continua" : "Microfono non disponibile"} type="button">
+          <button aria-label={continuousVoice ? "Ferma conversazione vocale" : "Parla con Mia"} className={`icon-button ${continuousVoice ? "is-listening" : ""}`} disabled={!canUseSpeech || (loading && !continuousVoice)} onClick={toggleContinuousVoice} title={canUseSpeech ? "Attiva o ferma la voce continua" : "Microfono non disponibile"} type="button">
             <span className="mic-symbol" aria-hidden="true" />
             <span className="voice-label">{continuousVoice ? "Stop" : "Parla"}</span>
           </button>
           <input aria-label="Messaggio" onChange={(event) => setInput(event.target.value)} placeholder={tenant.inputPlaceholder} value={input} />
-          <button aria-label="Invia messaggio" className="send-button" disabled={loading || !input.trim()} type="submit">Invia</button>
+          <button aria-label="Invia messaggio" className="send-button" disabled={loading || !input.trim()} type="submit"><span aria-hidden="true">➜</span><span className="sr-only">Invia</span></button>
         </form>
         <a aria-label="Apri WhatsApp" className="whatsapp-link" href={whatsappUrl} rel="noreferrer" target="_blank">
           <span className="whatsapp-icon" aria-hidden="true">W</span>
@@ -428,7 +426,7 @@ export function Assistant({ tenant: tenantConfig = fallbackTenant }) {
       </div>
 
       <div className="order-bar">
-        <span>{orderDraft ? "Riepilogo pronto per WhatsApp" : continuousVoice ? "Voce attiva." : tenant.slug === "demo-cliente-01" && clientMemory.nome ? `Ciao ${clientMemory.nome}, sono qui quando vuoi parlare.` : "Sono qui. Scrivi o attiva la voce quando vuoi iniziare."}</span>
+        <span>{orderDraft ? "Riepilogo pronto: tocca WhatsApp per inviarlo" : continuousVoice ? "Voce attiva: parla liberamente, Mia risponderà ad alta voce." : tenant.slug === "demo-cliente-01" && clientMemory.nome ? `Ciao ${clientMemory.nome}, sono qui quando vuoi parlare.` : "Tocca il microfono per parlare oppure scrivi un messaggio."}</span>
       </div>
     </div>
   );

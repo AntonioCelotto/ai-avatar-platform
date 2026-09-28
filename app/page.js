@@ -19,6 +19,10 @@ export default function Home() {
           <div className="mia-name-mark" aria-hidden="true">
             <span>{tenant.brandMark}</span>
           </div>
+          <div className="mia-commercial-badge" aria-label="Mia è online">
+            <span className="mia-commercial-dot" aria-hidden="true" />
+            Assistente AI online
+          </div>
         </div>
       </section>
 
