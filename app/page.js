@@ -47,7 +47,7 @@ export default function Home() {
           </div>
           <div className="mia-commercial-badge" aria-label="Mia è online">
             <span className="mia-commercial-dot" aria-hidden="true" />
-            Assistente AI online
+            MIA · ASSISTENTE AI ONLINE
           </div>
         </div>
       </section>
