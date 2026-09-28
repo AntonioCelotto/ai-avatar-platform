@@ -267,6 +267,49 @@ export async function uploadKnowledgeFile({
   return storagePath;
 }
 
+export async function createKnowledgeSignedUpload({
+  fileName,
+  tenantSlug = DEFAULT_TENANT_SLUG
+}) {
+  const tenant = getTenant(tenantSlug);
+  const safeName = String(fileName || "documento.pdf")
+    .replace(/[^a-zA-Z0-9_.-]+/g, "-")
+    .toLowerCase();
+  const storagePath = `${tenant.slug}/${Date.now()}-${safeName}`;
+  const response = await fetch(
+    getSupabaseUrl(`/storage/v1/object/upload/sign/${KNOWLEDGE_BUCKET}/${storagePath}`),
+    {
+      method: "POST",
+      headers: getHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({})
+    }
+  );
+  const data = await response.json();
+
+  if (!response.ok || !data?.url) {
+    throw new Error(data?.message || data?.error || "Impossibile preparare il caricamento del PDF.");
+  }
+
+  return {
+    storagePath,
+    signedUrl: `${supabaseUrl.replace(/\/$/, "")}/storage/v1${data.url}`
+  };
+}
+
+export async function downloadKnowledgeFile(storagePath) {
+  const response = await fetch(
+    getSupabaseUrl(`/storage/v1/object/${KNOWLEDGE_BUCKET}/${storagePath}`),
+    { headers: getHeaders() }
+  );
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Impossibile leggere il PDF caricato: ${response.status} ${body}`);
+  }
+
+  return Buffer.from(await response.arrayBuffer());
+}
+
 export async function insertKnowledgeSource({
   venueId,
   title,
