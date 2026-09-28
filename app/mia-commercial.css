@@ -51,11 +51,12 @@
   }
 
   .mobile-chat-shell {
-    width: 100%;
+    width: min(430px, 100%);
     height: 100dvh;
     min-height: 100dvh;
     max-height: 100dvh;
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: minmax(245px, 43dvh) minmax(0, 1fr);
     overflow: hidden;
   }
