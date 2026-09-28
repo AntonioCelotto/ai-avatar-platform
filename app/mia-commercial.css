@@ -39,7 +39,9 @@
   box-shadow: 0 0 0 4px rgba(54, 212, 125, 0.14), 0 0 14px rgba(54, 212, 125, 0.65);
 }
 
-@media (max-width: 860px) {
+/* The product intentionally keeps the same focused phone-like experience on
+   desktop, tablets and phones so a commercial demo never changes layout. */
+@media (min-width: 0px) {
   html,
   body {
     width: 100%;
