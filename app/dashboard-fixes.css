@@ -84,7 +84,12 @@
 .dashboard-shell {
   width: 100%;
   min-width: 100vw;
+  height: 100dvh;
   min-height: 100svh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
   justify-self: stretch;
   align-self: stretch;
   gap: 22px;
