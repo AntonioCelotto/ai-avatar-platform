@@ -335,3 +335,89 @@
     display: none;
   }
 }
+
+/* Avatar creati dalla dashboard: stessa esperienza futuristica e stesse
+   proporzioni della pagina principale di MIA. */
+@media (min-width: 0px) {
+  .custom-avatar-shell {
+    grid-template-rows: minmax(0, 68dvh) minmax(0, 32dvh);
+    background:
+      radial-gradient(circle at 10% 35%, rgba(67, 244, 238, 0.17), transparent 32%),
+      radial-gradient(circle at 92% 18%, rgba(124, 109, 255, 0.18), transparent 30%),
+      linear-gradient(180deg, #07131a 0%, #03090d 55%, #010305 100%);
+  }
+
+  .custom-avatar-shell::before {
+    opacity: 0.17;
+    background-image:
+      linear-gradient(rgba(67, 244, 238, 0.18) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(67, 244, 238, 0.12) 1px, transparent 1px);
+    background-size: 34px 34px;
+    mask-image: linear-gradient(to bottom, #000, transparent 72%);
+  }
+
+  .custom-avatar-shell .avatar-frame {
+    border: 1px solid rgba(92, 245, 239, 0.28);
+    border-radius: 28px;
+    box-shadow: 0 0 0 1px rgba(124, 109, 255, 0.08), 0 20px 60px rgba(0, 0, 0, 0.48), 0 0 42px rgba(49, 223, 217, 0.09);
+  }
+
+  .custom-avatar-shell .avatar-frame::before {
+    content: "";
+    position: absolute;
+    z-index: 8;
+    inset: 10px;
+    pointer-events: none;
+    border: 1px solid rgba(102, 247, 241, 0.2);
+    border-radius: 20px;
+  }
+
+  .custom-avatar-shell .avatar-frame::after {
+    height: 30%;
+    background: linear-gradient(180deg, transparent, rgba(2, 8, 12, 0.76));
+  }
+
+  .custom-avatar-shell .avatar-frame video,
+  .custom-avatar-shell .avatar-frame img {
+    object-fit: cover !important;
+    object-position: center 34% !important;
+  }
+
+  .custom-avatar-shell .mia-commercial-badge {
+    display: flex;
+    border-color: rgba(92, 245, 239, 0.28);
+    background: rgba(2, 11, 15, 0.68);
+    color: #dffefa;
+    font-size: 10px;
+  }
+
+  .custom-avatar-shell .assistant-panel {
+    border-color: rgba(92, 245, 239, 0.2);
+    background: linear-gradient(145deg, rgba(8, 22, 29, 0.9), rgba(3, 9, 14, 0.86));
+  }
+
+  .custom-avatar-shell .assistant-header {
+    min-height: 42px;
+    padding: 7px 13px 4px;
+  }
+
+  .custom-avatar-shell .assistant-title span,
+  .custom-avatar-shell .order-bar {
+    display: none;
+  }
+
+  .custom-avatar-shell .assistant-status {
+    border: 1px solid rgba(67, 244, 238, 0.18);
+    background: rgba(67, 244, 238, 0.09);
+    color: #71f7f1;
+    font-size: 9px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+}
+
+@media (max-width: 370px), (max-height: 680px) {
+  .custom-avatar-shell {
+    grid-template-rows: minmax(0, 64dvh) minmax(0, 36dvh);
+  }
+}
