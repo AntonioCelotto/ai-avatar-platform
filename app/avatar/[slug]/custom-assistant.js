@@ -105,7 +105,8 @@ export default function CustomAssistant({ tenant }) {
       if (!response.ok) throw new Error(data.error);
       const reply = data.reply || "Non ho trovato una risposta.";
       setMessages((current) => [...current, { role: "assistant", content: reply }]);
-      await speak(reply);
+      setLoading(false);
+      speak(reply);
     } catch {
       const fallback = "Non riesco a rispondere in questo momento. Riprova tra poco.";
       setMessages((current) => [...current, { role: "assistant", content: fallback }]);
