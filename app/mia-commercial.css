@@ -202,6 +202,10 @@
     padding: 7px 10px 0;
   }
 
+  .action-dock--chat-only {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .composer {
     display: grid;
     grid-template-columns: 48px minmax(0, 1fr) 44px;

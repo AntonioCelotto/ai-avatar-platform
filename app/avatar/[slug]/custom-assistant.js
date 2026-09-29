@@ -149,11 +149,13 @@ export default function CustomAssistant({ tenant }) {
   return (
     <div className="assistant-panel">
       <header className="assistant-header">
-        <div className="avatar-photo custom-avatar-initial">{tenant.assistantName.slice(0, 1)}</div>
-        <div className="assistant-title"><strong>{tenant.assistantName}</strong><span>{tenant.name}</span></div>
-        <div className="assistant-status">{speaking ? "Sta parlando" : listening ? "Ti ascolta" : loading ? "Sta pensando" : "Online"}</div>
+        <div className="assistant-title">
+          <strong>Parla o scrivi a {tenant.assistantName}</strong>
+          <span>Scegli come iniziare</span>
+        </div>
+        <div className="assistant-status">{speaking ? "Sta parlando" : listening ? "Ti ascolta" : loading ? "Sta pensando" : "Pronta"}</div>
       </header>
-      <div className="messages">
+      <div className="messages" aria-live="polite">
         <div className="message-list">
           {messages.map((message, index) => <div className={`message message--${message.role}`} key={`${message.role}-${index}`}>{message.content}</div>)}
           {loading ? <div className="message message--assistant">Sto pensando…</div> : null}
@@ -162,12 +164,20 @@ export default function CustomAssistant({ tenant }) {
           {(tenant.suggestions || []).map((suggestion) => <button disabled={loading} key={suggestion} onClick={() => send(suggestion)} type="button">{suggestion}</button>)}
         </div>
       </div>
-      {whatsappUrl ? <div className="order-bar"><span>Vuoi ricevere o inviare queste informazioni?</span><a className="whatsapp-link" href={whatsappUrl} target="_blank" rel="noreferrer">Invia su WhatsApp</a></div> : null}
-      <form className="composer custom-composer" onSubmit={(event) => { event.preventDefault(); send(input); }}>
-        <button className={`mic-button ${listening ? "is-listening" : ""}`} disabled={!canUseSpeech || loading} onClick={toggleListening} type="button" aria-label={listening ? "Ferma microfono" : "Parla con l'avatar"}>{listening ? "■" : "●"}</button>
-        <input aria-label="Messaggio" onChange={(event) => setInput(event.target.value)} placeholder={tenant.inputPlaceholder} value={input} />
-        <button className="custom-send-button" disabled={loading || !input.trim()} type="submit">Invia</button>
-      </form>
+      <div className={`action-dock ${whatsappUrl ? "" : "action-dock--chat-only"}`}>
+        <form className="composer" onSubmit={(event) => { event.preventDefault(); send(input); }}>
+          <button className={`icon-button ${listening ? "is-listening" : ""}`} disabled={!canUseSpeech || loading} onClick={toggleListening} type="button" aria-label={listening ? "Ferma microfono" : `Parla con ${tenant.assistantName}`}>
+            <span className="mic-symbol" aria-hidden="true" />
+            <span className="voice-label">{listening ? "Stop" : "Parla"}</span>
+          </button>
+          <input aria-label="Messaggio" onChange={(event) => setInput(event.target.value)} placeholder={tenant.inputPlaceholder} value={input} />
+          <button aria-label="Invia messaggio" className="send-button" disabled={loading || !input.trim()} type="submit"><span aria-hidden="true">➜</span><span className="sr-only">Invia</span></button>
+        </form>
+        {whatsappUrl ? (
+          <a aria-label="Apri WhatsApp" className="whatsapp-link" href={whatsappUrl} target="_blank" rel="noreferrer"><span className="whatsapp-icon" aria-hidden="true">W</span>WhatsApp</a>
+        ) : null}
+      </div>
+      <div className="order-bar"><span>{whatsappUrl ? "Puoi anche inviare le informazioni su WhatsApp." : "Tocca il microfono per parlare oppure scrivi un messaggio."}</span></div>
     </div>
   );
 }
