@@ -1,6 +1,7 @@
 import Link from "next/link";
 import ContactForm from "./contact-form";
 import "./landing.css";
+import "./landing-scroll.css";
 
 const features = [
   ["◉", "Parla e risponde", "Conversazioni vocali e testuali con una voce naturale, disponibili da smartphone, sito e app."],

@@ -1,0 +1,23 @@
+/* The MIA demo deliberately locks the viewport. The commercial landing page
+   must instead use the normal document scroll on desktop and mobile. */
+html:has(.landing),
+body:has(.landing) {
+  width: 100% !important;
+  height: auto !important;
+  min-height: 100% !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+body:has(.landing) {
+  display: block !important;
+  place-items: initial !important;
+}
+
+.landing {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
