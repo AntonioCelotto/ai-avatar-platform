@@ -28,7 +28,9 @@ export default function CustomAssistant({ tenant }) {
   }, []);
 
   useEffect(() => {
-    document.documentElement.dataset.miaAvatarState = speaking ? "speaking" : listening ? "listening" : loading ? "thinking" : "idle";
+    const state = speaking ? "speaking" : listening ? "listening" : loading ? "thinking" : "idle";
+    document.documentElement.dataset.miaAvatarState = state;
+    window.dispatchEvent(new CustomEvent("mia-avatar-state-change", { detail: { state } }));
   }, [listening, loading, speaking]);
 
   function cleanSpeech(text) {
@@ -48,6 +50,7 @@ export default function CustomAssistant({ tenant }) {
     utterance.onstart = () => setSpeaking(true);
     utterance.onend = () => setSpeaking(false);
     utterance.onerror = () => setSpeaking(false);
+    setSpeaking(true);
     window.speechSynthesis.speak(utterance);
   }
 
@@ -77,6 +80,7 @@ export default function CustomAssistant({ tenant }) {
       audio.onplaying = () => setSpeaking(true);
       audio.onended = () => { setSpeaking(false); URL.revokeObjectURL(url); };
       audio.onerror = () => { setSpeaking(false); URL.revokeObjectURL(url); };
+      setSpeaking(true);
       await audio.play();
     } catch {
       setSpeaking(false);

@@ -30,6 +30,29 @@ export function AvatarVideo({ label = "Avatar video Mia", poster, src = "/mia-av
       }
     };
 
+    const playWhileSpeaking = () => {
+      video.muted = true;
+      video.defaultMuted = true;
+      video.playsInline = true;
+
+      if (video.readyState === 0) video.load();
+      if (video.ended || (Number.isFinite(video.duration) && video.currentTime >= video.duration - 0.15)) {
+        video.currentTime = 0.05;
+      }
+
+      const playPromise = video.play();
+      if (playPromise?.catch) {
+        playPromise.catch(() => {
+          video.addEventListener("canplay", () => {
+            if (document.documentElement.dataset.miaAvatarState === "speaking") {
+              video.play().catch(() => {});
+            }
+          }, { once: true });
+          video.load();
+        });
+      }
+    };
+
     const syncWithMiaState = () => {
       const isSpeaking =
         document.documentElement.dataset.miaAvatarState === "speaking";
@@ -37,7 +60,7 @@ export function AvatarVideo({ label = "Avatar video Mia", poster, src = "/mia-av
       video.muted = true;
 
       if (isSpeaking) {
-        video.play().catch(() => {});
+        playWhileSpeaking();
         return;
       }
 
@@ -45,6 +68,8 @@ export function AvatarVideo({ label = "Avatar video Mia", poster, src = "/mia-av
     };
 
     video.addEventListener("loadedmetadata", pauseAtStart);
+    video.addEventListener("canplay", syncWithMiaState);
+    window.addEventListener("mia-avatar-state-change", syncWithMiaState);
 
     const observer = new MutationObserver(syncWithMiaState);
     observer.observe(document.documentElement, {
@@ -53,11 +78,14 @@ export function AvatarVideo({ label = "Avatar video Mia", poster, src = "/mia-av
     });
 
     pauseAtStart();
+    video.load();
     syncWithMiaState();
 
     return () => {
       observer.disconnect();
       video.removeEventListener("loadedmetadata", pauseAtStart);
+      video.removeEventListener("canplay", syncWithMiaState);
+      window.removeEventListener("mia-avatar-state-change", syncWithMiaState);
       video.pause();
     };
   }, [src]);

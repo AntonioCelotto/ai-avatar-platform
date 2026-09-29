@@ -109,7 +109,8 @@ async function generateOpenAISpeech(input, requestedVoice = "") {
       voice: ["alloy", "ash", "ballad", "coral", "echo", "fable", "nova", "onyx", "sage", "shimmer", "verse", "marin", "cedar"].includes(requestedVoice) ? requestedVoice : (process.env.OPENAI_TTS_VOICE || "marin"),
       input,
       instructions:
-        "Voce femminile italiana naturale, calda e professionale. Parla come un'assistente digitale elegante, con ritmo fluido e senza leggere simboli o formattazioni.",
+        "Voce femminile italiana naturale, calda, sicura e professionale. Parla come una direttrice marketing elegante: ritmo fluido e leggermente dinamico, pause brevi, dizione spontanea, mai lenta o robotica. Non leggere simboli o formattazioni.",
+      speed: 1.08,
       response_format: "mp3"
     })
   });
