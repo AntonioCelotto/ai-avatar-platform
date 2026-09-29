@@ -62,10 +62,14 @@ async function crawlWebsite(startUrl) {
 }
 
 async function requireAccess(request, slug) {
+  const cookie = request.headers.get("cookie") || "";
+  if (!cookie.includes("avatarone_admin=") && !cookie.includes("avatarone_client_session=")) {
+    return Response.json({ error: "Accesso non autorizzato." }, { status: 401, headers: { "Cache-Control": "no-store" } });
+  }
   if (isAdminRequest(request)) return null;
   const session = await getClientSessionFromRequest(request);
   const client = session?.profile?.avatar_client_id ? await getAvatarClientBySlug(String(slug || "")) : null;
-  return client?.id === session?.profile?.avatar_client_id ? null : Response.json({ error: "Accesso non autorizzato." }, { status: 401 });
+  return client?.id === session?.profile?.avatar_client_id ? null : Response.json({ error: "Accesso non autorizzato." }, { status: 401, headers: { "Cache-Control": "no-store" } });
 }
 
 async function clientFor(slug) {
