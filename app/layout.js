@@ -8,14 +8,15 @@ import "./mia-commercial.css";
 import { PwaInstaller } from "./pwa-installer";
 
 export const metadata = {
-  title: "New Digital App AI",
+  metadataBase: new URL("https://www.avatarone.it"),
+  title: "AvatarOne · Persone digitali AI",
   description: "Avatar AI parlanti per siti, app e clienti business.",
-  applicationName: "Mia AI",
+  applicationName: "AvatarOne",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Mia AI"
+    title: "AvatarOne"
   },
   icons: {
     icon: [

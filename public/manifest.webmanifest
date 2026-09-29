@@ -1,13 +1,13 @@
 {
-  "name": "Mia AI - New Digital App",
-  "short_name": "Mia AI",
-  "description": "Avatar AI parlante di New Digital App.",
+  "name": "AvatarOne by New Digital App",
+  "short_name": "AvatarOne",
+  "description": "Persone digitali AI che parlano, scrivono e conoscono la tua azienda.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#050505",
-  "theme_color": "#050505",
+  "background_color": "#071014",
+  "theme_color": "#071014",
   "icons": [
     {
       "src": "/icon-192.png",

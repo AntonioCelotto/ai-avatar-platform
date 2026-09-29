@@ -72,7 +72,7 @@ export const tenants = [
     assistantName: "Francesca",
     spokenAssistantName: "Francesca",
     ownerName: "Referente Centro Anziani",
-    website: "https://example.com",
+    website: "",
     whatsappPhone: "",
     welcomeMessage: "Ciao, sono Francesca. Sono qui per fare due chiacchiere con te.",
     inputPlaceholder: "Scrivi a Francesca",

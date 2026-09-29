@@ -3,8 +3,8 @@ import { AvatarVideo } from "../avatar-video";
 import { getTenantPublicConfig } from "../tenant-config";
 
 export const metadata = {
-  title: "EPM - Demo Cliente 01",
-  description: "Simulazione cliente per avatar AI configurabile.",
+  title: "Francesca · AvatarOne",
+  description: "Francesca, persona digitale conversazionale per il Centro Anziani.",
   icons: {
     icon: [{ url: "/epm-icon.svg", type: "image/svg+xml" }],
     shortcut: [{ url: "/epm-icon.svg", type: "image/svg+xml" }]

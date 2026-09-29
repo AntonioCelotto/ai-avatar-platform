@@ -152,7 +152,7 @@ export function Assistant({ tenant: tenantConfig = fallbackTenant }) {
   const [clientMemory, setClientMemory] = useState({});
 
   const whatsappText = orderDraft || tenant.orderFallbackText;
-  const whatsappUrl = `https://wa.me/${tenant.whatsappPhone}?text=${encodeURIComponent(whatsappText)}`;
+  const whatsappUrl = tenant.whatsappPhone ? `https://wa.me/${tenant.whatsappPhone}?text=${encodeURIComponent(whatsappText)}` : "";
 
   useEffect(() => {
     setClientMemory(readLocalMemory(tenant.slug));
@@ -412,21 +412,21 @@ export function Assistant({ tenant: tenantConfig = fallbackTenant }) {
 
       <div className="action-dock">
         <form className="composer" onSubmit={(event) => { event.preventDefault(); sendMessage(input); }}>
-          <button aria-label={continuousVoice ? "Ferma conversazione vocale" : "Parla con Mia"} className={`icon-button ${continuousVoice ? "is-listening" : ""}`} disabled={!canUseSpeech || (loading && !continuousVoice)} onClick={toggleContinuousVoice} title={canUseSpeech ? "Attiva o ferma la voce continua" : "Microfono non disponibile"} type="button">
+          <button aria-label={continuousVoice ? "Ferma conversazione vocale" : `Parla con ${tenant.spokenAssistantName || tenant.assistantName}`} className={`icon-button ${continuousVoice ? "is-listening" : ""}`} disabled={!canUseSpeech || (loading && !continuousVoice)} onClick={toggleContinuousVoice} title={canUseSpeech ? "Attiva o ferma la voce continua" : "Microfono non disponibile"} type="button">
             <span className="mic-symbol" aria-hidden="true" />
             <span className="voice-label">{continuousVoice ? "Stop" : "Parla"}</span>
           </button>
           <input aria-label="Messaggio" onChange={(event) => setInput(event.target.value)} placeholder={tenant.inputPlaceholder} value={input} />
           <button aria-label="Invia messaggio" className="send-button" disabled={loading || !input.trim()} type="submit"><span aria-hidden="true">➜</span><span className="sr-only">Invia</span></button>
         </form>
-        <a aria-label="Apri WhatsApp" className="whatsapp-link" href={whatsappUrl} rel="noreferrer" target="_blank">
+        {whatsappUrl ? <a aria-label="Apri WhatsApp" className="whatsapp-link" href={whatsappUrl} rel="noreferrer" target="_blank">
           <span className="whatsapp-icon" aria-hidden="true">W</span>
           WhatsApp
-        </a>
+        </a> : null}
       </div>
 
       <div className="order-bar">
-        <span>{orderDraft ? "Riepilogo pronto: tocca WhatsApp per inviarlo" : continuousVoice ? "Voce attiva: parla liberamente, Mia risponderà ad alta voce." : tenant.slug === "demo-cliente-01" && clientMemory.nome ? `Ciao ${clientMemory.nome}, sono qui quando vuoi parlare.` : "Tocca il microfono per parlare oppure scrivi un messaggio."}</span>
+        <span>{orderDraft && whatsappUrl ? "Riepilogo pronto: tocca WhatsApp per inviarlo" : continuousVoice ? `Voce attiva: parla liberamente, ${tenant.spokenAssistantName || tenant.assistantName} risponderà ad alta voce.` : tenant.slug === "demo-cliente-01" && clientMemory.nome ? `Ciao ${clientMemory.nome}, sono qui quando vuoi parlare.` : "Tocca il microfono per parlare oppure scrivi un messaggio."}</span>
       </div>
     </div>
   );

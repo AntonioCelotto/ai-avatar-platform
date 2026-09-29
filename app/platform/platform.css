@@ -38,6 +38,7 @@ body:has(.knowledge-shell) {
   width: 100%;
   max-width: 1440px;
   margin-inline: auto;
+  min-width: 0;
 }
 
 .platform-sidebar {
@@ -476,10 +477,13 @@ body:has(.knowledge-shell) {
 .knowledge-client-switcher button { min-height: 54px; display: grid; padding: 8px 14px; border: 1px solid var(--apple-line); border-radius: 14px; background: #fff; color: var(--apple-ink); text-align: left; }
 .knowledge-client-switcher button.is-active { border-color: var(--apple-blue); background: #edf5ff; color: var(--apple-blue); }
 .knowledge-client-switcher small { color: var(--apple-muted); font-size: 10px; }
+.knowledge-panel, .knowledge-form { min-width: 0; }
 .knowledge-form { display: grid; gap: 9px; }
 .knowledge-form label { color: var(--apple-muted); font-size: 12px; font-weight: 700; }
-.knowledge-form input { min-height: 48px; padding: 11px 13px; border: 1px solid var(--apple-line); border-radius: 13px; background: #fff; color: var(--apple-ink); }
-.knowledge-form button { background: var(--apple-blue); color: #fff; }
+.knowledge-form input { width: 100%; max-width: 100%; min-width: 0; min-height: 48px; padding: 11px 13px; border: 1px solid var(--apple-line); border-radius: 13px; background: #fff; color: var(--apple-ink); }
+.knowledge-form input[type="file"] { overflow: hidden; padding: 8px; font-size: 13px; }
+.knowledge-form input[type="file"]::file-selector-button { max-width: 46%; margin-right: 8px; overflow: hidden; border: 0; border-radius: 9px; padding: 8px 10px; background: #5f6368; color: #fff; text-overflow: ellipsis; white-space: nowrap; }
+.knowledge-form button { width: 100%; background: var(--apple-blue); color: #fff; }
 .knowledge-list { display: grid; gap: 10px; }
 .knowledge-item { display: grid; grid-template-columns: minmax(0,1fr) auto auto; align-items: center; gap: 10px; padding: 14px; border: 1px solid var(--apple-line); border-radius: 15px; }
 .knowledge-item > div { min-width: 0; display: grid; grid-template-columns: auto 1fr; gap: 3px 8px; }
@@ -517,6 +521,13 @@ body:has(.knowledge-shell) {
   .launch-client-grid { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 640px) {
+  .platform-main { width: 100%; padding-inline: 12px; overflow-x: clip; }
+  .platform-section { min-width: 0; padding: 20px 16px; }
+  .platform-grid-two { width: 100%; min-width: 0; }
+  .knowledge-client-switcher { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .knowledge-client-switcher button { width: 100%; min-width: 0; }
+  .knowledge-panel { width: 100%; overflow: hidden; }
+  .knowledge-form input[type="file"] { font-size: 12px; }
   .platform-hero { padding: 28px 23px; }
   .platform-hero h1 { font-size: 43px; }
   .platform-primary { width: 100%; }
