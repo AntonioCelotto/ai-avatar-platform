@@ -373,6 +373,7 @@
   }
 
   .custom-avatar-shell .avatar-frame::after {
+    inset: auto 0 0;
     height: 30%;
     background: linear-gradient(180deg, transparent, rgba(2, 8, 12, 0.76));
   }
