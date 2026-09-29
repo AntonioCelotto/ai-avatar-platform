@@ -22,6 +22,8 @@ function getElevenLabsVoiceId(tenantSlug) {
   return process.env.ELEVENLABS_VOICE_ID || "";
 }
 
+const LEGACY_TENANTS = new Set(["new-digital-app", "demo-cliente-01"]);
+
 async function callElevenLabs(input, tenantSlug) {
   const apiKey = process.env.ELEVENLABS_API_KEY;
   const voiceId = getElevenLabsVoiceId(tenantSlug);
@@ -180,6 +182,9 @@ export async function GET(request) {
     return generateSpeechDebug(input, tenantSlug);
   }
   const avatar = await getAvatarClientBySlug(tenantSlug).catch(() => null);
+  if (!avatar?.id && LEGACY_TENANTS.has(tenantSlug)) {
+    return generateSpeechResponse(input, tenantSlug);
+  }
   if (!avatar?.id || avatar.status !== "active") return Response.json({ error: "Avatar non disponibile." }, { status: 404 });
   const usage = await listUsageSummary(avatar.id).catch(() => ({}));
   if (Number(usage.speech || 0) + input.length > Number(avatar.monthly_speech_character_limit || 120000)) return Response.json({ error: "Limite mensile voce raggiunto." }, { status: 429 });
@@ -199,6 +204,9 @@ export async function POST(request) {
   const input = cleanSpeechInput(payload.text);
   const tenantSlug = String(payload.tenantSlug || "").slice(0, 80);
   const avatar = await getAvatarClientBySlug(tenantSlug).catch(() => null);
+  if (!avatar?.id && LEGACY_TENANTS.has(tenantSlug)) {
+    return generateSpeechResponse(input, tenantSlug);
+  }
   if (!avatar?.id || avatar.status !== "active") return Response.json({ error: "Avatar non disponibile." }, { status: 404 });
   const usage = await listUsageSummary(avatar.id).catch(() => ({}));
   if (Number(usage.speech || 0) + input.length > Number(avatar.monthly_speech_character_limit || 120000)) return Response.json({ error: "Limite mensile voce raggiunto." }, { status: 429 });
