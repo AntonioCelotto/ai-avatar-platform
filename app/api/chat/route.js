@@ -1,6 +1,7 @@
 import { defaultTenantSlug, getTenant } from "../../tenant-config";
 import { getFrancescaLibraryContext } from "../../data/francesca-library";
 import { findRelevantKnowledge } from "../../lib/supabase-server";
+import { enforceRateLimit } from "../../lib/rate-limit";
 
 function getExtraTenantContext(tenant) {
   if (tenant.slug === "demo-cliente-01") {
@@ -71,6 +72,8 @@ function fallbackReply(messages, tenant, extra = {}) {
 }
 
 export async function POST(request) {
+  const limited = enforceRateLimit(request, "chat", { limit: 18, windowMs: 60_000 });
+  if (limited) return limited;
   let payload;
   try {
     payload = await request.json();

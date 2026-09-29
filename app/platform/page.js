@@ -24,7 +24,7 @@ async function getPlatformClients() {
 }
 
 function getClientUrl(client) {
-  if (client.slug === "new-digital-app") return "/";
+  if (client.slug === "new-digital-app") return "/mia";
   if (client.slug === "demo-cliente-01") return "/demo-cliente-01";
   return `/avatar/${client.slug}`;
 }

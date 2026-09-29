@@ -58,9 +58,28 @@ export async function getAvatarClientBySlug(slug = DEFAULT_TENANT_SLUG) {
   if (!isSupabaseConfigured()) return null;
   const safeSlug = encodeURIComponent(slug);
   const rows = await supabaseFetch(
-    `/rest/v1/avatar_clients?slug=eq.${safeSlug}&select=id,slug,company_name,category,status,website,whatsapp_phone,avatar_name,spoken_avatar_name,avatar_poster_url,avatar_video_url,media_mode,voice_provider,voice_id,voice_label,liveavatar_avatar_id,brand_mark,welcome_message,input_placeholder,suggestions,theme,personality,notes,features,created_at,updated_at&limit=1`
+    `/rest/v1/avatar_clients?slug=eq.${safeSlug}&select=id,slug,company_name,category,status,website,whatsapp_phone,avatar_name,spoken_avatar_name,avatar_poster_url,avatar_video_url,media_mode,voice_provider,voice_id,voice_label,liveavatar_avatar_id,brand_mark,welcome_message,input_placeholder,suggestions,theme,personality,notes,features,plan_code,monthly_chat_limit,monthly_speech_character_limit,commercial_status,created_at,updated_at&limit=1`
   );
   return rows?.[0] || null;
+}
+
+export async function getAvatarClientById(id) {
+  if (!isSupabaseConfigured() || !id) return null;
+  const rows = await supabaseFetch(`/rest/v1/avatar_clients?id=eq.${encodeURIComponent(id)}&select=*&limit=1`);
+  return rows?.[0] || null;
+}
+
+export async function getCustomerProfileByUserId(userId) {
+  if (!isSupabaseConfigured() || !userId) return null;
+  const rows = await supabaseFetch(`/rest/v1/customer_profiles?user_id=eq.${encodeURIComponent(userId)}&select=user_id,avatar_client_id,display_name,role,active&limit=1`);
+  return rows?.[0] || null;
+}
+
+export async function listUsageSummary(clientId) {
+  if (!isSupabaseConfigured() || !clientId) return {};
+  const start = new Date(); start.setUTCDate(1); start.setUTCHours(0,0,0,0);
+  const rows = await supabaseFetch(`/rest/v1/avatar_usage_events?client_id=eq.${encodeURIComponent(clientId)}&created_at=gte.${encodeURIComponent(start.toISOString())}&select=event_type,units&limit=5000`);
+  return (rows || []).reduce((summary, row) => { summary[row.event_type] = (summary[row.event_type] || 0) + Number(row.units || 0); return summary; }, {});
 }
 
 export async function getAvatarKnowledgeText(clientId) {
@@ -219,6 +238,25 @@ export async function insertAvatarKnowledgeSource({
   });
 
   return rows?.[0];
+}
+
+export async function insertCommercialLead(lead) {
+  const rows = await supabaseFetch("/rest/v1/commercial_leads", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Prefer: "return=representation" },
+    body: JSON.stringify({ name: lead.name, company: lead.company, email: lead.email, phone: lead.phone, category: lead.category || null, plan: lead.plan || null, message: lead.message || null, source: lead.source || "website", status: "new", metadata: { ip: lead.ip || "" } })
+  });
+  return rows?.[0] || null;
+}
+
+export async function insertUsageEvent({ clientId, eventType, units = 1, metadata = {} }) {
+  if (!clientId) return null;
+  const rows = await supabaseFetch("/rest/v1/avatar_usage_events", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Prefer: "return=representation" },
+    body: JSON.stringify({ client_id: clientId, event_type: eventType, units, metadata })
+  });
+  return rows?.[0] || null;
 }
 
 export function chunkText(text, maxLength = 1200) {

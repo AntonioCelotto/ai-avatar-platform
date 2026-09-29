@@ -99,18 +99,7 @@ export default function CustomAssistant({ tenant }) {
       const response = await fetch("/api/custom-chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          avatar: {
-            name: tenant.assistantName,
-            companyName: tenant.name,
-            role: tenant.role,
-            tone: tenant.tone,
-            knowledgeSummary: tenant.knowledgeSummary,
-            knowledgeUrl: tenant.knowledgeUrl,
-            websiteKnowledge: tenant.websiteKnowledge
-          },
-          messages: next
-        })
+        body: JSON.stringify({ slug: tenant.slug, messages: next })
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error);

@@ -15,7 +15,7 @@ function cleanSpeechInput(input) {
 }
 
 function getElevenLabsVoiceId(tenantSlug) {
-  if (tenantSlug === "demo-cliente-01" || provider === "elevenlabs") {
+  if (tenantSlug === "demo-cliente-01") {
     return process.env.ELEVENLABS_FRANCESCA_VOICE_ID || "EnMjgV8GaKfSk1f0AlV9";
   }
 
@@ -169,23 +169,42 @@ async function generateSpeechResponse(input, tenantSlug = "", provider = "", voi
 }
 
 export async function GET(request) {
+  const limited = enforceRateLimit(request, "speech", { limit: 12, windowMs: 60_000 });
+  if (limited) return limited;
   const { searchParams } = new URL(request.url);
   const input = cleanSpeechInput(searchParams.get("text"));
   const tenantSlug = searchParams.get("tenantSlug") || "";
 
   if (searchParams.get("debug") === "1") {
+    if (!isAdminRequest(request)) return Response.json({ error: "Accesso amministratore richiesto." }, { status: 401 });
     return generateSpeechDebug(input, tenantSlug);
   }
-
-  return generateSpeechResponse(input, tenantSlug);
+  const avatar = await getAvatarClientBySlug(tenantSlug).catch(() => null);
+  if (!avatar?.id || avatar.status !== "active") return Response.json({ error: "Avatar non disponibile." }, { status: 404 });
+  const usage = await listUsageSummary(avatar.id).catch(() => ({}));
+  if (Number(usage.speech || 0) + input.length > Number(avatar.monthly_speech_character_limit || 120000)) return Response.json({ error: "Limite mensile voce raggiunto." }, { status: 429 });
+  insertUsageEvent({ clientId: avatar.id, eventType: "speech", units: input.length, metadata: { ip: requestIp(request) } }).catch(() => {});
+  return generateSpeechResponse(input, tenantSlug, avatar.voice_provider || "", avatar.voice_id || "");
 }
 
 export async function POST(request) {
+  const limited = enforceRateLimit(request, "speech", { limit: 12, windowMs: 60_000 });
+  if (limited) return limited;
   let payload;
   try {
     payload = await request.json();
   } catch {
     return Response.json({ error: "Invalid JSON payload" }, { status: 400 });
   }
-  return generateSpeechResponse(cleanSpeechInput(payload.text), payload.tenantSlug || "", payload.provider || "", payload.voiceId || "");
+  const input = cleanSpeechInput(payload.text);
+  const tenantSlug = String(payload.tenantSlug || "").slice(0, 80);
+  const avatar = await getAvatarClientBySlug(tenantSlug).catch(() => null);
+  if (!avatar?.id || avatar.status !== "active") return Response.json({ error: "Avatar non disponibile." }, { status: 404 });
+  const usage = await listUsageSummary(avatar.id).catch(() => ({}));
+  if (Number(usage.speech || 0) + input.length > Number(avatar.monthly_speech_character_limit || 120000)) return Response.json({ error: "Limite mensile voce raggiunto." }, { status: 429 });
+  insertUsageEvent({ clientId: avatar.id, eventType: "speech", units: input.length, metadata: { ip: requestIp(request) } }).catch(() => {});
+  return generateSpeechResponse(input, tenantSlug, avatar.voice_provider || "", avatar.voice_id || "");
 }
+import { getAvatarClientBySlug, insertUsageEvent, listUsageSummary } from "../../lib/supabase-server";
+import { enforceRateLimit, requestIp } from "../../lib/rate-limit";
+import { isAdminRequest } from "../../lib/admin-auth";
