@@ -52,9 +52,9 @@
 
   .mobile-chat-shell {
     width: min(430px, 100%);
-    height: 100dvh;
-    min-height: 100dvh;
-    max-height: 100dvh;
+    height: 100svh;
+    min-height: 100svh;
+    max-height: 100svh;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: minmax(245px, 43dvh) minmax(0, 1fr);
@@ -98,7 +98,7 @@
     width: 100%;
     height: auto;
     min-height: 0;
-    padding: 4px 10px max(8px, env(safe-area-inset-bottom));
+    padding: 4px 10px max(16px, env(safe-area-inset-bottom));
     overflow: hidden;
   }
 
@@ -309,6 +309,28 @@
     line-height: 1.2;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+}
+
+/* Samsung Internet and some Android WebViews can report a dynamic viewport
+   taller than the actually clickable area while their browser bars are open.
+   Keep the avatar dominant, but reserve enough room for every chat control. */
+@media (max-height: 860px) {
+  .mobile-chat-shell {
+    grid-template-rows: minmax(230px, 66svh) minmax(0, 34svh);
+  }
+
+  .assistant-header {
+    min-height: 40px;
+    padding-block: 6px 3px;
+  }
+
+  .messages {
+    padding-block: 2px 4px;
+  }
+
+  .action-dock {
+    padding-top: 4px;
   }
 }
 
