@@ -70,8 +70,8 @@ export const sectors = {
 };
 
 export const sectorCards = [
-  ["hotel", "Hotel", "Concierge digitale per ospiti e reception."],
-  ["benessere", "Benessere", "Consulente AI per trattamenti e appuntamenti."],
-  ["ristorazione", "Ristorazione", "Menu parlante, territorio e prenotazioni."],
-  ["immobiliare", "Immobiliare", "Presentazione immobili e contatti qualificati."],
+  ["hotel", "Hotel", "Concierge digitale per ospiti e reception.", "/sofia-hotel-poster.jpg", "Sofia"],
+  ["benessere", "Benessere", "Consulente AI per trattamenti e appuntamenti.", "/giulia-benessere-poster.jpg", "Giulia"],
+  ["ristorazione", "Ristorazione", "Menu parlante, territorio e prenotazioni.", "/marco-ristorazione-poster.jpg", "Marco"],
+  ["immobiliare", "Immobiliare", "Presentazione immobili e contatti qualificati.", "/ilaria-immobiliare-poster.jpg", "Ilaria"],
 ];
