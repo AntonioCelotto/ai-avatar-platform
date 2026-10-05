@@ -10,8 +10,38 @@ import { PwaInstaller } from "./pwa-installer";
 export const metadata = {
   metadataBase: new URL("https://www.avatarone.it"),
   title: "AvatarOne · Persone digitali AI",
-  description: "Avatar AI parlanti per siti, app e clienti business.",
+  description: "Avatar AI personalizzati che parlano, rispondono, apprendono da siti e PDF e trasformano le conversazioni in contatti.",
   applicationName: "AvatarOne",
+  keywords: ["avatar AI", "assistente virtuale", "intelligenza artificiale per aziende", "avatar parlante", "chatbot vocale", "AvatarOne", "MIA AI"],
+  authors: [{ name: "New Digital App", url: "https://www.avatarone.it" }],
+  creator: "New Digital App",
+  publisher: "New Digital App",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1
+    }
+  },
+  openGraph: {
+    type: "website",
+    locale: "it_IT",
+    url: "https://www.avatarone.it",
+    siteName: "AvatarOne",
+    title: "AvatarOne · Persone digitali AI per aziende",
+    description: "Avatar AI personalizzati che parlano, rispondono, apprendono da siti e PDF e trasformano le conversazioni in contatti.",
+    images: [{ url: "/icon-512.png", width: 512, height: 512, alt: "AvatarOne by New Digital App" }]
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AvatarOne · Persone digitali AI per aziende",
+    description: "Avatar AI personalizzati che parlano, rispondono e conoscono la tua azienda.",
+    images: ["/icon-512.png"]
+  },
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,

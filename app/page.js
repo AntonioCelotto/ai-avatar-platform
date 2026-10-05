@@ -21,7 +21,8 @@ const plans = [
 
 export const metadata = {
   title: "AvatarOne · Persone digitali AI per aziende",
-  description: "Avatar AI personalizzati che parlano, rispondono, apprendono da siti e PDF e trasformano le conversazioni in contatti."
+  description: "Avatar AI personalizzati che parlano, rispondono, apprendono da siti e PDF e trasformano le conversazioni in contatti.",
+  alternates: { canonical: "https://www.avatarone.it/" }
 };
 
 export default function LandingPage(){return <main className="landing">
