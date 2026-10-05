@@ -122,6 +122,33 @@ body:has(.landing) {
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12);
 }
 
+.landing .home-avatar-showcase { display: grid; justify-items: center; gap: 18px; min-width: 0; }
+.landing .home-avatar-showcase .phone-topline small { display: block; color: #8fa7ad; font-size: 11px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
+.landing .avatar-switcher { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; width: min(470px,100%); }
+.landing .avatar-switcher button { min-width: 0; display: flex; align-items: center; gap: 8px; padding: 7px; border: 1px solid #dce3e9; border-radius: 16px; background: rgba(255,255,255,.88); color: #17242c; box-shadow: 0 8px 22px rgba(20,38,59,.06); cursor: pointer; transition: .22s ease; }
+.landing .avatar-switcher button:hover,.landing .avatar-switcher button.is-active { transform: translateY(-2px); border-color: #6b6cf6; box-shadow: 0 12px 28px rgba(78,86,221,.17); }
+.landing .avatar-switcher button.is-active { background: linear-gradient(145deg,#f1f7ff,#f5f1ff); }
+.landing .avatar-switcher img { width: 34px; height: 42px; object-fit: cover; object-position: center 20%; border-radius: 10px; }
+.landing .avatar-switcher span { min-width: 0; display: grid; text-align: left; font-size: 10px; font-weight: 900; }
+.landing .avatar-switcher small { color: #74818a; font-size: 8px; font-weight: 650; }
+
+.landing .home-sector-grid { grid-template-columns: repeat(4,minmax(0,1fr)); }
+.landing .home-sector-grid .sector-card { display: grid; grid-template-rows: 218px 1fr; min-width: 0; padding: 0; overflow: hidden; }
+.landing .sector-card-visual { position: relative; overflow: hidden; background: #e8eef4; }
+.landing .sector-card-visual::after { content: ""; position: absolute; inset: 45% 0 0; background: linear-gradient(transparent,rgba(4,12,19,.67)); }
+.landing .sector-card-visual img { width: 100%; height: 100%; display: block; object-fit: cover; object-position: center 17%; transition: transform .45s ease; }
+.landing .sector-card:hover .sector-card-visual img { transform: scale(1.035); }
+.landing .sector-card-visual span { position: absolute; z-index: 1; left: 18px; bottom: 15px; color: #fff; font-size: 13px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+.landing .sector-card-copy { display: flex; flex-direction: column; min-height: 215px; padding: 22px; }
+.landing .sector-card-copy h3 { margin-bottom: 5px; }
+.landing .sector-card-copy p { flex: 1; }
+.landing .sector-card-hotel { --card-accent:#147edf; }
+.landing .sector-card-benessere { --card-accent:#77a98d; }
+.landing .sector-card-ristorazione { --card-accent:#d77d38; }
+.landing .sector-card-immobiliare { --card-accent:#755cde; }
+.landing .home-sector-grid .sector-card { border-top: 3px solid var(--card-accent); }
+.landing .home-sector-grid .sector-card b,.landing .home-sector-grid .sector-card small { color: var(--card-accent); }
+
 .landing .dark-section {
   position: relative;
   overflow: hidden;
@@ -153,10 +180,17 @@ body:has(.landing) {
 
 @media (max-width: 980px) {
   .landing .dark-section .steps-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .landing .home-sector-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
 
 @media (max-width: 560px) {
   .landing .dark-section .steps-grid { grid-template-columns: 1fr; }
   .landing .phone-screen { min-height: 655px; padding: 18px; }
   .landing .avatar-orb { height: 320px; }
+  .landing .avatar-switcher { grid-template-columns: repeat(2,1fr); }
+  .landing .avatar-switcher button { padding: 6px; }
+  .landing .home-sector-grid { grid-template-columns: 1fr; }
+  .landing .home-sector-grid .sector-card { grid-template-columns: 42% 58%; grid-template-rows: none; }
+  .landing .home-sector-grid .sector-card-visual { min-height: 250px; }
+  .landing .sector-card-copy { min-height: 250px; padding: 20px 17px; }
 }
