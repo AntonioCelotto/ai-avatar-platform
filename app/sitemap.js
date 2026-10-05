@@ -4,6 +4,7 @@ export default function sitemap() {
 
   return [
     { url: `${baseUrl}/`, lastModified, changeFrequency: "weekly", priority: 1 },
+    { url: `${baseUrl}/avatar`, lastModified, changeFrequency: "weekly", priority: 0.9 },
     { url: `${baseUrl}/hotel`, lastModified, changeFrequency: "monthly", priority: 0.9 },
     { url: `${baseUrl}/benessere`, lastModified, changeFrequency: "monthly", priority: 0.9 },
     { url: `${baseUrl}/ristorazione`, lastModified, changeFrequency: "monthly", priority: 0.9 },
