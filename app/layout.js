@@ -16,6 +16,9 @@ export const metadata = {
   authors: [{ name: "New Digital App", url: "https://www.avatarone.it" }],
   creator: "New Digital App",
   publisher: "New Digital App",
+  verification: {
+    google: "iB9VgtJ4qH1WQVd1fhsNm9trgkqoY5rZGUEPYb6aV9k"
+  },
   robots: {
     index: true,
     follow: true,
