@@ -3,15 +3,13 @@ import ContactForm from "../contact-form";
 import { sectors } from "./sector-data";
 import "../landing.css";
 import "./sector-pages.css";
+import ResponsiveNav from "../responsive-nav";
 
 export default function SectorPage({ sector }) {
   const item = sectors[sector];
 
   return <main className={`landing sector-landing sector-${sector}`}>
-    <nav className="landing-nav">
-      <Link className="brand" href="/"><img className="landing-brand-mark" src="/icon-512.png" alt="Icona M di AvatarOne"/><div>AvatarOne <small>by New Digital App</small></div></Link>
-      <div className="nav-links"><Link href="/#settori">Settori</Link><a href="#vantaggi">Vantaggi</a><a href="#contatti">Contatti</a><Link href="/mia">Prova MIA</Link><a className="nav-cta" href="#contatti">Richiedi una demo</a></div>
-    </nav>
+    <ResponsiveNav sectorPage />
 
     <section className="sector-hero">
       <div className="sector-copy">
