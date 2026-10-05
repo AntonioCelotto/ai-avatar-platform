@@ -194,3 +194,46 @@ body:has(.landing) {
   .landing .home-sector-grid .sector-card-visual { min-height: 250px; }
   .landing .sector-card-copy { min-height: 250px; padding: 20px 17px; }
 }
+#funzioni .feature-card {
+  position: relative;
+  overflow: hidden;
+  border-color: color-mix(in srgb, var(--feature-accent) 22%, #e1e6ec);
+  background:
+    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--feature-accent) 10%, transparent), transparent 42%),
+    linear-gradient(145deg, #fff 38%, color-mix(in srgb, var(--feature-accent) 5%, #fff));
+  transition: transform .28s ease, box-shadow .28s ease, border-color .28s ease;
+}
+
+#funzioni .feature-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  background: linear-gradient(90deg, var(--feature-accent), var(--feature-accent-soft));
+}
+
+#funzioni .feature-card:nth-child(1) { --feature-accent: #0877ff; --feature-accent-soft: #53c8ff; }
+#funzioni .feature-card:nth-child(2) { --feature-accent: #7657ff; --feature-accent-soft: #be72ff; }
+#funzioni .feature-card:nth-child(3) { --feature-accent: #13b966; --feature-accent-soft: #67e6a2; }
+#funzioni .feature-card:nth-child(4) { --feature-accent: #e24ca5; --feature-accent-soft: #9c63ff; }
+#funzioni .feature-card:nth-child(5) { --feature-accent: #06aeb6; --feature-accent-soft: #55e0d7; }
+#funzioni .feature-card:nth-child(6) { --feature-accent: #2453d4; --feature-accent-soft: #4c8dff; }
+
+#funzioni .feature-card > span {
+  width: 50px;
+  height: 50px;
+  color: var(--feature-accent);
+  background: color-mix(in srgb, var(--feature-accent) 11%, #fff);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--feature-accent) 16%, transparent);
+}
+
+#funzioni .feature-card:hover {
+  transform: translateY(-7px);
+  border-color: color-mix(in srgb, var(--feature-accent) 42%, #dce3ea);
+  box-shadow: 0 22px 54px color-mix(in srgb, var(--feature-accent) 15%, rgba(14,31,51,.08));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #funzioni .feature-card { transition: none; }
+  #funzioni .feature-card:hover { transform: none; }
+}
