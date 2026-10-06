@@ -22,6 +22,46 @@ body:has(.landing) {
   overflow: visible;
 }
 
+/* Preview campagna cartolina: cambia esclusivamente lo sfondo della hero. */
+.landing .hero {
+  isolation: isolate;
+  overflow: hidden;
+  margin-top: 34px;
+  margin-bottom: 34px;
+  padding-inline: clamp(28px, 5vw, 70px);
+  border-radius: 42px;
+  background:
+    linear-gradient(90deg, rgba(2, 8, 20, .96) 0%, rgba(2, 8, 20, .83) 42%, rgba(2, 8, 20, .28) 70%, rgba(2, 8, 20, .48) 100%),
+    url('/avatarone-ai-background.jpg') center / cover no-repeat;
+  box-shadow: 0 35px 100px rgba(4, 18, 44, .28);
+}
+
+.landing .hero::before {
+  inset: 0;
+  width: auto;
+  height: auto;
+  border-radius: inherit;
+  background: linear-gradient(180deg, transparent 65%, rgba(1, 7, 17, .5));
+}
+
+.landing .hero > * { position: relative; z-index: 1; }
+.landing .hero h1 { color: #fff; text-shadow: 0 5px 28px rgba(0,0,0,.26); }
+.landing .hero .gradient-text { background: linear-gradient(100deg,#57f8ff,#46b5ff,#ab7cff); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.landing .hero .hero-copy { color: #d7e6ef; }
+.landing .hero .eyebrow { color: #62fff7; }
+.landing .hero .trust-row { color: #d6e3eb; }
+.landing .hero .trust-row span::before { color: #62fff7; }
+.landing .hero .secondary-cta { border-color: rgba(255,255,255,.3); background: rgba(255,255,255,.12); backdrop-filter: blur(12px); color:#fff; }
+
+@media (max-width: 850px) {
+  .landing .hero {
+    margin: 18px 14px 28px;
+    padding-inline: 24px;
+    border-radius: 30px;
+    background-position: 63% center;
+  }
+}
+
 .landing .avatar-orb {
   position: relative;
   overflow: hidden;
