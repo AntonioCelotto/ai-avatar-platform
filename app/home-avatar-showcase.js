@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-const avatars = [
+const demoAvatars = [
   { name: "SOFIA", sector: "Hotel", video: "/sofia-hotel-avatar.mp4", poster: "/sofia-hotel-poster.jpg", question: "A che ora viene servita la colazione?", answer: "Ti aiuto con camere, servizi e richieste alla reception." },
   { name: "GIULIA", sector: "Benessere", video: "/giulia-benessere-avatar.mp4", poster: "/giulia-benessere-poster.jpg", question: "Quale trattamento è più adatto a me?", answer: "Ti presento percorsi, prodotti e disponibilità del centro." },
   { name: "MARCO", sector: "Ristorazione", video: "/marco-ristorazione-avatar.mp4", poster: "/marco-ristorazione-poster.jpg", question: "Mi consigli un piatto tipico?", answer: "Ti racconto menu, ingredienti e abbinamenti del ristorante." },
@@ -10,14 +10,27 @@ const avatars = [
 ];
 
 export default function HomeAvatarShowcase() {
+  const [avatars, setAvatars] = useState(demoAvatars);
   const [active, setActive] = useState(0);
   const avatar = avatars[active];
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/avatar-showcase", { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error("showcase unavailable")))
+      .then((data) => {
+        if (cancelled || !Array.isArray(data.avatars) || !data.avatars.length) return;
+        setAvatars([...demoAvatars, ...data.avatars]);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
 
   return <div className="home-avatar-showcase">
     <div className={`phone-card phone-sector-${active}`} aria-label={`Anteprima AvatarOne ${avatar.sector}`}>
       <div className="phone-screen">
         <div className="phone-topline"><div><span className="live-pill">● ONLINE</span><h3>{avatar.name}</h3><small>{avatar.sector}</small></div><span className="voice-status">◉ In ascolto</span></div>
-        <div className="avatar-orb"><video key={avatar.video} autoPlay muted loop playsInline preload="metadata" poster={avatar.poster} aria-label={`Video dimostrativo di ${avatar.name}`}><source src={avatar.video} type="video/mp4" /></video><span className="avatar-video-glow"/><span className="speaking-pill"><i/><i/><i/><i/> {avatar.name} sta parlando</span></div>
+        <div className="avatar-orb">{avatar.video ? <video key={avatar.video} autoPlay muted loop playsInline preload="metadata" poster={avatar.poster} aria-label={`Video dimostrativo di ${avatar.name}`}><source src={avatar.video} type="video/mp4" /></video> : <img src={avatar.poster} alt={`Avatar ${avatar.name}`} />}<span className="avatar-video-glow"/><span className="speaking-pill"><i/><i/><i/><i/> {avatar.name} sta parlando</span></div>
         <div className="demo-chat" aria-label={`Esempio di conversazione con ${avatar.name}`}><p className="chat-user">{avatar.question}</p><p className="chat-mia"><strong>{avatar.name}</strong>{avatar.answer}</p></div>
         <div className="demo-input"><span>Scrivi a {avatar.name}…</span><b>↑</b></div>
       </div>

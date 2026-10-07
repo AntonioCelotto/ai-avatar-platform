@@ -71,7 +71,8 @@ body:has(.landing) {
   background: linear-gradient(150deg, rgba(73, 243, 235, .14), rgba(118, 87, 255, .22));
 }
 
-.landing .avatar-orb video {
+.landing .avatar-orb video,
+.landing .avatar-orb > img {
   width: 100%;
   height: 100%;
   display: block;
