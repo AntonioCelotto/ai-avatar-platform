@@ -6,6 +6,8 @@ const EMPTY_MEDIA = { imageDataUrl: "", imageName: "", videoDataUrl: "", videoNa
 function readAvatars() { try { const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); return Array.isArray(value) ? value : []; } catch { return []; } }
 function saveAvatar(avatar) { const current = readAvatars(); localStorage.setItem(STORAGE_KEY, JSON.stringify([avatar, ...current.filter((item) => item.slug !== avatar.slug)].slice(0, 20))); window.dispatchEvent(new Event("avatarone:avatars-changed")); }
 function readSmallFile(file, maxBytes) { return new Promise((resolve, reject) => { if (!file) return resolve(""); if (file.size > maxBytes) return reject(new Error(`Il file supera ${Math.round(maxBytes / 1048576)} MB. Usa un URL pubblico.`)); const reader = new FileReader(); reader.onload = () => resolve(String(reader.result || "")); reader.onerror = () => reject(new Error("Non riesco a leggere il file.")); reader.readAsDataURL(file); }); }
+function dataUrlToBlob(dataUrl) { const [header, encoded] = String(dataUrl || "").split(","); const type = header?.match(/^data:([^;]+)/)?.[1] || "application/octet-stream"; const binary = atob(encoded || ""); const bytes = new Uint8Array(binary.length); for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index); return new Blob([bytes], { type }); }
+async function readJsonResponse(response, fallback) { const text = await response.text(); try { return JSON.parse(text); } catch { throw new Error(response.status === 413 ? "Il file è troppo grande per la pubblicazione." : fallback); } }
 
 export function AvatarCreator() {
   const [prompt, setPrompt] = useState("");
@@ -77,6 +79,22 @@ export function AvatarCreator() {
     if (!consent) return setError("Conferma di avere i diritti per utilizzare immagine, video e voce.");
     setPublishLoading(true); setError(""); setWebsiteStatus("");
     try {
+      async function uploadMedia(kind, dataUrl, fileName) {
+        if (!dataUrl) return null;
+        const blob = dataUrlToBlob(dataUrl);
+        const prepareResponse = await fetch("/api/avatar-creator", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "create_media_upload", slug: draft.slug, kind, fileName, fileType: blob.type }) });
+        const prepared = await readJsonResponse(prepareResponse, `Non riesco a preparare il caricamento ${kind}.`);
+        if (!prepareResponse.ok) throw new Error(prepared.error || `Non riesco a preparare il caricamento ${kind}.`);
+        setWebsiteStatus(`Caricamento ${kind === "image" ? "immagine" : kind === "video" ? "video" : "voce"}…`);
+        const sent = await fetch(prepared.upload.signedUrl, { method: "PUT", headers: { "Content-Type": blob.type, "x-upsert": "false" }, body: blob });
+        if (!sent.ok) throw new Error(`Caricamento ${kind} non riuscito.`);
+        return prepared.upload;
+      }
+      const [imageUpload, videoUpload, voiceUpload] = await Promise.all([
+        uploadMedia("image", media.imageDataUrl, media.imageName),
+        uploadMedia("video", media.videoDataUrl, media.videoName),
+        uploadMedia("voice", media.voiceDataUrl, media.voiceName)
+      ]);
       let websiteKnowledge = "";
       let verifiedKnowledgeUrl = "";
       if (knowledgeUrl.trim()) {
@@ -88,10 +106,10 @@ export function AvatarCreator() {
         verifiedKnowledgeUrl = data.website.url;
         setWebsiteStatus(`Sito importato: ${data.website.hostname}`);
       }
-      const completed = { ...draft, imageDataUrl: media.imageDataUrl, imageUrl: imageUrl.trim(), imageName: media.imageName, videoDataUrl: media.videoDataUrl, videoUrl: videoUrl.trim(), videoName: media.videoName, voiceDataUrl: media.voiceDataUrl, voiceName: media.voiceName, voice, whatsappPhone: whatsappPhone.replace(/\D/g, ""), knowledgeUrl: verifiedKnowledgeUrl, websiteKnowledge, knowledgeSummary: knowledgeNotes.trim() || draft.knowledgeSummary, mediaMode: preview.video ? "video" : preview.image ? "image" : "placeholder", syncMode: preview.video ? "speaking-loop" : "still-image", publishedAt: new Date().toISOString() };
+      const completed = { ...draft, imageDataUrl: "", imageUrl: imageUpload?.publicUrl || imageUrl.trim(), imageName: media.imageName, videoDataUrl: "", videoUrl: videoUpload?.publicUrl || videoUrl.trim(), videoName: media.videoName, voiceDataUrl: "", voiceName: media.voiceName, voiceSamplePath: voiceUpload?.storagePath || "", voice, whatsappPhone: whatsappPhone.replace(/\D/g, ""), knowledgeUrl: verifiedKnowledgeUrl, websiteKnowledge, knowledgeSummary: knowledgeNotes.trim() || draft.knowledgeSummary, mediaMode: preview.video ? "video" : preview.image ? "image" : "placeholder", syncMode: preview.video ? "speaking-loop" : "still-image", publishedAt: new Date().toISOString() };
       setWebsiteStatus("Salvataggio sicuro nel cloud…");
       const cloudResponse = await fetch("/api/avatar-creator", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "publish", avatar: completed }) });
-      const cloudData = await cloudResponse.json();
+      const cloudData = await readJsonResponse(cloudResponse, "Il server non ha restituito una risposta valida.");
       if (!cloudResponse.ok) throw new Error(cloudData.error || "Pubblicazione cloud non riuscita.");
       saveAvatar(cloudData.avatar); setCreated(cloudData.avatar); setWebsiteStatus("Avatar salvato nel cloud");
     } catch (publishError) { setError(publishError.message || "Pubblicazione non riuscita."); }
