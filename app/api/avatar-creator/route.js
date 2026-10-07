@@ -43,6 +43,15 @@ async function importWebsite(value) {
 export async function POST(request) {
   if (!isAdminRequest(request)) return Response.json({ error: "Accesso amministratore richiesto." }, { status: 401 });
   let payload; try { payload = await request.json(); } catch { return Response.json({ error: "Richiesta non valida." }, { status: 400 }); }
+  if (payload?.action === "create_media_upload") {
+    if (!isSupabaseConfigured()) return Response.json({ error: "Archivio cloud non configurato." }, { status: 503 });
+    try {
+      const upload = await createAvatarMediaSignedUpload({ fileName: payload.fileName, fileType: payload.fileType, slug: payload.slug, kind: payload.kind });
+      return Response.json({ ok: true, upload });
+    } catch (error) {
+      return Response.json({ error: error.message || "Impossibile preparare il caricamento." }, { status: 500 });
+    }
+  }
   if (payload?.action === "publish") {
     if (!isSupabaseConfigured()) return Response.json({ error: "Archivio cloud non configurato." }, { status: 503 });
     const avatar = payload.avatar && typeof payload.avatar === "object" ? payload.avatar : null;
@@ -78,7 +87,7 @@ export async function POST(request) {
         },
         theme: { accent: /^#[0-9a-f]{6}$/i.test(avatar.accent || "") ? avatar.accent : "#0071e3" },
         notes: String(avatar.knowledgeSummary || "").slice(0, 10000),
-        features: { cloud: true, website: Boolean(avatar.knowledgeUrl), documents: false, voiceSampleUrl: uploadedVoice || "" }
+        features: { cloud: true, website: Boolean(avatar.knowledgeUrl), documents: false, voiceSampleUrl: uploadedVoice || avatar.voiceSamplePath || "" }
       });
       if (!saved?.id) throw new Error("Salvataggio cloud non completato.");
       if (avatar.websiteKnowledge || avatar.knowledgeSummary) {
@@ -119,6 +128,7 @@ export async function POST(request) {
   catch (error) { return Response.json({ error: error?.name === "AbortError" ? "Creazione scaduta. Riprova." : "Creazione non riuscita." }, { status: 502 }); } finally { clearTimeout(timeout); }
 }
 import {
+  createAvatarMediaSignedUpload,
   insertAvatarKnowledgeSource,
   isSupabaseConfigured,
   uploadAvatarMedia,
