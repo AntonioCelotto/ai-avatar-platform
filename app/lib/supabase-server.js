@@ -142,6 +142,27 @@ export async function uploadAvatarMedia({ dataUrl, fileName, slug, kind }) {
   return kind === "voice" ? storagePath : `${supabaseUrl.replace(/\/$/, "")}/storage/v1/object/public/${AVATAR_MEDIA_BUCKET}/${storagePath}`;
 }
 
+export async function createAvatarMediaSignedUpload({ fileName, fileType, slug, kind }) {
+  const safeSlug = String(slug || "avatar").replace(/[^a-zA-Z0-9_.-]+/g, "-").toLowerCase();
+  const safeKind = ["image", "video", "voice"].includes(kind) ? kind : "image";
+  const extension = String(fileType || "").split("/")[1]?.replace("jpeg", "jpg") || (safeKind === "video" ? "mp4" : safeKind === "voice" ? "mp3" : "jpg");
+  const safeName = String(fileName || `${safeKind}.${extension}`).replace(/[^a-zA-Z0-9_.-]+/g, "-").toLowerCase();
+  const storagePath = `${safeSlug}/${safeKind}-${Date.now()}-${safeName}`;
+  const bucket = safeKind === "voice" ? AVATAR_VOICE_BUCKET : AVATAR_MEDIA_BUCKET;
+  const response = await fetch(getSupabaseUrl(`/storage/v1/object/upload/sign/${bucket}/${storagePath}`), {
+    method: "POST",
+    headers: getHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify({})
+  });
+  const data = await response.json();
+  if (!response.ok || !data?.url) throw new Error(data?.message || data?.error || `Impossibile preparare il caricamento ${safeKind}.`);
+  return {
+    storagePath,
+    signedUrl: `${supabaseUrl.replace(/\/$/, "")}/storage/v1${data.url}`,
+    publicUrl: safeKind === "voice" ? "" : `${supabaseUrl.replace(/\/$/, "")}/storage/v1/object/public/${bucket}/${storagePath}`
+  };
+}
+
 export async function listAvatarDocuments(clientId) {
   if (!isSupabaseConfigured() || !clientId) return [];
   return supabaseFetch(
