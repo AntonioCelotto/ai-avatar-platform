@@ -316,7 +316,16 @@ body:has(.knowledge-shell) {
   --apple-ink: #1d1d1f;
   --apple-muted: #6e6e73;
   --apple-line: rgba(29, 29, 31, 0.1);
-  grid-template-columns: 252px minmax(0, 1fr);
+
+  
+/* Keep creator voice controls readable on every screen. */
+.creator-upload { display: grid; gap: 8px; min-width: 0; }
+.creator-upload input { width: 100%; max-width: 100%; min-width: 0; }
+.creator-upload small { line-height: 1.4; overflow-wrap: anywhere; }
+.creator-voice-upload { width: 100%; }
+.creator-inline { align-items: stretch; min-width: 0; }
+.creator-inline button { min-height: 46px; white-space: nowrap; }
+grid-template-columns: 252px minmax(0, 1fr);
   background: radial-gradient(circle at 82% 4%, rgba(98, 153, 255, .2), transparent 27%), radial-gradient(circle at 42% 30%, rgba(188, 155, 255, .13), transparent 25%), #f5f5f7;
   color: var(--apple-ink);
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter, sans-serif;
