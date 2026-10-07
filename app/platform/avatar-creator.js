@@ -59,8 +59,10 @@ export function AvatarCreator() {
         await audio.play();
         return;
       } catch {
-        return setError("Non riesco a riprodurre questa voce. Riprova.");
-      }
+        return setError("Non riesco a riprodurre questa voce. Riprova.");106
+      <CreatorBlock number="1B" title="Messaggio di benvenuto" text="Personalizza la prima frase che vedrà il cliente."><div className="creator-fields"><Field area wide label="Testo di benvenuto" value={draft.welcomeMessage || ""} onChange={(v) => updateDraft("welcomeMessage", v)} /></div></CreatorBlock>
+          
+ <Field area wide label="Ruolo"     }
     }
     if (!("speechSynthesis" in window)) return setError("La prova voce non è disponibile in questo browser.");
     speechSynthesis.cancel();
