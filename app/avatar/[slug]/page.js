@@ -4,16 +4,18 @@ import { redirect } from "next/navigation";
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  if (slug === "custom-elisa-gmwug") return { title: "Ilaria · AvatarOne" };
+  if (slug === "custom-elisa-gmwug") return { title: "Ilaria · AvatarOne", openGraph: { images: ["/icon.svg"] }, twitter: { images: ["/icon.svg"] } };
   try {
     const avatar = await getAvatarClientBySlug(slug);
     const name = avatar?.spoken_avatar_name || avatar?.avatar_name || "Persona digitale";
     return {
       title: `${name} · AvatarOne`,
-      description: `${name}, persona digitale AI di ${avatar?.company_name || "AvatarOne"}.`
+      description: `${name}, persona digitale AI di ${avatar?.company_name || "AvatarOne"}.`,
+      openGraph: { title: `${name} · AvatarOne`, images: [{ url: "/icon.svg", alt: "AvatarOne" }] },
+      twitter: { card: "summary_large_image", images: ["/icon.svg"] }
     };
   } catch {
-    return { title: "Persona digitale · AvatarOne" };
+    return { title: "Persona digitale · AvatarOne", openGraph: { images: ["/icon.svg"] }, twitter: { images: ["/icon.svg"] } };
   }
 }
 
