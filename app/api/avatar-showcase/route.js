@@ -11,7 +11,10 @@ export async function GET() {
     const clients = await listAvatarClients();
     const mediaClients = (clients || [])
       .filter((client) => client.avatar_video_url || client.avatar_poster_url)
-      .filter((client) => !["sofia", "giulia", "marco", "ilaria", "francesca", "mia", "mia.ai"].includes(String(client.avatar_name || "").trim().toLowerCase()));
+      .filter((client) => {
+        if (client.slug === "capitano-marco-new-digital-app") return true;
+        return !["sofia", "giulia", "marco", "ilaria", "francesca", "mia", "mia.ai"].includes(String(client.avatar_name || "").trim().toLowerCase());
+      });
     const eligibleClients = mediaClients.filter((client) => client.status === "active");
 
     const matches = (client, words) => {
