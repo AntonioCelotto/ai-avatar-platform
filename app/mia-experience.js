@@ -29,7 +29,9 @@ const criticalMiaStyles = `
 
 export const metadata = {
   title: "Prova MIA · AvatarOne",
-  description: "Parla e scrivi con MIA, la persona digitale di New Digital App."
+  description: "Parla e scrivi con MIA, la persona digitale di New Digital App.",
+  openGraph: { images: [{ url: "/icon.svg", alt: "AvatarOne" }] },
+  twitter: { card: "summary_large_image", images: ["/icon.svg"] }
 };
 
 export default function MiaExperience() {
