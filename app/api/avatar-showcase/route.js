@@ -11,7 +11,7 @@ export async function GET() {
     const clients = await listAvatarClients();
     const avatars = (clients || [])
       .filter((client) => client.status === "active" && (client.avatar_video_url || client.avatar_poster_url))
-      .filter((client) => !["sofia", "giulia", "marco", "ilaria"].includes(String(client.avatar_name || "").trim().toLowerCase()))
+      .filter((client) => !["sofia", "giulia", "marco", "ilaria", "francesca"].includes(String(client.avatar_name || "").trim().toLowerCase()))
       .slice(-2)
       .reverse()
       .map((client) => ({
