@@ -20,7 +20,7 @@ const features = [
 const plans = [
   { name: "Start", price: "da €1.490", monthly: "Licenza da €99/mese", items: ["Avatar personalizzato", "Chat e voce AI", "PDF e sito web", "WhatsApp", "Installazione web/PWA"] },
   { name: "Business", price: "da €2.900", monthly: "Licenza da €199/mese", featured: true, items: ["Tutto di Start", "Più contenuti e utilizzo", "Analytics e contatti", "Personalizzazione avanzata", "Assistenza prioritaria"] },
-  { name: "AvatarOne Experience", price: "da €4.900", monthly: "Licenza da €299/mese", items: ["Tutto di Business", "Esperienza per spazi fisici", "API e integrazioni", "Più lingue", "Hardware escluso: Box, Totem o Monitor touch su preventivo"] }
+  { name: "Experience", price: "da €4.900", monthly: "Licenza da €299/mese", items: ["Tutto di Business", "Esperienza per spazi fisici", "API e integrazioni", "Più lingue", "Hardware escluso: Box, Totem o Monitor touch su preventivo"] }
 ];
 
 export const metadata = {
