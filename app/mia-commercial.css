@@ -444,3 +444,28 @@
     grid-template-rows: minmax(0, 64dvh) minmax(0, 36dvh);
   }
 }
+
+/* AvatarOne: keep every avatar name below the face, across screen sizes. */
+.avatar-frame .mia-name-mark {
+  top: auto !important;
+  bottom: clamp(48px, 9%, 100px) !important;
+  left: 50% !important;
+  max-width: calc(100% - 32px);
+  width: max-content;
+  transform: translateX(-50%);
+  text-align: center;
+}
+.avatar-frame .mia-name-mark span {
+  font-size: clamp(28px, 7vw, 64px) !important;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 520px) {
+  .avatar-frame .mia-name-mark {
+    bottom: 52px !important;
+    max-width: calc(100% - 24px);
+  }
+  .avatar-frame .mia-name-mark span {
+    font-size: clamp(26px, 10vw, 46px) !important;
+  }
+}
