@@ -18,6 +18,7 @@ export function AvatarCreator() {
   const [imageUrl, setImageUrl] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
   const [voice, setVoice] = useState("openai:marin");
+  const [elevenVoiceId, setElevenVoiceId] = useState("");
   const [whatsappPhone, setWhatsappPhone] = useState("");
   const [knowledgeUrl, setKnowledgeUrl] = useState("");
   const [knowledgeNotes, setKnowledgeNotes] = useState("");
@@ -46,6 +47,19 @@ export function AvatarCreator() {
     if (!draft) return;
     setError("");
     const text = `Ciao, sono ${draft.name}. Questa è la mia voce di prova.`;
+    if (voice === "elevenlabs") {
+      if (!/^[a-zA-Z0-9]{15,40}$/.test(elevenVoiceId.trim())) return setError("Inserisci un Voice ID ElevenLabs valido.");
+      try {
+        const response = await fetch("/api/speech", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text, provider: "elevenlabs", voiceId: elevenVoiceId.trim() }) });
+        if (!response.ok) throw new Error("Voce ElevenLabs non disponibile.");
+        const audioUrl = URL.createObjectURL(await response.blob());
+        const audio = new Audio(audioUrl);
+        audio.onended = () => URL.revokeObjectURL(audioUrl);
+        audio.onerror = () => URL.revokeObjectURL(audioUrl);
+        await audio.play();
+        return;
+      } catch { return setError("Non riesco a riprodurre la voce ElevenLabs. Controlla il Voice ID."); }
+    }
     if (voice.startsWith("openai:")) {
       try {
         const response = await fetch("/api/speech", {
@@ -76,6 +90,7 @@ export function AvatarCreator() {
 
   async function publishAvatar() {
     if (!preview.image && !preview.video) return setError("Carica una foto o un video prima di pubblicare.");
+    if (voice === "elevenlabs" && !/^[a-zA-Z0-9]{15,40}$/.test(elevenVoiceId.trim())) return setError("Inserisci un Voice ID ElevenLabs valido.");
     if (!consent) return setError("Conferma di avere i diritti per utilizzare immagine, video e voce.");
     setPublishLoading(true); setError(""); setWebsiteStatus("");
     try {
@@ -106,7 +121,7 @@ export function AvatarCreator() {
         verifiedKnowledgeUrl = data.website.url;
         setWebsiteStatus(`Sito importato: ${data.website.hostname}`);
       }
-      const completed = { ...draft, imageDataUrl: "", imageUrl: imageUpload?.publicUrl || imageUrl.trim(), imageName: media.imageName, videoDataUrl: "", videoUrl: videoUpload?.publicUrl || videoUrl.trim(), videoName: media.videoName, voiceDataUrl: "", voiceName: media.voiceName, voiceSamplePath: voiceUpload?.storagePath || "", voice, whatsappPhone: whatsappPhone.replace(/\D/g, ""), knowledgeUrl: verifiedKnowledgeUrl, websiteKnowledge, knowledgeSummary: knowledgeNotes.trim() || draft.knowledgeSummary, mediaMode: preview.video ? "video" : preview.image ? "image" : "placeholder", syncMode: preview.video ? "speaking-loop" : "still-image", publishedAt: new Date().toISOString() };
+      const completed = { ...draft, imageDataUrl: "", imageUrl: imageUpload?.publicUrl || imageUrl.trim(), imageName: media.imageName, videoDataUrl: "", videoUrl: videoUpload?.publicUrl || videoUrl.trim(), videoName: media.videoName, voiceDataUrl: "", voiceName: media.voiceName, voiceSamplePath: voiceUpload?.storagePath || "", voice: voice === "elevenlabs" ? `elevenlabs:${elevenVoiceId.trim()}` : voice, whatsappPhone: whatsappPhone.replace(/\D/g, ""), knowledgeUrl: verifiedKnowledgeUrl, websiteKnowledge, knowledgeSummary: knowledgeNotes.trim() || draft.knowledgeSummary, mediaMode: preview.video ? "video" : preview.image ? "image" : "placeholder", syncMode: preview.video ? "speaking-loop" : "still-image", publishedAt: new Date().toISOString() };
       setWebsiteStatus("Salvataggio sicuro nel cloud…");
       const cloudResponse = await fetch("/api/avatar-creator", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "publish", avatar: completed }) });
       const cloudData = await readJsonResponse(cloudResponse, "Il server non ha restituito una risposta valida.");
@@ -122,7 +137,7 @@ export function AvatarCreator() {
     {draft ? <div className="creator-blocks">
       <CreatorBlock number="1" title="Azienda e identità" text="Controlla la configurazione proposta dall’AI."><div className="creator-fields"><Field label="Nome avatar" value={draft.name} onChange={(v) => updateDraft("name", v)} /><Field label="Azienda" value={draft.companyName} onChange={(v) => updateDraft("companyName", v)} /><Field label="Categoria" value={draft.category} onChange={(v) => updateDraft("category", v)} /><Field label="WhatsApp" placeholder="Es. 393457980259" value={whatsappPhone} onChange={setWhatsappPhone} /><label>Colore<input type="color" value={draft.accent} onChange={(e) => updateDraft("accent", e.target.value)} /></label><Field area wide label="Messaggio di benvenuto" value={draft.welcomeMessage || ""} onChange={(v) => updateDraft("welcomeMessage", v)} /><Field area wide label="Ruolo" value={draft.role} onChange={(v) => updateDraft("role", v)} /><Field area wide label="Tono" value={draft.tone} onChange={(v) => updateDraft("tone", v)} /></div></CreatorBlock>
       <CreatorBlock number="2" title="Immagine e video" text="Carica file leggeri per il test oppure usa URL pubblici."><div className="creator-media-grid"><label className="creator-upload">Foto avatar<input accept="image/jpeg,image/png,image/webp" type="file" onChange={(e) => selectMedia(e, "image")} /><small>{media.imageName || "JPG, PNG o WebP · max 1,5 MB"}</small></label><label className="creator-upload">Video avatar<input accept="video/mp4,video/webm" type="file" onChange={(e) => selectMedia(e, "video")} /><small>{media.videoName || "MP4 o WebM · max 3 MB"}</small></label><Field label="URL immagine" placeholder="https://…/avatar.jpg" value={imageUrl} onChange={setImageUrl} /><Field label="URL video" placeholder="https://…/avatar.mp4" value={videoUrl} onChange={setVideoUrl} /></div><div className="creator-preview">{preview.video ? <video autoPlay loop muted playsInline src={preview.video} /> : preview.image ? <img alt={`Anteprima ${draft.name}`} src={preview.image} /> : <div>{draft.name.slice(0, 1)}</div>}<span>{preview.video ? "Video pronto: si attiva quando parla" : preview.image ? "Foto pronta: lip-sync da generare" : "Aggiungi foto o video"}</span></div></CreatorBlock>
-      <CreatorBlock number="3" title="Voce" text="Scegli una voce oppure conserva un campione autorizzato per una futura clonazione."><div className="creator-inline"><select aria-label="Voce avatar" value={voice} onChange={(e) => setVoice(e.target.value)}><option value="openai:marin">OpenAI Marin · naturale</option><option value="openai:cedar">OpenAI Cedar · profonda</option><option value="openai:coral">OpenAI Coral · brillante</option><option value="openai:nova">OpenAI Nova · chiara</option><option value="openai:onyx">OpenAI Onyx · maschile</option><option value="browser-it">Voce italiana del dispositivo</option><option value="browser-female">Voce italiana femminile del dispositivo</option></select><button type="button" onClick={testVoice}>▶ Prova voce</button></div><label className="creator-upload creator-voice-upload">Campione voce autorizzato<input accept="audio/mpeg,audio/mp4,audio/wav,audio/webm" type="file" onChange={(e) => selectMedia(e, "voice")} /><small>{media.voiceName || "MP3, M4A, WAV o WebM · max 5 MB. Il caricamento non clona automaticamente la voce."}</small></label></CreatorBlock>
+      <CreatorBlock number="3" title="Voce" text="Scegli una voce oppure conserva un campione autorizzato per una futura clonazione."><div className="creator-inline"><select aria-label="Voce avatar" value={voice} onChange={(e) => setVoice(e.target.value)}><option value="elevenlabs">ElevenLabs · Voice ID personalizzato</option><option value="openai:marin">OpenAI Marin · naturale</option><option value="openai:cedar">OpenAI Cedar · profonda</option><option value="openai:coral">OpenAI Coral · brillante</option><option value="openai:nova">OpenAI Nova · chiara</option><option value="openai:onyx">OpenAI Onyx · maschile</option><option value="browser-it">Voce italiana del dispositivo</option><option value="browser-female">Voce italiana femminile del dispositivo</option></select><button type="button" onClick={testVoice}>▶ Prova voce</button></div>{voice === "elevenlabs" ? <Field label="ElevenLabs Voice ID" placeholder="Incolla il Voice ID" value={elevenVoiceId} onChange={setElevenVoiceId} /> : null}<label className="creator-upload creator-voice-upload">Campione voce autorizzato<input accept="audio/mpeg,audio/mp4,audio/wav,audio/webm" type="file" onChange={(e) => selectMedia(e, "voice")} /><small>{media.voiceName || "MP3, M4A, WAV o WebM · max 5 MB. Il caricamento non clona automaticamente la voce."}</small></label></CreatorBlock>
       <CreatorBlock number="4" title="Knowledge" text="Aggiungi il sito ufficiale e una conoscenza iniziale. Dopo il salvataggio potrai caricare tutti i PDF dal Knowledge Center."><div className="creator-fields"><Field wide label="Sito web" placeholder="https://www.azienda.it" value={knowledgeUrl} onChange={(value) => { setKnowledgeUrl(value); setWebsiteStatus(""); }} /><Field area wide label="Conoscenza iniziale" value={knowledgeNotes} onChange={setKnowledgeNotes} />{websiteStatus ? <p className="creator-website-status">✓ {websiteStatus}</p> : null}<div className="creator-upload creator-wide"><strong>Documenti PDF</strong><small>Disponibili nel Knowledge Center subito dopo la pubblicazione · fino a 10 MB.</small></div></div></CreatorBlock>
       <CreatorBlock number="5" title="Test e pubblicazione" text="Prima della pubblicazione controlliamo identità, media, voce e sito."><div className="creator-status-grid"><span className="is-ready">Identità</span><span className={preview.image || preview.video ? "is-ready" : ""}>Media</span><span className="is-ready">Voce</span><span className={knowledgeUrl.trim() || knowledgeNotes ? "is-ready" : ""}>Knowledge</span><span>{preview.video ? "Video parlante" : "Foto statica"}</span></div><label className="creator-consent"><input checked={consent} type="checkbox" onChange={(e) => setConsent(e.target.checked)} /> Confermo di avere l’autorizzazione a utilizzare immagine, video e voce caricati.</label><button className="creator-publish" disabled={publishLoading} type="button" onClick={publishAvatar}>{publishLoading ? "Importazione e pubblicazione…" : "Pubblica persona digitale"}</button></CreatorBlock>
     </div> : null}
