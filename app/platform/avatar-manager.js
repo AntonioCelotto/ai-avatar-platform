@@ -16,6 +16,9 @@ export default function AvatarManager({ client }) {
     whatsappPhone: client.whatsapp_phone || "",
     liveAvatarId: client.liveavatar_avatar_id || "",
     mediaMode: client.media_mode || (client.avatar_video_url ? "video" : client.avatar_poster_url ? "image" : "placeholder"),
+    voiceProvider: client.voice_provider || "openai",
+    voiceId: client.voice_id || "",
+    voiceLabel: client.voice_label || "",
     status: client.status || "active"
   });
   const update = (field, value) => setForm((current) => ({ ...current, [field]: value }));
@@ -48,6 +51,8 @@ export default function AvatarManager({ client }) {
     <label>WhatsApp<input placeholder="393..." value={form.whatsappPhone} onChange={(event) => update("whatsappPhone", event.target.value)} /></label>
     <label>Modalità avatar<select value={form.mediaMode} onChange={(event) => update("mediaMode", event.target.value)}><option value="image">Immagine statica</option><option value="video">Video parlante</option><option value="liveavatar">LiveAvatar sincronizzato</option><option value="placeholder">Da configurare</option></select></label>
     {form.mediaMode === "liveavatar" ? <label>ID LiveAvatar<input value={form.liveAvatarId} onChange={(event) => update("liveAvatarId", event.target.value)} /></label> : null}
+    <label>Provider voce<select value={form.voiceProvider} onChange={(event) => update("voiceProvider", event.target.value)}><option value="openai">OpenAI</option><option value="elevenlabs">ElevenLabs (voce personalizzata)</option></select></label>
+    {form.voiceProvider === "elevenlabs" ? <><label>Nome voce<input placeholder="Es. Fabio" value={form.voiceLabel} onChange={(event) => update("voiceLabel", event.target.value)} /></label><label>ElevenLabs Voice ID<input placeholder="ID voce ElevenLabs" value={form.voiceId} onChange={(event) => update("voiceId", event.target.value)} required /></label></> : null}
     <label>Stato<select value={form.status} onChange={(event) => update("status", event.target.value)}><option value="active">Online</option><option value="paused">In pausa</option><option value="draft">Bozza</option></select></label>
     {error ? <p className="creator-message creator-message--error">{error}</p> : null}
     <div className="avatar-manager-actions"><button disabled={working} type="submit">Salva modifiche</button>{!["new-digital-app", "demo-cliente-01"].includes(client.slug) ? <button className="danger-button" disabled={working} onClick={remove} type="button">Elimina AI</button> : null}</div>
