@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AvatarVideo } from "../../avatar-video";
 import CustomAssistant from "./custom-assistant";
+import AvatarInstall from "./install-avatar";
 
 const STORAGE_KEY = "avatarone:custom-avatars";
 
@@ -142,12 +143,14 @@ export default function CustomAvatar({ slug, initialAvatar }) {
         .avatar-immersive .assistant-workspace::before, .avatar-immersive .assistant-workspace::after, .avatar-immersive .assistant-panel::before, .avatar-immersive .assistant-panel::after, .avatar-immersive .action-dock::before, .avatar-immersive .action-dock::after, .avatar-immersive .composer::before, .avatar-immersive .composer::after { content: none !important; display: none !important; }
         @media (max-width: 600px) { .avatar-immersive .avatar-expand-toggle { font-size: 13px; } }
         .avatar-expand-toggle { position: absolute; top: max(12px, env(safe-area-inset-top)); right: 14px; z-index: 10; border: 1px solid #ffffff80; border-radius: 999px; padding: 10px 15px; background: #081a2dd9; color: white; font: 600 14px system-ui, sans-serif; cursor: pointer; }
+        .avatar-immersive .avatar-share-button { flex: 0 0 44px !important; width: 44px !important; height: 44px !important; }
         .avatar-immersive .mia-commercial-badge { right: 12px !important; max-width: calc(100% - 150px) !important; }
       `}</style>
       <div className="aurora aurora--coral" />
       <div className="aurora aurora--cyan" />
       <section className="avatar-stage" aria-label={tenant.assistantName} style={{ position: "relative" }}>
         <button type="button" className="avatar-expand-toggle" aria-label={immersive ? "Esci dalla modalità a tutto schermo" : "Espandi avatar a tutto schermo"} aria-pressed={immersive} onClick={() => setImmersive((value) => !value)}>{immersive ? "↙ Riduci" : "⛶ Espandi"}</button>
+        <AvatarInstall name={tenant.assistantName} />
         <div className="avatar-frame" aria-label={`Avatar ${tenant.spokenAssistantName}`}>
           {tenant.mediaMode === "video" && tenant.avatarVideo
             ? <AvatarVideo label={`Avatar video ${tenant.spokenAssistantName}`} poster={tenant.avatarPoster} src={tenant.avatarVideo} idleSrc={tenant.avatarIdleVideo} />
