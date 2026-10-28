@@ -7,16 +7,20 @@ export default function LiveAvatarSandbox() {
   const [session, setSession] = useState(null);
   const [connected, setConnected] = useState(false);
   const roomRef = useRef(null);
+  const socketRef = useRef(null);
+  const [voiceReady, setVoiceReady] = useState(false);
+  const [speakingTest, setSpeakingTest] = useState(false);
   const videoRef = useRef(null);
   const audioRef = useRef(null);
   const mountedRef = useRef(true);
 
   useEffect(() => {
     mountedRef.current = true;
-    return () => { mountedRef.current = false; roomRef.current?.disconnect(); roomRef.current = null; };
+    return () => { mountedRef.current = false; roomRef.current?.disconnect(); roomRef.current = null; socketRef.current?.close(); socketRef.current = null; };
   }, []);
 
   async function disconnect() {
+    socketRef.current?.close(); socketRef.current = null; setVoiceReady(false);
     const room = roomRef.current;
     roomRef.current = null;
     if (room) await room.disconnect();
@@ -68,6 +72,13 @@ export default function LiveAvatarSandbox() {
       for (const participant of room.remoteParticipants.values()) {
         for (const publication of participant.trackPublications.values()) if (publication.track) attach(publication.track);
       }
+      if (data.wsUrl && /^wss:\/\//.test(data.wsUrl)) {
+        const socket = new WebSocket(data.wsUrl);
+        socketRef.current = socket;
+        socket.onmessage = (event) => { try { const msg = JSON.parse(event.data); if (msg.type === "session.state_updated" && (msg.state === "connected" || msg.status === "connected")) setVoiceReady(true); } catch {} };
+        socket.onclose = () => setVoiceReady(false);
+        socket.onerror = () => setResult("Video attivo, ma canale voce non disponibile.");
+      }
       setConnected(true);
       setState("started");
       setResult("Streaming LiveKit collegato. Attendi che l'avatar appaia. Questo test non invia ancora audio per il lip-sync.");
@@ -77,6 +88,26 @@ export default function LiveAvatarSandbox() {
       setResult(error.message || "Errore di streaming");
       setState("error");
     }
+  }
+
+  async function speakTest() {
+    const socket = socketRef.current;
+    if (!socket || socket.readyState !== WebSocket.OPEN || !voiceReady) { setResult("Canale voce non ancora pronto."); return; }
+    setSpeakingTest(true);
+    try {
+      const response = await fetch("/api/liveavatar-test/speech", {method:"POST"});
+      if (!response.ok) { const data = await response.json(); throw new Error(data.error || "Voce non disponibile"); }
+      const pcm = new Uint8Array(await response.arrayBuffer());
+      const eventId = "sandbox-" + Date.now();
+      for (let offset = 0; offset < pcm.length; offset += 48000) {
+        const chunk = pcm.subarray(offset, offset + 48000);
+        let binary = "";
+        for (let i = 0; i < chunk.length; i += 8192) binary += String.fromCharCode(...chunk.subarray(i, i + 8192));
+        socket.send(JSON.stringify({type:"agent.speak",event_id:eventId,audio:btoa(binary)}));
+      }
+      socket.send(JSON.stringify({type:"agent.speak_end",event_id:eventId}));
+      setResult("Audio inviato a LiveAvatar. Controlla movimento della bocca e audio.");
+    } catch(error) {setResult(error.message);} finally {setSpeakingTest(false);}
   }
 
   async function enableAudio() {
@@ -91,6 +122,8 @@ export default function LiveAvatarSandbox() {
     <p>Le sessioni a pagamento sono disabilitate. Il lip-sync con ElevenLabs non e ancora collegato.</p>
     <button onClick={test} disabled={state==="loading" || connected} style={buttonStyle}>Verifica collegamento sandbox</button>
     {session && !connected ? <button onClick={start} disabled={state==="loading"} style={{...buttonStyle,background:"#047857"}}>Avvia streaming sandbox</button> : null}
+    {connected && voiceReady ? <button onClick={speakTest} disabled={speakingTest} style={{...buttonStyle,background:"#7c3aed"}}>{speakingTest ? "Invio audio..." : "Fai parlare l avatar"}</button> : null}
+    {connected && !voiceReady ? <p>Attendo collegamento del canale voce...</p> : null}
     {connected ? <button onClick={enableAudio} style={buttonStyle}>Attiva audio</button> : null}
     {connected ? <button onClick={disconnect} style={{...buttonStyle,background:"#b91c1c"}}>Termina streaming</button> : null}
     <p role="status">{result}</p>
