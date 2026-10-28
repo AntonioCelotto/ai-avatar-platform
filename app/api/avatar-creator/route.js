@@ -56,6 +56,7 @@ export async function POST(request) {
     if (!isSupabaseConfigured()) return Response.json({ error: "Archivio cloud non configurato." }, { status: 503 });
     const avatar = payload.avatar && typeof payload.avatar === "object" ? payload.avatar : null;
     if (!avatar?.slug || !avatar?.name || !avatar?.companyName) return Response.json({ error: "Configurazione avatar incompleta." }, { status: 400 });
+    if (String(avatar.voice || "").startsWith("elevenlabs:") && !/^elevenlabs:[a-zA-Z0-9]{15,40}$/.test(avatar.voice)) return Response.json({ error: "Voice ID ElevenLabs non valido." }, { status: 400 });
     try {
       const [uploadedImage, uploadedVideo, uploadedVoice] = await Promise.all([
         avatar.imageDataUrl ? uploadAvatarMedia({ dataUrl: avatar.imageDataUrl, fileName: avatar.imageName, slug: avatar.slug, kind: "image" }) : "",
