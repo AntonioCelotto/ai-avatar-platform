@@ -16,6 +16,7 @@ export default function CustomAvatar({ slug, initialAvatar }) {
     name: initialAvatar.spoken_avatar_name || initialAvatar.avatar_name,
     imageUrl: initialAvatar.avatar_poster_url || "",
     videoUrl: initialAvatar.avatar_video_url || "",
+    idleVideoUrl: initialAvatar.features?.idleVideoUrl || "",
     mediaMode: initialAvatar.media_mode,
     voice: initialAvatar.voice_provider,
     voiceId: initialAvatar.voice_id || "",
@@ -71,6 +72,7 @@ export default function CustomAvatar({ slug, initialAvatar }) {
     welcomeMessage: avatar.welcomeMessage,
     inputPlaceholder: `Scrivi a ${avatar.name}`,
     avatarVideo: avatar.videoDataUrl || avatar.videoUrl || "",
+    avatarIdleVideo: avatar.idleVideoUrl || "",
     avatarPoster: avatar.imageDataUrl || avatar.imageUrl || "",
     brandMark: avatar.name.toUpperCase().slice(0, 12),
     whatsappPhone: avatar.whatsappPhone || "",
@@ -148,7 +150,7 @@ export default function CustomAvatar({ slug, initialAvatar }) {
         <button type="button" className="avatar-expand-toggle" aria-label={immersive ? "Esci dalla modalità a tutto schermo" : "Espandi avatar a tutto schermo"} aria-pressed={immersive} onClick={() => setImmersive((value) => !value)}>{immersive ? "↙ Riduci" : "⛶ Espandi"}</button>
         <div className="avatar-frame" aria-label={`Avatar ${tenant.spokenAssistantName}`}>
           {tenant.mediaMode === "video" && tenant.avatarVideo
-            ? <AvatarVideo label={`Avatar video ${tenant.spokenAssistantName}`} poster={tenant.avatarPoster} src={tenant.avatarVideo} />
+            ? <AvatarVideo label={`Avatar video ${tenant.spokenAssistantName}`} poster={tenant.avatarPoster} src={tenant.avatarVideo} idleSrc={tenant.avatarIdleVideo} />
             : tenant.avatarPoster
               ? <img className="custom-avatar-image" alt={`Avatar ${tenant.spokenAssistantName}`} src={tenant.avatarPoster} />
               : <div className="custom-avatar-placeholder" aria-label="Immagine avatar non disponibile">{tenant.spokenAssistantName.slice(0, 1)}</div>}
