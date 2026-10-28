@@ -105,14 +105,21 @@ export default function CustomAvatar({ slug, initialAvatar }) {
         .custom-avatar-shell.avatar-immersive { position: fixed !important; inset: 0 !important; width: 100vw !important; height: 100dvh !important; max-width: none !important; max-height: none !important; margin: 0 !important; padding: 0 !important; border-radius: 0 !important; overflow: hidden !important; z-index: 2147483000 !important; display: flex !important; flex-direction: column !important; background: #06121e !important; }
         .avatar-immersive .avatar-stage { flex: 1 1 auto !important; min-height: 0 !important; height: auto !important; width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; display: flex !important; align-items: center !important; justify-content: center !important; }
         .avatar-immersive .avatar-frame { width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; border-radius: 0 !important; }
-        .avatar-immersive .assistant-workspace { flex: 0 0 auto !important; width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; position: relative !important; z-index: 4 !important; }
-        .avatar-immersive .assistant-panel { padding: 10px 14px max(12px, env(safe-area-inset-bottom)) !important; border-radius: 0 !important; min-height: 0 !important; height: auto !important; max-height: 185px !important; background: #071825ee !important; }
+        .avatar-immersive .assistant-workspace { position: absolute !important; bottom: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; z-index: 8 !important; pointer-events: none !important; }
+        .avatar-immersive .assistant-panel { pointer-events: none !important; padding: 40px 14px max(18px, env(safe-area-inset-bottom)) !important; border: 0 !important; box-shadow: none !important; border-radius: 0 !important; min-height: 0 !important; height: auto !important; max-height: none !important; background: linear-gradient(transparent, #071825aa) !important; }
         .avatar-immersive .assistant-panel .messages, .avatar-immersive .assistant-panel .suggestions, .avatar-immersive .assistant-panel .order-bar { display: none !important; }
-        .avatar-immersive .assistant-panel .assistant-header { margin-bottom: 8px !important; padding: 0 !important; }
-        .avatar-immersive .assistant-panel .action-dock { margin: 0 !important; }
+        .avatar-immersive .assistant-panel .assistant-header { display: none !important; }
+        .avatar-immersive .assistant-panel .action-dock { pointer-events: auto !important; display: flex !important; justify-content: center !important; align-items: center !important; gap: 12px !important; margin: 0 auto !important; width: min(100%, 320px) !important; background: transparent !important; border: 0 !important; box-shadow: none !important; }
         .avatar-immersive .assistant-panel .composer input { display: none !important; }
         .avatar-immersive .assistant-panel .composer .send-button { display: none !important; }
-        .avatar-immersive .assistant-panel .composer { justify-content: center !important; }
+        .avatar-immersive .assistant-panel .composer { flex: 0 0 auto !important; width: auto !important; justify-content: center !important; padding: 0 !important; background: transparent !important; border: 0 !important; box-shadow: none !important; }
+        .avatar-immersive .assistant-panel .composer .icon-button { width: 70px !important; height: 70px !important; border-radius: 50% !important; background: #008c86dd !important; box-shadow: 0 6px 25px #0008 !important; }
+        .avatar-immersive .assistant-panel .whatsapp-link { width: 46px !important; height: 46px !important; min-width: 46px !important; padding: 0 !important; border-radius: 50% !important; font-size: 0 !important; overflow: hidden !important; justify-content: center !important; }
+        .avatar-immersive .assistant-panel .whatsapp-link .whatsapp-icon { font-size: 20px !important; }
+        .avatar-immersive .assistant-panel .action-dock--chat-only { justify-content: center !important; }
+        .avatar-immersive .avatar-frame .custom-avatar-image, .avatar-immersive .avatar-frame video { object-fit: contain !important; }
+        .avatar-immersive .avatar-frame { background: #06121e !important; }
+        @media (max-width: 600px) { .avatar-immersive .avatar-expand-toggle { font-size: 13px; } }
         .avatar-expand-toggle { position: absolute; top: max(12px, env(safe-area-inset-top)); right: 14px; z-index: 10; border: 1px solid #ffffff80; border-radius: 999px; padding: 10px 15px; background: #081a2dd9; color: white; font: 600 14px system-ui, sans-serif; cursor: pointer; }
         .avatar-immersive .mia-commercial-badge { right: 12px !important; max-width: calc(100% - 150px) !important; }
       `}</style>
