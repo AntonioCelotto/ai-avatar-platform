@@ -24,7 +24,7 @@ export async function POST(request) {
     `Ruolo: ${String(avatar.personality?.role || "assistente digitale").slice(0, 500)}.`,
     `Tono: ${String(avatar.personality?.tone || "naturale e professionale").slice(0, 500)}.`,
     `Conoscenza aziendale verificata:\n${knowledge || String(avatar.notes || "").slice(0, 1200)}`,
-    "Rispondi in italiano, in modo breve, chiaro e coerente, senza Markdown.",
+    "Rispondi in italiano in 2 o 3 frasi complete, chiare e naturali, senza Markdown. Mantieni ogni risposta entro 350 caratteri, così l’avatar può pronunciarla interamente. Non interrompere mai una frase.",
     "Usa solo i fatti della conoscenza di questo avatar. Non utilizzare dati di altri clienti.",
     "Non inventare prezzi, orari, indirizzi, disponibilità o servizi. Se il dato manca, proponi il contatto con l’azienda."
   ].join("\n");
@@ -32,7 +32,15 @@ export async function POST(request) {
     const response = await fetch("https://api.openai.com/v1/responses", { method: "POST", headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ model: process.env.OPENAI_MODEL || "gpt-5.2", instructions, input: messages }) });
     if (!response.ok) return Response.json({ error: "Risposta AI non disponibile." }, { status: 502 });
     const data = await response.json();
-    const reply = String(data.output_text || data.output?.flatMap((item) => item.content || []).map((item) => item.text || "").join("") || "").replace(/\*\*|__|`/g, "").trim().slice(0, 4000);
+    const rawReply = String(data.output_text || data.output?.flatMap((item) => item.content || []).map((item) => item.text || "").join("") || "").replace(/\*\*|__|`/g, "").trim();
+    const speechLimit = 380;
+    let reply = rawReply;
+    if (reply.length > speechLimit) {
+      const within = reply.slice(0, speechLimit);
+      const sentences = [...within.matchAll(/[.!?](?=\\s|$)/g)];
+      const last = sentences.at(-1);
+      reply = last && last.index > 80 ? within.slice(0, last.index + 1).trim() : within.slice(0, within.lastIndexOf(" ")).trim().replace(/[,;:\\s]+$/, "") + ".";
+    }
     if (!reply) return Response.json({ error: "Risposta AI vuota." }, { status: 502 });
     insertUsageEvent({ clientId: avatar.id, eventType: "chat", units: 1, metadata: { ip: requestIp(request), inputCharacters: messages.at(-1)?.content?.length || 0, outputCharacters: reply.length } }).catch(() => {});
     return Response.json({ reply }, { headers: { "Cache-Control": "no-store" } });
