@@ -50,7 +50,7 @@ export async function listAvatarClients() {
   if (!isSupabaseConfigured()) return [];
 
   return supabaseFetch(
-    "/rest/v1/avatar_clients?select=id,slug,company_name,category,status,website,whatsapp_phone,avatar_name,spoken_avatar_name,avatar_poster_url,avatar_video_url,media_mode,liveavatar_avatar_id,voice_provider,voice_id,voice_label,brand_mark,welcome_message,features,created_at,updated_at&order=created_at.asc"
+    "/rest/v1/avatar_clients?select=id,slug,company_name,category,status,website,whatsapp_phone,avatar_name,spoken_avatar_name,avatar_poster_url,avatar_video_url,features,media_mode,liveavatar_avatar_id,voice_provider,voice_id,voice_label,brand_mark,welcome_message,features,created_at,updated_at&order=created_at.asc"
   );
 }
 
@@ -58,7 +58,7 @@ export async function getAvatarClientBySlug(slug = DEFAULT_TENANT_SLUG) {
   if (!isSupabaseConfigured()) return null;
   const safeSlug = encodeURIComponent(slug);
   const rows = await supabaseFetch(
-    `/rest/v1/avatar_clients?slug=eq.${safeSlug}&select=id,slug,company_name,category,status,website,whatsapp_phone,avatar_name,spoken_avatar_name,avatar_poster_url,avatar_video_url,media_mode,voice_provider,voice_id,voice_label,liveavatar_avatar_id,brand_mark,welcome_message,input_placeholder,suggestions,theme,personality,notes,features,plan_code,monthly_chat_limit,monthly_speech_character_limit,commercial_status,created_at,updated_at&limit=1`
+    `/rest/v1/avatar_clients?slug=eq.${safeSlug}&select=id,slug,company_name,category,status,website,whatsapp_phone,avatar_name,spoken_avatar_name,avatar_poster_url,avatar_video_url,features,media_mode,voice_provider,voice_id,voice_label,liveavatar_avatar_id,brand_mark,welcome_message,input_placeholder,suggestions,theme,personality,notes,features,plan_code,monthly_chat_limit,monthly_speech_character_limit,commercial_status,created_at,updated_at&limit=1`
   );
   return rows?.[0] || null;
 }
@@ -144,7 +144,7 @@ export async function uploadAvatarMedia({ dataUrl, fileName, slug, kind }) {
 
 export async function createAvatarMediaSignedUpload({ fileName, fileType, slug, kind }) {
   const safeSlug = String(slug || "avatar").replace(/[^a-zA-Z0-9_.-]+/g, "-").toLowerCase();
-  const safeKind = ["image", "video", "voice"].includes(kind) ? kind : "image";
+  const safeKind = ["image", "video", "idle", "voice"].includes(kind) ? kind : "image";
   const extension = String(fileType || "").split("/")[1]?.replace("jpeg", "jpg") || (safeKind === "video" ? "mp4" : safeKind === "voice" ? "mp3" : "jpg");
   const safeName = String(fileName || `${safeKind}.${extension}`).replace(/[^a-zA-Z0-9_.-]+/g, "-").toLowerCase();
   const storagePath = `${safeSlug}/${safeKind}-${Date.now()}-${safeName}`;
