@@ -28,6 +28,7 @@ export async function PATCH(request) {
     voice_label: String(payload.voiceLabel ?? current.voice_label ?? "").trim().slice(0, 100) || null,
     ...(payload.avatarPosterUrl !== undefined ? { avatar_poster_url: String(payload.avatarPosterUrl || "").trim() || null } : {}),
     ...(payload.avatarVideoUrl !== undefined ? { avatar_video_url: String(payload.avatarVideoUrl || "").trim() || null } : {}),
+    ...(payload.idleVideoUrl !== undefined ? { features: { ...(current.features || {}), idleVideoUrl: String(payload.idleVideoUrl || "").trim() } } : {}),
     updated_at: new Date().toISOString()
   };
   if (changes.voice_provider === "elevenlabs" && !/^[a-zA-Z0-9]{15,40}$/.test(changes.voice_id || "")) return Response.json({ error: "Inserisci un Voice ID ElevenLabs valido." }, { status: 400 });
@@ -36,6 +37,10 @@ export async function PATCH(request) {
       const expected = `https://${process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/^https?:\/\//, "")}/storage/v1/object/public/avatar-media/${slug}/`;
       if (!changes[key].startsWith(expected)) return Response.json({ error: "Il file deve essere caricato nello storage AvatarOne." }, { status: 400 });
     }
+  }
+  if (changes.features?.idleVideoUrl) {
+    const expected = `https://${process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/^https?:\/\//, "")}/storage/v1/object/public/avatar-media/${slug}/`;
+    if (!changes.features.idleVideoUrl.startsWith(expected)) return Response.json({ error: "Video di attesa non valido." }, { status: 400 });
   }
   const saved = await updateAvatarClient(slug, changes);
   return Response.json({ ok: true, avatar: saved });
