@@ -23,8 +23,12 @@ export async function PATCH(request) {
     liveavatar_avatar_id: String(payload.liveAvatarId || "").trim().slice(0, 160) || null,
     media_mode: ["image", "video", "liveavatar", "placeholder"].includes(payload.mediaMode) ? payload.mediaMode : current.media_mode,
     status: allowedStatus.includes(payload.status) ? payload.status : current.status,
+    voice_provider: ["openai", "elevenlabs"].includes(payload.voiceProvider) ? payload.voiceProvider : current.voice_provider,
+    voice_id: String(payload.voiceId ?? current.voice_id ?? "").trim().slice(0, 100) || null,
+    voice_label: String(payload.voiceLabel ?? current.voice_label ?? "").trim().slice(0, 100) || null,
     updated_at: new Date().toISOString()
   };
+  if (changes.voice_provider === "elevenlabs" && !/^[a-zA-Z0-9]{15,40}$/.test(changes.voice_id || "")) return Response.json({ error: "Inserisci un Voice ID ElevenLabs valido." }, { status: 400 });
   const saved = await updateAvatarClient(slug, changes);
   return Response.json({ ok: true, avatar: saved });
 }
