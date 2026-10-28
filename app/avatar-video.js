@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const mediaStyle = {
   width: "100%",
@@ -14,6 +14,7 @@ const mediaStyle = {
 
 export function AvatarVideo({ label = "Avatar video Mia", poster, src = "/mia-avatar-video.mp4" }) {
   const videoRef = useRef(null);
+  const [speaking, setSpeaking] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -58,6 +59,7 @@ export function AvatarVideo({ label = "Avatar video Mia", poster, src = "/mia-av
         document.documentElement.dataset.miaAvatarState === "speaking";
 
       video.muted = true;
+      setSpeaking(isSpeaking);
 
       if (isSpeaking) {
         playWhileSpeaking();
@@ -91,6 +93,7 @@ export function AvatarVideo({ label = "Avatar video Mia", poster, src = "/mia-av
   }, [src]);
 
   return (
+    <div style={{ position: "relative", width: "100%", height: "100%" }}>
     <video
       aria-label={label}
       loop
@@ -102,5 +105,7 @@ export function AvatarVideo({ label = "Avatar video Mia", poster, src = "/mia-av
       src={src}
       style={mediaStyle}
     />
+    {poster ? <img src={poster} alt={`${label} in attesa`} style={{ ...mediaStyle, position: "absolute", inset: 0, opacity: speaking ? 0 : 1, pointerEvents: "none", transition: "opacity 180ms ease" }} /> : null}
+    </div>
   );
 }
