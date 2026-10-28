@@ -9,12 +9,13 @@ export default function AvatarManager({ client }) {
   const [working, setWorking] = useState(false);
   const [error, setError] = useState("");
   const [mediaUploading, setMediaUploading] = useState(false);
+  const [mediaNotice, setMediaNotice] = useState("");
   const [posterUrl, setPosterUrl] = useState(client.avatar_poster_url || "");
   const [videoUrl, setVideoUrl] = useState(client.avatar_video_url || "");
   async function uploadMedia(file, kind) {
     if (!file) return;
     if (file.size > 30 * 1024 * 1024) { setError("File troppo grande: massimo 30 MB."); return; }
-    setMediaUploading(true); setError("");
+    setMediaUploading(true); setError(""); setMediaNotice("");
     try {
       const prep = await fetch("/api/avatar-creator", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "create_media_upload", slug: client.slug, kind, fileName: file.name, fileType: file.type }) });
       const data = await prep.json();
@@ -23,7 +24,12 @@ export default function AvatarManager({ client }) {
       if (!sent.ok) throw new Error("Caricamento file non riuscito.");
       const url = data.upload.publicUrl || data.upload.url;
       if (!url) throw new Error("URL del file non disponibile.");
+      const changes = kind === "image" ? { avatarPosterUrl: url } : { avatarVideoUrl: url, mediaMode: "video" };
+      const saved = await fetch("/api/avatar-clients", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: client.slug, ...changes }) });
+      const result = await saved.json();
+      if (!saved.ok) throw new Error(result.error || "Il file è stato caricato ma non associato all’avatar.");
       if (kind === "image") setPosterUrl(url); else { setVideoUrl(url); update("mediaMode", "video"); }
+      setMediaNotice(`${kind === "image" ? "Fotografia" : "Video"} caricato e salvato sull’avatar. Puoi aprire il link pubblico per provarlo.`);
     } catch (e) { setError(e.message); } finally { setMediaUploading(false); }
   }
   const [form, setForm] = useState({
@@ -44,6 +50,7 @@ export default function AvatarManager({ client }) {
   async function save(event) {
     event.preventDefault(); setWorking(true); setError("");
     try {
+      if (form.mediaMode === "video" && !videoUrl) throw new Error("Hai scelto Video parlante, ma manca il file MP4. Caricalo prima di salvare.");
       const response = await fetch("/api/avatar-clients", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: client.slug, ...form, avatarPosterUrl: posterUrl, avatarVideoUrl: videoUrl }) });
       const data = await response.json(); if (!response.ok) throw new Error(data.error || "Salvataggio non riuscito.");
       setOpen(false); router.refresh();
@@ -69,8 +76,9 @@ export default function AvatarManager({ client }) {
     <label>WhatsApp<input placeholder="393..." value={form.whatsappPhone} onChange={(event) => update("whatsappPhone", event.target.value)} /></label>
     <label>Foto avatar (sostituisci)<input type="file" accept="image/png,image/jpeg,image/webp" disabled={mediaUploading || working} onChange={(event) => uploadMedia(event.target.files?.[0], "image")} /></label>
     <label>Video avatar MP4 (sostituisci)<input type="file" accept="video/mp4,video/webm" disabled={mediaUploading || working} onChange={(event) => uploadMedia(event.target.files?.[0], "video")} /></label>
-    {mediaUploading ? <p>Caricamento file in corso…</p> : null}
-    {videoUrl ? <p>Video caricato. Premi Salva modifiche per attivarlo.</p> : null}
+    {mediaUploading ? <p>Caricamento e salvataggio file in corso… Attendi la conferma.</p> : null}
+    {mediaNotice ? <p role="status">{mediaNotice}</p> : null}
+    {videoUrl ? <p>Video MP4 associato all’avatar.</p> : <p>Video MP4 non ancora caricato.</p>}
     <label>Modalità avatar<select value={form.mediaMode} onChange={(event) => update("mediaMode", event.target.value)}><option value="image">Immagine statica</option><option value="video">Video parlante</option><option value="liveavatar">LiveAvatar sincronizzato</option><option value="placeholder">Da configurare</option></select></label>
     {form.mediaMode === "liveavatar" ? <label>ID LiveAvatar<input value={form.liveAvatarId} onChange={(event) => update("liveAvatarId", event.target.value)} /></label> : null}
     <label>Provider voce<select value={form.voiceProvider} onChange={(event) => update("voiceProvider", event.target.value)}><option value="openai">OpenAI</option><option value="elevenlabs">ElevenLabs (voce personalizzata)</option></select></label>
