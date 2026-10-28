@@ -37,9 +37,9 @@ export async function POST(request) {
     let reply = rawReply;
     if (reply.length > speechLimit) {
       const within = reply.slice(0, speechLimit);
-      const sentences = [...within.matchAll(/[.!?](?=\\s|$)/g)];
+      const sentences = [...within.matchAll(/[.!?](?=\s|$)/g)];
       const last = sentences.at(-1);
-      reply = last && last.index > 80 ? within.slice(0, last.index + 1).trim() : within.slice(0, within.lastIndexOf(" ")).trim().replace(/[,;:\\s]+$/, "") + ".";
+      reply = last && last.index > 80 ? within.slice(0, last.index + 1).trim() : within.slice(0, within.lastIndexOf(" ")).trim().replace(/[,;:\s]+$/, "") + ".";
     }
     if (!reply) return Response.json({ error: "Risposta AI vuota." }, { status: 502 });
     insertUsageEvent({ clientId: avatar.id, eventType: "chat", units: 1, metadata: { ip: requestIp(request), inputCharacters: messages.at(-1)?.content?.length || 0, outputCharacters: reply.length } }).catch(() => {});
