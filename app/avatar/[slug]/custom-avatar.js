@@ -8,6 +8,7 @@ import CustomAssistant from "./custom-assistant";
 const STORAGE_KEY = "avatarone:custom-avatars";
 
 export default function CustomAvatar({ slug, initialAvatar }) {
+  const [immersive, setImmersive] = useState(false);
   const [avatar, setAvatar] = useState(() => initialAvatar ? {
     slug: initialAvatar.slug,
     companyName: initialAvatar.company_name,
@@ -39,6 +40,13 @@ export default function CustomAvatar({ slug, initialAvatar }) {
       setAvatar(null);
     }
   }, [initialAvatar, slug]);
+
+  useEffect(() => {
+    if (!immersive) return;
+    const onKey = (event) => { if (event.key === "Escape") setImmersive(false); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [immersive]);
 
   if (avatar === undefined) return null;
 
@@ -92,10 +100,26 @@ export default function CustomAvatar({ slug, initialAvatar }) {
   };
 
   return (
-    <main className="mobile-chat-shell custom-avatar-shell" style={tenant.theme}>
+    <main className={`mobile-chat-shell custom-avatar-shell ${immersive ? "avatar-immersive" : ""}`} style={tenant.theme}>
+      <style>{`
+        .custom-avatar-shell.avatar-immersive { position: fixed !important; inset: 0 !important; width: 100vw !important; height: 100dvh !important; max-width: none !important; max-height: none !important; margin: 0 !important; padding: 0 !important; border-radius: 0 !important; overflow: hidden !important; z-index: 2147483000 !important; display: flex !important; flex-direction: column !important; background: #06121e !important; }
+        .avatar-immersive .avatar-stage { flex: 1 1 auto !important; min-height: 0 !important; height: auto !important; width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; display: flex !important; align-items: center !important; justify-content: center !important; }
+        .avatar-immersive .avatar-frame { width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; border-radius: 0 !important; }
+        .avatar-immersive .assistant-workspace { flex: 0 0 auto !important; width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; position: relative !important; z-index: 4 !important; }
+        .avatar-immersive .assistant-panel { padding: 10px 14px max(12px, env(safe-area-inset-bottom)) !important; border-radius: 0 !important; min-height: 0 !important; height: auto !important; max-height: 185px !important; background: #071825ee !important; }
+        .avatar-immersive .assistant-panel .messages, .avatar-immersive .assistant-panel .suggestions, .avatar-immersive .assistant-panel .order-bar { display: none !important; }
+        .avatar-immersive .assistant-panel .assistant-header { margin-bottom: 8px !important; padding: 0 !important; }
+        .avatar-immersive .assistant-panel .action-dock { margin: 0 !important; }
+        .avatar-immersive .assistant-panel .composer input { display: none !important; }
+        .avatar-immersive .assistant-panel .composer .send-button { display: none !important; }
+        .avatar-immersive .assistant-panel .composer { justify-content: center !important; }
+        .avatar-expand-toggle { position: absolute; top: max(12px, env(safe-area-inset-top)); right: 14px; z-index: 10; border: 1px solid #ffffff80; border-radius: 999px; padding: 10px 15px; background: #081a2dd9; color: white; font: 600 14px system-ui, sans-serif; cursor: pointer; }
+        .avatar-immersive .mia-commercial-badge { right: 12px !important; max-width: calc(100% - 150px) !important; }
+      `}</style>
       <div className="aurora aurora--coral" />
       <div className="aurora aurora--cyan" />
-      <section className="avatar-stage" aria-label={tenant.assistantName}>
+      <section className="avatar-stage" aria-label={tenant.assistantName} style={{ position: "relative" }}>
+        <button type="button" className="avatar-expand-toggle" aria-label={immersive ? "Esci dalla modalità a tutto schermo" : "Espandi avatar a tutto schermo"} aria-pressed={immersive} onClick={() => setImmersive((value) => !value)}>{immersive ? "↙ Riduci" : "⛶ Espandi"}</button>
         <div className="avatar-frame" aria-label={`Avatar ${tenant.spokenAssistantName}`}>
           {tenant.mediaMode === "video" && tenant.avatarVideo
             ? <AvatarVideo label={`Avatar video ${tenant.spokenAssistantName}`} poster={tenant.avatarPoster} src={tenant.avatarVideo} />
