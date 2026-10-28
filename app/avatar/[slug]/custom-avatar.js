@@ -119,6 +119,15 @@ export default function CustomAvatar({ slug, initialAvatar }) {
         .avatar-immersive .assistant-panel .action-dock--chat-only { justify-content: center !important; }
         .avatar-immersive .avatar-frame .custom-avatar-image, .avatar-immersive .avatar-frame video { object-fit: contain !important; }
         .avatar-immersive .avatar-frame { background: #06121e !important; }
+        .avatar-immersive .assistant-workspace { top: 76px !important; right: 12px !important; bottom: auto !important; left: auto !important; width: 48px !important; }
+        .avatar-immersive .assistant-panel { width: 48px !important; padding: 0 !important; background: transparent !important; }
+        .avatar-immersive .assistant-panel .action-dock { flex-direction: column !important; gap: 8px !important; width: 48px !important; }
+        .avatar-immersive .assistant-panel .composer { width: 48px !important; }
+        .avatar-immersive .assistant-panel .composer .icon-button { width: 44px !important; height: 44px !important; min-width: 44px !important; }
+        .avatar-immersive .assistant-panel .composer .voice-label { display: none !important; }
+        .avatar-immersive .assistant-panel .whatsapp-link { width: 42px !important; height: 42px !important; min-width: 42px !important; }
+        .avatar-immersive .avatar-stage, .avatar-immersive .avatar-frame { height: 100dvh !important; }
+        .avatar-immersive .avatar-expand-toggle { padding: 8px 11px !important; font-size: 12px !important; }
         @media (max-width: 600px) { .avatar-immersive .avatar-expand-toggle { font-size: 13px; } }
         .avatar-expand-toggle { position: absolute; top: max(12px, env(safe-area-inset-top)); right: 14px; z-index: 10; border: 1px solid #ffffff80; border-radius: 999px; padding: 10px 15px; background: #081a2dd9; color: white; font: 600 14px system-ui, sans-serif; cursor: pointer; }
         .avatar-immersive .mia-commercial-badge { right: 12px !important; max-width: calc(100% - 150px) !important; }
