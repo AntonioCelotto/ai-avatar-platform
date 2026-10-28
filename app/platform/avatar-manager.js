@@ -12,6 +12,7 @@ export default function AvatarManager({ client }) {
   const [mediaNotice, setMediaNotice] = useState("");
   const [posterUrl, setPosterUrl] = useState(client.avatar_poster_url || "");
   const [videoUrl, setVideoUrl] = useState(client.avatar_video_url || "");
+  const [idleVideoUrl, setIdleVideoUrl] = useState(client.features?.idleVideoUrl || "");
   async function uploadMedia(file, kind) {
     if (!file) return;
     if (file.size > 30 * 1024 * 1024) { setError("File troppo grande: massimo 30 MB."); return; }
@@ -24,11 +25,11 @@ export default function AvatarManager({ client }) {
       if (!sent.ok) throw new Error("Caricamento file non riuscito.");
       const url = data.upload.publicUrl || data.upload.url;
       if (!url) throw new Error("URL del file non disponibile.");
-      const changes = kind === "image" ? { avatarPosterUrl: url } : { avatarVideoUrl: url, mediaMode: "video" };
+      const changes = kind === "image" ? { avatarPosterUrl: url } : kind === "idle" ? { idleVideoUrl: url } : { avatarVideoUrl: url, mediaMode: "video" };
       const saved = await fetch("/api/avatar-clients", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: client.slug, ...changes }) });
       const result = await saved.json();
       if (!saved.ok) throw new Error(result.error || "Il file è stato caricato ma non associato all’avatar.");
-      if (kind === "image") setPosterUrl(url); else { setVideoUrl(url); update("mediaMode", "video"); }
+      if (kind === "image") setPosterUrl(url); else if (kind === "idle") setIdleVideoUrl(url); else { setVideoUrl(url); update("mediaMode", "video"); }
       setMediaNotice(`${kind === "image" ? "Fotografia" : "Video"} caricato e salvato sull’avatar. Puoi aprire il link pubblico per provarlo.`);
     } catch (e) { setError(e.message); } finally { setMediaUploading(false); }
   }
@@ -51,7 +52,7 @@ export default function AvatarManager({ client }) {
     event.preventDefault(); setWorking(true); setError("");
     try {
       if (form.mediaMode === "video" && !videoUrl) throw new Error("Hai scelto Video parlante, ma manca il file MP4. Caricalo prima di salvare.");
-      const response = await fetch("/api/avatar-clients", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: client.slug, ...form, avatarPosterUrl: posterUrl, avatarVideoUrl: videoUrl }) });
+      const response = await fetch("/api/avatar-clients", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: client.slug, ...form, avatarPosterUrl: posterUrl, avatarVideoUrl: videoUrl, idleVideoUrl }) });
       const data = await response.json(); if (!response.ok) throw new Error(data.error || "Salvataggio non riuscito.");
       setOpen(false); router.refresh();
     } catch (saveError) { setError(saveError.message); }
@@ -76,6 +77,8 @@ export default function AvatarManager({ client }) {
     <label>WhatsApp<input placeholder="393..." value={form.whatsappPhone} onChange={(event) => update("whatsappPhone", event.target.value)} /></label>
     <label>Foto avatar (sostituisci)<input type="file" accept="image/png,image/jpeg,image/webp" disabled={mediaUploading || working} onChange={(event) => uploadMedia(event.target.files?.[0], "image")} /></label>
     <label>Video avatar MP4 (sostituisci)<input type="file" accept="video/mp4,video/webm" disabled={mediaUploading || working} onChange={(event) => uploadMedia(event.target.files?.[0], "video")} /></label>
+    <label>Video di attesa MP4 (loop silenzioso)<input type="file" accept="video/mp4" disabled={mediaUploading || working} onChange={(event) => uploadMedia(event.target.files?.[0], "idle")} /></label>
+    {idleVideoUrl ? <p>Video di attesa associato.</p> : null}
     {mediaUploading ? <p>Caricamento e salvataggio file in corso… Attendi la conferma.</p> : null}
     {mediaNotice ? <p role="status">{mediaNotice}</p> : null}
     {videoUrl ? <p>Video MP4 associato all’avatar.</p> : <p>Video MP4 non ancora caricato.</p>}
