@@ -11,6 +11,7 @@ export default function CustomAssistant({ tenant }) {
   const [canUseSpeech, setCanUseSpeech] = useState(false);
   const recognitionRef = useRef(null);
   const audioRef = useRef(null);
+  const speechSequenceRef = useRef(0);
 
   const lastAssistantMessage = [...messages].reverse().find((item) => item.role === "assistant")?.content || tenant.orderFallbackText;
   const whatsappUrl = tenant.whatsappPhone
@@ -54,10 +55,14 @@ export default function CustomAssistant({ tenant }) {
     window.speechSynthesis.speak(utterance);
   }
 
-  async function speak(text) {
+  async function speak(text, onAudioStart = () => {}) {
+    const sequence = ++speechSequenceRef.current;
+    let revealed = false;
+    const reveal = () => { if (!revealed && sequence === speechSequenceRef.current) { revealed = true; onAudioStart(); } };
     const clean = cleanSpeech(text);
     if (!clean) return;
     if (tenant.voice === "browser" || String(tenant.voice).startsWith("browser")) {
+      reveal();
       speakWithBrowser(clean);
       return;
     }
@@ -77,13 +82,13 @@ export default function CustomAssistant({ tenant }) {
       const url = URL.createObjectURL(await response.blob());
       const audio = new Audio(url);
       audioRef.current = audio;
-      audio.onplaying = () => setSpeaking(true);
+      audio.onplaying = () => { reveal(); setSpeaking(true); };
       audio.onended = () => { setSpeaking(false); URL.revokeObjectURL(url); };
       audio.onerror = () => { setSpeaking(false); URL.revokeObjectURL(url); };
-      setSpeaking(true);
       await audio.play();
     } catch {
       setSpeaking(false);
+      reveal();
       speakWithBrowser(clean);
     }
   }
@@ -104,9 +109,8 @@ export default function CustomAssistant({ tenant }) {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error);
       const reply = data.reply || "Non ho trovato una risposta.";
-      setMessages((current) => [...current, { role: "assistant", content: reply }]);
+      await speak(reply, () => setMessages((current) => [...current, { role: "assistant", content: reply }]));
       setLoading(false);
-      speak(reply);
     } catch {
       const fallback = "Non riesco a rispondere in questo momento. Riprova tra poco.";
       setMessages((current) => [...current, { role: "assistant", content: fallback }]);
