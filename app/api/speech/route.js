@@ -24,9 +24,9 @@ function getElevenLabsVoiceId(tenantSlug) {
 
 const LEGACY_TENANTS = new Set(["new-digital-app", "demo-cliente-01"]);
 
-async function callElevenLabs(input, tenantSlug) {
+async function callElevenLabs(input, tenantSlug, selectedVoiceId = '') {
   const apiKey = process.env.ELEVENLABS_API_KEY;
-  const voiceId = getElevenLabsVoiceId(tenantSlug);
+  const voiceId = selectedVoiceId || getElevenLabsVoiceId(tenantSlug);
 
   if (!apiKey || !voiceId) {
     return {
@@ -82,8 +82,8 @@ async function callElevenLabs(input, tenantSlug) {
   };
 }
 
-async function generateElevenLabsSpeech(input, tenantSlug) {
-  const result = await callElevenLabs(input, tenantSlug);
+async function generateElevenLabsSpeech(input, tenantSlug, voiceId = '') {
+  const result = await callElevenLabs(input, tenantSlug, voiceId);
   if (!result.ok) return null;
 
   return new Response(result.response.body, {
@@ -162,9 +162,10 @@ async function generateSpeechResponse(input, tenantSlug = "", provider = "", voi
     return Response.json({ error: "Missing text" }, { status: 400 });
   }
 
-  if (tenantSlug === "demo-cliente-01") {
-    const elevenLabsResponse = await generateElevenLabsSpeech(input, tenantSlug);
+  if (provider === "elevenlabs" || tenantSlug === "demo-cliente-01") {
+    const elevenLabsResponse = await generateElevenLabsSpeech(input, tenantSlug, voiceId);
     if (elevenLabsResponse) return elevenLabsResponse;
+    return Response.json({ error: "Voce ElevenLabs non disponibile. Verifica Voice ID e configurazione." }, { status: 502 });
   }
 
   return generateOpenAISpeech(input, voiceId);
