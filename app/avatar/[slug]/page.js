@@ -10,6 +10,8 @@ export async function generateMetadata({ params }) {
     const name = avatar?.spoken_avatar_name || avatar?.avatar_name || "Persona digitale";
     return {
       title: `${name} · AvatarOne`,
+      manifest: `/avatar/${encodeURIComponent(slug)}/manifest.webmanifest`,
+      appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: name.slice(0, 30) },
       description: `${name}, persona digitale AI di ${avatar?.company_name || "AvatarOne"}.`,
       openGraph: { title: `${name} · AvatarOne`, images: [{ url: "/icon.svg", alt: "AvatarOne" }] },
       twitter: { card: "summary_large_image", images: ["/icon.svg"] }
