@@ -12,8 +12,9 @@ const mediaStyle = {
   background: "#050505"
 };
 
-export function AvatarVideo({ label = "Avatar video Mia", poster, src = "/mia-avatar-video.mp4" }) {
+export function AvatarVideo({ label = "Avatar video Mia", poster, idleSrc = "", src = "/mia-avatar-video.mp4" }) {
   const videoRef = useRef(null);
+  const idleRef = useRef(null);
   const [speaking, setSpeaking] = useState(false);
 
   useEffect(() => {
@@ -92,6 +93,13 @@ export function AvatarVideo({ label = "Avatar video Mia", poster, src = "/mia-av
     };
   }, [src]);
 
+  useEffect(() => {
+    const idle = idleRef.current;
+    if (!idle) return;
+    if (speaking) idle.pause();
+    else idle.play().catch(() => {});
+  }, [speaking, idleSrc]);
+
   return (
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
     <video
@@ -105,7 +113,7 @@ export function AvatarVideo({ label = "Avatar video Mia", poster, src = "/mia-av
       src={src}
       style={mediaStyle}
     />
-    {poster ? <img src={poster} alt={`${label} in attesa`} style={{ ...mediaStyle, position: "absolute", inset: 0, opacity: speaking ? 0 : 1, pointerEvents: "none", transition: "opacity 180ms ease" }} /> : null}
+    {idleSrc ? <video ref={idleRef} src={idleSrc} autoPlay loop muted playsInline preload="auto" poster={poster} aria-label={`${label} in attesa`} style={{ ...mediaStyle, position: "absolute", inset: 0, opacity: speaking ? 0 : 1, pointerEvents: "none", transition: "opacity 180ms ease" }} /> : poster ? <img src={poster} alt={`${label} in attesa`} style={{ ...mediaStyle, position: "absolute", inset: 0, opacity: speaking ? 0 : 1, pointerEvents: "none", transition: "opacity 180ms ease" }} /> : null}
     </div>
   );
 }
