@@ -26,9 +26,17 @@ export async function PATCH(request) {
     voice_provider: ["openai", "elevenlabs"].includes(payload.voiceProvider) ? payload.voiceProvider : current.voice_provider,
     voice_id: String(payload.voiceId ?? current.voice_id ?? "").trim().slice(0, 100) || null,
     voice_label: String(payload.voiceLabel ?? current.voice_label ?? "").trim().slice(0, 100) || null,
+    ...(payload.avatarPosterUrl !== undefined ? { avatar_poster_url: String(payload.avatarPosterUrl || "").trim() || null } : {}),
+    ...(payload.avatarVideoUrl !== undefined ? { avatar_video_url: String(payload.avatarVideoUrl || "").trim() || null } : {}),
     updated_at: new Date().toISOString()
   };
   if (changes.voice_provider === "elevenlabs" && !/^[a-zA-Z0-9]{15,40}$/.test(changes.voice_id || "")) return Response.json({ error: "Inserisci un Voice ID ElevenLabs valido." }, { status: 400 });
+  for (const key of ["avatar_poster_url", "avatar_video_url"]) {
+    if (key in changes && changes[key]) {
+      const expected = `https://${process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/^https?:\/\//, "")}/storage/v1/object/public/avatar-media/${slug}/`;
+      if (!changes[key].startsWith(expected)) return Response.json({ error: "Il file deve essere caricato nello storage AvatarOne." }, { status: 400 });
+    }
+  }
   const saved = await updateAvatarClient(slug, changes);
   return Response.json({ ok: true, avatar: saved });
 }
