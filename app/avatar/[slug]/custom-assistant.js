@@ -9,6 +9,7 @@ export default function CustomAssistant({ tenant }) {
   const [listening, setListening] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [canUseSpeech, setCanUseSpeech] = useState(false);
+  const [shareNotice, setShareNotice] = useState("");
   const recognitionRef = useRef(null);
   const audioRef = useRef(null);
   const speechSequenceRef = useRef(0);
@@ -120,6 +121,18 @@ export default function CustomAssistant({ tenant }) {
     }
   }
 
+  async function shareAvatar() {
+    const url = window.location.origin + "/avatar/" + encodeURIComponent(tenant.slug);
+    const data = { title: tenant.assistantName + " · AvatarOne", text: "Parla con " + tenant.assistantName, url };
+    try {
+      if (navigator.share) { await navigator.share(data); return; }
+      await navigator.clipboard.writeText(url);
+      setShareNotice("Link copiato");
+    } catch (error) {
+      if (error?.name !== "AbortError") setShareNotice("Condividi questo link: " + url);
+    }
+  }
+
   function toggleListening() {
     if (!canUseSpeech) return;
     if (listening) {
@@ -174,6 +187,8 @@ export default function CustomAssistant({ tenant }) {
         {whatsappUrl ? (
           <a aria-label="Apri WhatsApp" className="whatsapp-link" href={whatsappUrl} target="_blank" rel="noreferrer"><span className="whatsapp-icon" aria-hidden="true">W</span>WhatsApp</a>
         ) : null}
+        <button type="button" onClick={shareAvatar} aria-label={"Condividi " + tenant.assistantName} title="Condividi avatar" className="avatar-share-button" style={{ width: 44, height: 44, flex: "0 0 44px", borderRadius: "50%", border: "1px solid #ffffff70", background: "#102638dd", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.7 10.7 6.6-4.3M8.7 13.3l6.6 4.3"/></svg></button>
+        {shareNotice ? <span role="status" style={{ fontSize: 11, color: "white", maxWidth: 160 }}>{shareNotice}</span> : null}
       </div>
       <div className="order-bar"><span>{whatsappUrl ? "Puoi anche inviare le informazioni su WhatsApp." : "Tocca il microfono per parlare oppure scrivi un messaggio."}</span></div>
     </div>
