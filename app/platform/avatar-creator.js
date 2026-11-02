@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 const STORAGE_KEY = "avatarone:custom-avatars";
-const EMPTY_MEDIA = { imageDataUrl: "", imageName: "", videoDataUrl: "", videoName: "", voiceDataUrl: "", voiceName: "" };
+const EMPTY_MEDIA = { imageDataUrl: "", imageName: "", videoDataUrl: "", videoName: "", idleDataUrl: "", idleName: "", voiceDataUrl: "", voiceName: "" };
 function readAvatars() { try { const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); return Array.isArray(value) ? value : []; } catch { return []; } }
 function saveAvatar(avatar) { const current = readAvatars(); localStorage.setItem(STORAGE_KEY, JSON.stringify([avatar, ...current.filter((item) => item.slug !== avatar.slug)].slice(0, 20))); window.dispatchEvent(new Event("avatarone:avatars-changed")); }
 function readSmallFile(file, maxBytes) { return new Promise((resolve, reject) => { if (!file) return resolve(""); if (file.size > maxBytes) return reject(new Error(`Il file supera ${Math.round(maxBytes / 1048576)} MB. Usa un URL pubblico.`)); const reader = new FileReader(); reader.onload = () => resolve(String(reader.result || "")); reader.onerror = () => reject(new Error("Non riesco a leggere il file.")); reader.readAsDataURL(file); }); }
@@ -17,6 +17,7 @@ export function AvatarCreator() {
   const [media, setMedia] = useState(EMPTY_MEDIA);
   const [imageUrl, setImageUrl] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
+  const [idleUrl, setIdleUrl] = useState("");
   const [voice, setVoice] = useState("openai:marin");
   const [elevenVoiceId, setElevenVoiceId] = useState("");
   const [whatsappPhone, setWhatsappPhone] = useState("");
@@ -26,7 +27,7 @@ export function AvatarCreator() {
   const [created, setCreated] = useState(null);
   const [publishLoading, setPublishLoading] = useState(false);
   const [websiteStatus, setWebsiteStatus] = useState("");
-  const preview = useMemo(() => ({ image: media.imageDataUrl || imageUrl.trim(), video: media.videoDataUrl || videoUrl.trim() }), [imageUrl, media, videoUrl]);
+  const preview = useMemo(() => ({ image: media.imageDataUrl || imageUrl.trim(), video: media.videoDataUrl || videoUrl.trim(), idle: media.idleDataUrl || idleUrl.trim() }), [imageUrl, media, videoUrl, idleUrl]);
   const updateDraft = (field, value) => setDraft((current) => ({ ...current, [field]: value }));
 
   async function createConfiguration(event) {
@@ -105,9 +106,10 @@ export function AvatarCreator() {
         if (!sent.ok) throw new Error(`Caricamento ${kind} non riuscito.`);
         return prepared.upload;
       }
-      const [imageUpload, videoUpload, voiceUpload] = await Promise.all([
+      const [imageUpload, videoUpload, idleUpload, voiceUpload] = await Promise.all([
         uploadMedia("image", media.imageDataUrl, media.imageName),
         uploadMedia("video", media.videoDataUrl, media.videoName),
+        uploadMedia("idle", media.idleDataUrl, media.idleName),
         uploadMedia("voice", media.voiceDataUrl, media.voiceName)
       ]);
       let websiteKnowledge = "";
@@ -121,7 +123,7 @@ export function AvatarCreator() {
         verifiedKnowledgeUrl = data.website.url;
         setWebsiteStatus(`Sito importato: ${data.website.hostname}`);
       }
-      const completed = { ...draft, imageDataUrl: "", imageUrl: imageUpload?.publicUrl || imageUrl.trim(), imageName: media.imageName, videoDataUrl: "", videoUrl: videoUpload?.publicUrl || videoUrl.trim(), videoName: media.videoName, voiceDataUrl: "", voiceName: media.voiceName, voiceSamplePath: voiceUpload?.storagePath || "", voice: voice === "elevenlabs" ? `elevenlabs:${elevenVoiceId.trim()}` : voice, whatsappPhone: whatsappPhone.replace(/\D/g, ""), knowledgeUrl: verifiedKnowledgeUrl, websiteKnowledge, knowledgeSummary: knowledgeNotes.trim() || draft.knowledgeSummary, mediaMode: preview.video ? "video" : preview.image ? "image" : "placeholder", syncMode: preview.video ? "speaking-loop" : "still-image", publishedAt: new Date().toISOString() };
+      const completed = { ...draft, imageDataUrl: "", imageUrl: imageUpload?.publicUrl || imageUrl.trim(), imageName: media.imageName, videoDataUrl: "", videoUrl: videoUpload?.publicUrl || videoUrl.trim(), videoName: media.videoName, idleDataUrl: "", idleVideoUrl: idleUpload?.publicUrl || idleUrl.trim(), idleName: media.idleName, voiceDataUrl: "", voiceName: media.voiceName, voiceSamplePath: voiceUpload?.storagePath || "", voice: voice === "elevenlabs" ? `elevenlabs:${elevenVoiceId.trim()}` : voice, whatsappPhone: whatsappPhone.replace(/\D/g, ""), knowledgeUrl: verifiedKnowledgeUrl, websiteKnowledge, knowledgeSummary: knowledgeNotes.trim() || draft.knowledgeSummary, mediaMode: preview.video ? "video" : preview.image ? "image" : "placeholder", syncMode: preview.video ? "speaking-loop" : "still-image", publishedAt: new Date().toISOString() };
       setWebsiteStatus("Salvataggio sicuro nel cloud…");
       const cloudResponse = await fetch("/api/avatar-creator", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "publish", avatar: completed }) });
       const cloudData = await readJsonResponse(cloudResponse, "Il server non ha restituito una risposta valida.");
