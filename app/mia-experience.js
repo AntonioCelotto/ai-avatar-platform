@@ -1,3 +1,4 @@
+import ImmersiveAvatarShell from "./immersive-avatar-shell";
 import { Assistant } from "./assistant";
 import { AvatarVideo } from "./avatar-video";
 import { getTenantPublicConfig } from "./tenant-config";
@@ -40,6 +41,7 @@ export default function MiaExperience() {
   return (
     <>
     <style dangerouslySetInnerHTML={{ __html: criticalMiaStyles }} />
+    <ImmersiveAvatarShell>
     <main className="mobile-chat-shell mia-home" style={tenant.theme}>
       <div className="aurora aurora--coral" />
       <div className="aurora aurora--cyan" />
@@ -64,6 +66,7 @@ export default function MiaExperience() {
         <Assistant tenant={tenant} />
       </section>
     </main>
+    </ImmersiveAvatarShell>
     </>
   );
 }
