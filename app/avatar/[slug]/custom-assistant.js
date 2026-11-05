@@ -77,7 +77,7 @@ export default function CustomAssistant({ tenant }) {
     const sequence = ++speechSequenceRef.current;
     let revealed = false;
     const reveal = () => { if (!revealed && sequence === speechSequenceRef.current) { revealed = true; onAudioStart(); } };
-    const clean = cleanSpeech(text);
+    const clean = cleanSpeech(text).replace(/new\s+digital\s+app/gi, tenant.slug === "mia-nda" ? "enne di a" : "New Digital App");
     if (!clean) return;
     if (tenant.voice === "browser" || String(tenant.voice).startsWith("browser")) {
       reveal();
