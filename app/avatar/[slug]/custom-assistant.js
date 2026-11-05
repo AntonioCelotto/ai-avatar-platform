@@ -7,6 +7,7 @@ export default function CustomAssistant({ tenant }) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
+  const [micEnabled, setMicEnabled] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [canUseSpeech, setCanUseSpeech] = useState(false);
   const [shareNotice, setShareNotice] = useState("");
@@ -37,7 +38,7 @@ export default function CustomAssistant({ tenant }) {
   }, []);
 
   useEffect(() => {
-    const state = speaking ? "speaking" : listening ? "listening" : loading ? "thinking" : "idle";
+    const state = speaking ? "speaking" : loading ? "thinking" : listening ? "listening" : "idle";
     document.documentElement.dataset.miaAvatarState = state;
     window.dispatchEvent(new CustomEvent("mia-avatar-state-change", { detail: { state } }));
   }, [listening, loading, speaking]);
@@ -47,7 +48,7 @@ export default function CustomAssistant({ tenant }) {
     if (speaking) {
       try { recognitionRef.current?.abort(); } catch {}
       setListening(false);
-    } else if (!loading && continuousRef.current) {
+    } else if (!loading && !busyRef.current && continuousRef.current) {
       restartListeningRef.current();
     }
   }, [speaking, loading]);
@@ -67,8 +68,9 @@ export default function CustomAssistant({ tenant }) {
       : voices.find((item) => item.lang?.startsWith("it"));
     if (selected) utterance.voice = selected;
     utterance.onstart = () => setSpeaking(true);
-    utterance.onend = () => { setSpeaking(false); busyRef.current = false; restartListeningRef.current(); };
-    utterance.onerror = () => { setSpeaking(false); busyRef.current = false; restartListeningRef.current(); };
+    utterance.onend = () => { speakingRef.current = false; setSpeaking(false); busyRef.current = false; restartListeningRef.current(); };
+    utterance.onerror = () => { speakingRef.current = false; setSpeaking(false); busyRef.current = false; restartListeningRef.current(); };
+    speakingRef.current = true;
     setSpeaking(true);
     window.speechSynthesis.speak(utterance);
   }
@@ -100,9 +102,9 @@ export default function CustomAssistant({ tenant }) {
       const url = URL.createObjectURL(await response.blob());
       const audio = new Audio(url);
       audioRef.current = audio;
-      audio.onplaying = () => { reveal(); setSpeaking(true); };
-      audio.onended = () => { setSpeaking(false); busyRef.current = false; URL.revokeObjectURL(url); restartListeningRef.current(); };
-      audio.onerror = () => { setSpeaking(false); busyRef.current = false; URL.revokeObjectURL(url); restartListeningRef.current(); };
+      audio.onplaying = () => { speakingRef.current = true; reveal(); setSpeaking(true); };
+      audio.onended = () => { speakingRef.current = false; setSpeaking(false); busyRef.current = false; URL.revokeObjectURL(url); restartListeningRef.current(); };
+      audio.onerror = () => { speakingRef.current = false; setSpeaking(false); busyRef.current = false; URL.revokeObjectURL(url); restartListeningRef.current(); };
       await audio.play();
     } catch {
       setSpeaking(false);
@@ -139,8 +141,7 @@ export default function CustomAssistant({ tenant }) {
       speakWithBrowser(fallback);
     } finally {
       setLoading(false);
-      if (!speakingRef.current && !audioRef.current?.paused) return;
-      if (!speakingRef.current && !("speechSynthesis" in window && window.speechSynthesis.speaking)) {
+      if (!speakingRef.current && (audioRef.current?.paused !== false) && !("speechSynthesis" in window && window.speechSynthesis.speaking)) {
         busyRef.current = false;
         restartListeningRef.current();
       }
@@ -181,6 +182,7 @@ export default function CustomAssistant({ tenant }) {
       setListening(false);
       if (event.error === "not-allowed" || event.error === "service-not-allowed") {
         continuousRef.current = false;
+        setMicEnabled(false);
       }
     };
     recognition.onend = () => {
@@ -204,6 +206,7 @@ export default function CustomAssistant({ tenant }) {
     if (!canUseSpeech) return;
     if (continuousRef.current) {
       continuousRef.current = false;
+      setMicEnabled(false);
       clearTimeout(restartTimerRef.current);
       try { recognitionRef.current?.abort(); } catch {}
       recognitionRef.current = null;
@@ -211,6 +214,7 @@ export default function CustomAssistant({ tenant }) {
       return;
     }
     continuousRef.current = true;
+    setMicEnabled(true);
     startRecognition();
   }
 
@@ -221,7 +225,7 @@ export default function CustomAssistant({ tenant }) {
           <strong>Parla o scrivi a {tenant.assistantName}</strong>
           <span>Scegli come iniziare</span>
         </div>
-        <div className="assistant-status">{speaking ? "Sta parlando" : listening ? "Ti ascolta" : loading ? "Sta pensando" : "Pronta"}</div>
+        <div className="assistant-status">{speaking ? "Sta parlando" : loading ? "Sta pensando" : listening ? "Ti ascolta" : micEnabled ? "Ascolto continuo attivo" : "Pronta"}</div>
       </header>
       <div className="messages" aria-live="polite">
         <div className="message-list">
@@ -234,9 +238,9 @@ export default function CustomAssistant({ tenant }) {
       </div>
       <div className={`action-dock ${whatsappUrl ? "" : "action-dock--chat-only"}`}>
         <form className="composer" onSubmit={(event) => { event.preventDefault(); send(input); }}>
-          <button className={`icon-button ${listening ? "is-listening" : ""}`} disabled={!canUseSpeech} onClick={toggleListening} type="button" aria-label={continuousRef.current ? "Disattiva ascolto continuo" : `Attiva ascolto continuo con ${tenant.assistantName}`}>
+          <button className={`icon-button ${micEnabled ? "is-listening" : ""}`} disabled={!canUseSpeech} onClick={toggleListening} type="button" aria-label={micEnabled ? "Disattiva ascolto continuo" : `Attiva ascolto continuo con ${tenant.assistantName}`}>
             <span className="mic-symbol" aria-hidden="true" />
-            <span className="voice-label">{continuousRef.current ? "Stop" : "Parla"}</span>
+            <span className="voice-label">{micEnabled ? "Stop" : "Parla"}</span>
           </button>
           <input aria-label="Messaggio" onChange={(event) => setInput(event.target.value)} placeholder={tenant.inputPlaceholder} value={input} />
           <button aria-label="Invia messaggio" className="send-button" disabled={loading || !input.trim()} type="submit"><span aria-hidden="true">➜</span><span className="sr-only">Invia</span></button>
