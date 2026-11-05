@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import "./experience.css";
 
 const fields = [
   { key: "portrait", title: "Immagine avatar", accept: "image/*" },
@@ -21,7 +22,7 @@ export default function ExperienceStudio() {
   }
   const current = mode === "talking" ? media.talking : media.idle;
   const style = { background: "#122439", color: "#f6faff", padding: 24, borderRadius: 18 };
-  return <main style={{ maxWidth: 1080, margin: "24px auto", padding: 16, fontFamily: "Arial, sans-serif" }}>
+  return <main className="experience-studio" style={{ maxWidth: 1080, margin: "24px auto", padding: 16, fontFamily: "Arial, sans-serif" }}>
     <a href="/platform">← Torna alla dashboard</a>
     <h1>AvatarOne · Experience Studio</h1>
     <p>Laboratorio di prova riservato agli amministratori. Questa versione non modifica gli avatar pubblicati e non salva file sul server.</p>
