@@ -2,6 +2,8 @@
 
 import { useRef, useState } from "react";
 import "./experience.css";
+import { AvatarCreator } from "../../platform/avatar-creator";
+import "../../platform/platform.css";
 
 const fields = [
   { key: "portrait", title: "Immagine avatar", accept: "image/*" },
@@ -51,5 +53,11 @@ export default function ExperienceStudio() {
         <p>Questa anteprima verifica i video e il passaggio manuale tra stati. Non è ancora sincronizzata con l'audio AI.</p>
       </section>
     </div>
+    <section id="create-experience" className="experience-create" style={{ marginTop: 32, padding: 24, borderRadius: 18, background: "#f5f7fb", color: "#182331" }}>
+      <h2>Crea e salva un nuovo avatar con AI e voce</h2>
+      <p>Qui puoi creare un avatar definitivo, scegliere OpenAI o ElevenLabs, caricare foto e video di riposo e parlato, aggiungere conoscenze e pubblicare nel cloud. I file usati nell’anteprima sopra non sono trasferiti automaticamente: selezionali nuovamente nel modulo sottostante.</p>
+      <p><strong>Importante:</strong> la creazione pubblica un nuovo avatar nel cloud. Usa un nome univoco per il test. La sincronizzazione reale della bocca con le parole non è ancora inclusa: il video parlato viene riprodotto durante la risposta.</p>
+      <AvatarCreator />
+    </section>
   </main>;
 }
