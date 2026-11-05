@@ -19,6 +19,8 @@ export default function CustomAssistant({ tenant }) {
   const speakingRef = useRef(false);
   const restartTimerRef = useRef(null);
   const restartListeningRef = useRef(() => {});
+  const sendRef = useRef(() => {});
+  const loadingRef = useRef(false);
 
   const lastAssistantMessage = [...messages].reverse().find((item) => item.role === "assistant")?.content || tenant.orderFallbackText;
   const whatsappUrl = tenant.whatsappPhone
@@ -115,11 +117,12 @@ export default function CustomAssistant({ tenant }) {
 
   async function send(content) {
     const clean = String(content || "").trim();
-    if (!clean || loading) return;
+    if (!clean || loadingRef.current || busyRef.current) return;
     const next = [...messages, { role: "user", content: clean }];
     setMessages(next);
     setInput("");
     busyRef.current = true;
+    loadingRef.current = true;
     clearTimeout(restartTimerRef.current);
     try { recognitionRef.current?.abort(); } catch {}
     setListening(false);
@@ -140,6 +143,7 @@ export default function CustomAssistant({ tenant }) {
       setMessages((current) => [...current, { role: "assistant", content: fallback }]);
       speakWithBrowser(fallback);
     } finally {
+      loadingRef.current = false;
       setLoading(false);
       if (!speakingRef.current && (audioRef.current?.paused !== false) && !("speechSynthesis" in window && window.speechSynthesis.speaking)) {
         busyRef.current = false;
@@ -147,6 +151,8 @@ export default function CustomAssistant({ tenant }) {
       }
     }
   }
+
+  sendRef.current = send;
 
   async function shareAvatar() {
     const url = window.location.origin + "/avatar/" + encodeURIComponent(tenant.slug);
@@ -175,7 +181,7 @@ export default function CustomAssistant({ tenant }) {
       const transcript = event.results?.[0]?.[0]?.transcript || "";
       if (transcript.trim() && continuousRef.current && !busyRef.current) {
         setInput(transcript);
-        send(transcript);
+        sendRef.current(transcript);
       }
     };
     recognition.onerror = (event) => {
@@ -193,13 +199,20 @@ export default function CustomAssistant({ tenant }) {
     try { recognition.start(); } catch {
       recognitionRef.current = null;
       setListening(false);
+      if (continuousRef.current) restartTimerRef.current = setTimeout(() => restartListeningRef.current(), 1200);
     }
   }
 
   restartListeningRef.current = () => {
     clearTimeout(restartTimerRef.current);
     if (!continuousRef.current || busyRef.current || speakingRef.current) return;
-    restartTimerRef.current = setTimeout(() => startRecognition(), 450);
+    restartTimerRef.current = setTimeout(() => {
+      if (recognitionRef.current) {
+        restartListeningRef.current();
+        return;
+      }
+      startRecognition();
+    }, 650);
   };
 
   function toggleListening() {
