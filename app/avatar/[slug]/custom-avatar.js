@@ -152,8 +152,8 @@ export default function CustomAvatar({ slug, initialAvatar }) {
         <button type="button" className="avatar-expand-toggle" aria-label={immersive ? "Esci dalla modalità a tutto schermo" : "Espandi avatar a tutto schermo"} aria-pressed={immersive} onClick={() => setImmersive((value) => !value)}>{immersive ? "↙ Riduci" : "⛶ Espandi"}</button>
         <AvatarInstall name={tenant.assistantName} />
         <div className="avatar-frame" aria-label={`Avatar ${tenant.spokenAssistantName}`}>
-          {tenant.mediaMode === "video" && tenant.avatarVideo
-            ? <AvatarVideo label={`Avatar video ${tenant.spokenAssistantName}`} poster={tenant.avatarPoster} src={tenant.avatarVideo} idleSrc={tenant.avatarIdleVideo} />
+          {Boolean(tenant.avatarVideo || tenant.avatarIdleVideo)
+            ? <AvatarVideo label={`Avatar video ${tenant.spokenAssistantName}`} poster={tenant.avatarPoster} src={tenant.avatarVideo || tenant.avatarIdleVideo} idleSrc={tenant.avatarIdleVideo} />
             : tenant.avatarPoster
               ? <img className="custom-avatar-image" alt={`Avatar ${tenant.spokenAssistantName}`} src={tenant.avatarPoster} />
               : <div className="custom-avatar-placeholder" aria-label="Immagine avatar non disponibile">{tenant.spokenAssistantName.slice(0, 1)}</div>}

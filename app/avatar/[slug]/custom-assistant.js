@@ -7,12 +7,20 @@ export default function CustomAssistant({ tenant }) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
+  const [micEnabled, setMicEnabled] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [canUseSpeech, setCanUseSpeech] = useState(false);
   const [shareNotice, setShareNotice] = useState("");
   const recognitionRef = useRef(null);
   const audioRef = useRef(null);
   const speechSequenceRef = useRef(0);
+  const continuousRef = useRef(false);
+  const busyRef = useRef(false);
+  const speakingRef = useRef(false);
+  const restartTimerRef = useRef(null);
+  const restartListeningRef = useRef(() => {});
+  const sendRef = useRef(() => {});
+  const loadingRef = useRef(false);
 
   const lastAssistantMessage = [...messages].reverse().find((item) => item.role === "assistant")?.content || tenant.orderFallbackText;
   const whatsappUrl = tenant.whatsappPhone
@@ -22,7 +30,9 @@ export default function CustomAssistant({ tenant }) {
   useEffect(() => {
     setCanUseSpeech("SpeechRecognition" in window || "webkitSpeechRecognition" in window);
     return () => {
-      try { recognitionRef.current?.stop(); } catch {}
+      continuousRef.current = false;
+      clearTimeout(restartTimerRef.current);
+      try { recognitionRef.current?.abort(); } catch {}
       audioRef.current?.pause();
       if ("speechSynthesis" in window) window.speechSynthesis.cancel();
       delete document.documentElement.dataset.miaAvatarState;
@@ -30,10 +40,20 @@ export default function CustomAssistant({ tenant }) {
   }, []);
 
   useEffect(() => {
-    const state = speaking ? "speaking" : listening ? "listening" : loading ? "thinking" : "idle";
+    const state = speaking ? "speaking" : loading ? "thinking" : listening ? "listening" : "idle";
     document.documentElement.dataset.miaAvatarState = state;
     window.dispatchEvent(new CustomEvent("mia-avatar-state-change", { detail: { state } }));
   }, [listening, loading, speaking]);
+
+  useEffect(() => {
+    speakingRef.current = speaking;
+    if (speaking) {
+      try { recognitionRef.current?.abort(); } catch {}
+      setListening(false);
+    } else if (!loading && !busyRef.current && continuousRef.current) {
+      restartListeningRef.current();
+    }
+  }, [speaking, loading]);
 
   function cleanSpeech(text) {
     return String(text || "").replace(/\*\*|__|`|[#>~]/g, "").replace(/\s+/g, " ").trim().slice(0, 420);
@@ -50,8 +70,9 @@ export default function CustomAssistant({ tenant }) {
       : voices.find((item) => item.lang?.startsWith("it"));
     if (selected) utterance.voice = selected;
     utterance.onstart = () => setSpeaking(true);
-    utterance.onend = () => setSpeaking(false);
-    utterance.onerror = () => setSpeaking(false);
+    utterance.onend = () => { speakingRef.current = false; setSpeaking(false); busyRef.current = false; restartListeningRef.current(); };
+    utterance.onerror = () => { speakingRef.current = false; setSpeaking(false); busyRef.current = false; restartListeningRef.current(); };
+    speakingRef.current = true;
     setSpeaking(true);
     window.speechSynthesis.speak(utterance);
   }
@@ -60,7 +81,7 @@ export default function CustomAssistant({ tenant }) {
     const sequence = ++speechSequenceRef.current;
     let revealed = false;
     const reveal = () => { if (!revealed && sequence === speechSequenceRef.current) { revealed = true; onAudioStart(); } };
-    const clean = cleanSpeech(text);
+    const clean = cleanSpeech(text).replace(/new\s+digital\s+app/gi, tenant.slug === "mia-nda" ? "enne di a" : "New Digital App");
     if (!clean) return;
     if (tenant.voice === "browser" || String(tenant.voice).startsWith("browser")) {
       reveal();
@@ -83,9 +104,9 @@ export default function CustomAssistant({ tenant }) {
       const url = URL.createObjectURL(await response.blob());
       const audio = new Audio(url);
       audioRef.current = audio;
-      audio.onplaying = () => { reveal(); setSpeaking(true); };
-      audio.onended = () => { setSpeaking(false); URL.revokeObjectURL(url); };
-      audio.onerror = () => { setSpeaking(false); URL.revokeObjectURL(url); };
+      audio.onplaying = () => { speakingRef.current = true; reveal(); setSpeaking(true); };
+      audio.onended = () => { speakingRef.current = false; setSpeaking(false); busyRef.current = false; URL.revokeObjectURL(url); restartListeningRef.current(); };
+      audio.onerror = () => { speakingRef.current = false; setSpeaking(false); busyRef.current = false; URL.revokeObjectURL(url); restartListeningRef.current(); };
       await audio.play();
     } catch {
       setSpeaking(false);
@@ -96,10 +117,15 @@ export default function CustomAssistant({ tenant }) {
 
   async function send(content) {
     const clean = String(content || "").trim();
-    if (!clean || loading) return;
+    if (!clean || loadingRef.current || busyRef.current) return;
     const next = [...messages, { role: "user", content: clean }];
     setMessages(next);
     setInput("");
+    busyRef.current = true;
+    loadingRef.current = true;
+    clearTimeout(restartTimerRef.current);
+    try { recognitionRef.current?.abort(); } catch {}
+    setListening(false);
     setLoading(true);
     try {
       const response = await fetch("/api/custom-chat", {
@@ -117,9 +143,16 @@ export default function CustomAssistant({ tenant }) {
       setMessages((current) => [...current, { role: "assistant", content: fallback }]);
       speakWithBrowser(fallback);
     } finally {
+      loadingRef.current = false;
       setLoading(false);
+      if (!speakingRef.current && (audioRef.current?.paused !== false) && !("speechSynthesis" in window && window.speechSynthesis.speaking)) {
+        busyRef.current = false;
+        restartListeningRef.current();
+      }
     }
   }
+
+  sendRef.current = send;
 
   async function shareAvatar() {
     const url = window.location.origin + "/avatar/" + encodeURIComponent(tenant.slug);
@@ -133,28 +166,69 @@ export default function CustomAssistant({ tenant }) {
     }
   }
 
-  function toggleListening() {
-    if (!canUseSpeech) return;
-    if (listening) {
-      try { recognitionRef.current?.stop(); } catch {}
-      setListening(false);
-      return;
-    }
+  function startRecognition() {
+    if (!continuousRef.current || busyRef.current || speakingRef.current || recognitionRef.current) return;
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
     const recognition = new SpeechRecognition();
     recognitionRef.current = recognition;
     recognition.lang = "it-IT";
     recognition.interimResults = false;
+    recognition.continuous = false;
     recognition.maxAlternatives = 1;
     recognition.onstart = () => setListening(true);
     recognition.onresult = (event) => {
       const transcript = event.results?.[0]?.[0]?.transcript || "";
-      setInput(transcript);
-      if (transcript.trim()) send(transcript);
+      if (transcript.trim() && continuousRef.current && !busyRef.current) {
+        setInput(transcript);
+        sendRef.current(transcript);
+      }
     };
-    recognition.onerror = () => setListening(false);
-    recognition.onend = () => setListening(false);
-    recognition.start();
+    recognition.onerror = (event) => {
+      setListening(false);
+      if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+        continuousRef.current = false;
+        setMicEnabled(false);
+      }
+    };
+    recognition.onend = () => {
+      if (recognitionRef.current === recognition) recognitionRef.current = null;
+      setListening(false);
+      if (continuousRef.current && !busyRef.current && !speakingRef.current) restartListeningRef.current();
+    };
+    try { recognition.start(); } catch {
+      recognitionRef.current = null;
+      setListening(false);
+      if (continuousRef.current) restartTimerRef.current = setTimeout(() => restartListeningRef.current(), 1200);
+    }
+  }
+
+  restartListeningRef.current = () => {
+    clearTimeout(restartTimerRef.current);
+    if (!continuousRef.current || busyRef.current || speakingRef.current) return;
+    restartTimerRef.current = setTimeout(() => {
+      if (recognitionRef.current) {
+        restartListeningRef.current();
+        return;
+      }
+      startRecognition();
+    }, 650);
+  };
+
+  function toggleListening() {
+    if (!canUseSpeech) return;
+    if (continuousRef.current) {
+      continuousRef.current = false;
+      setMicEnabled(false);
+      clearTimeout(restartTimerRef.current);
+      try { recognitionRef.current?.abort(); } catch {}
+      recognitionRef.current = null;
+      setListening(false);
+      return;
+    }
+    continuousRef.current = true;
+    setMicEnabled(true);
+    startRecognition();
   }
 
   return (
@@ -164,7 +238,7 @@ export default function CustomAssistant({ tenant }) {
           <strong>Parla o scrivi a {tenant.assistantName}</strong>
           <span>Scegli come iniziare</span>
         </div>
-        <div className="assistant-status">{speaking ? "Sta parlando" : listening ? "Ti ascolta" : loading ? "Sta pensando" : "Pronta"}</div>
+        <div className="assistant-status">{speaking ? "Sta parlando" : loading ? "Sta pensando" : listening ? "Ti ascolta" : micEnabled ? "Ascolto continuo attivo" : "Pronta"}</div>
       </header>
       <div className="messages" aria-live="polite">
         <div className="message-list">
@@ -177,9 +251,9 @@ export default function CustomAssistant({ tenant }) {
       </div>
       <div className={`action-dock ${whatsappUrl ? "" : "action-dock--chat-only"}`}>
         <form className="composer" onSubmit={(event) => { event.preventDefault(); send(input); }}>
-          <button className={`icon-button ${listening ? "is-listening" : ""}`} disabled={!canUseSpeech || loading} onClick={toggleListening} type="button" aria-label={listening ? "Ferma microfono" : `Parla con ${tenant.assistantName}`}>
+          <button className={`icon-button ${micEnabled ? "is-listening" : ""}`} disabled={!canUseSpeech} onClick={toggleListening} type="button" aria-label={micEnabled ? "Disattiva ascolto continuo" : `Attiva ascolto continuo con ${tenant.assistantName}`}>
             <span className="mic-symbol" aria-hidden="true" />
-            <span className="voice-label">{listening ? "Stop" : "Parla"}</span>
+            <span className="voice-label">{micEnabled ? "Stop" : "Parla"}</span>
           </button>
           <input aria-label="Messaggio" onChange={(event) => setInput(event.target.value)} placeholder={tenant.inputPlaceholder} value={input} />
           <button aria-label="Invia messaggio" className="send-button" disabled={loading || !input.trim()} type="submit"><span aria-hidden="true">➜</span><span className="sr-only">Invia</span></button>
