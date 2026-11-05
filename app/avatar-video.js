@@ -126,6 +126,6 @@ export function AvatarVideo({ label = "Avatar video Mia", poster, idleSrc = "", 
     {idleSrc
       ? <video src={idleSrc} poster={poster} aria-label={`${label} in attesa`} autoPlay loop muted playsInline preload="auto" style={{ ...mediaStyle, position: "absolute", inset: 0, opacity: speaking ? 0 : 1, transition: "opacity 250ms ease", pointerEvents: "none" }} />
       : poster ? <img src={poster} alt={`${label} in attesa`} style={{ ...mediaStyle, position: "absolute", inset: 0, opacity: speaking ? 0 : 1, transition: "opacity 250ms ease" }} /> : null}
-    <SmoothVideoLoop src={src} poster={poster} label={label} active={speaking} style={{ opacity: speaking ? 1 : 0, transition: "opacity 250ms ease", pointerEvents: "none" }} />
+    <video src={src} poster={poster} aria-label={label} autoPlay loop muted playsInline preload="auto" style={{ ...mediaStyle, position: "absolute", inset: 0, opacity: speaking ? 1 : 0, transition: "opacity 250ms ease", pointerEvents: "none" }} />
   </div>;
 }
