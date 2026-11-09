@@ -8,7 +8,7 @@ import AvatarInstall from "./install-avatar";
 
 const STORAGE_KEY = "avatarone:custom-avatars";
 
-export default function CustomAvatar({ slug, initialAvatar, initialImmersive = false }) {
+export default function CustomAvatar({ slug, initialAvatar, initialImmersive = false, experienceMode = false }) {
   const [immersive, setImmersive] = useState(initialImmersive);
   const [avatar, setAvatar] = useState(() => initialAvatar ? {
     slug: initialAvatar.slug,
@@ -65,6 +65,7 @@ export default function CustomAvatar({ slug, initialAvatar, initialImmersive = f
     );
   }
 
+  const experienceMedia = experienceMode ? (initialAvatar?.features?.experienceMedia || {}) : {};
   const tenant = {
     slug: avatar.slug,
     name: avatar.companyName,
@@ -72,9 +73,9 @@ export default function CustomAvatar({ slug, initialAvatar, initialImmersive = f
     spokenAssistantName: avatar.name,
     welcomeMessage: avatar.welcomeMessage,
     inputPlaceholder: `Scrivi a ${avatar.name}`,
-    avatarVideo: avatar.videoDataUrl || avatar.videoUrl || "",
-    avatarIdleVideo: avatar.idleVideoUrl || "",
-    avatarPoster: avatar.imageDataUrl || avatar.imageUrl || "",
+    avatarVideo: experienceMedia.talking || avatar.videoDataUrl || avatar.videoUrl || "",
+    avatarIdleVideo: experienceMedia.idle || avatar.idleVideoUrl || "",
+    avatarPoster: experienceMedia.poster || avatar.imageDataUrl || avatar.imageUrl || "",
     brandMark: avatar.name.toUpperCase().slice(0, 12),
     whatsappPhone: avatar.whatsappPhone || "",
     orderFallbackText: `Ciao, vorrei informazioni da ${avatar.name}.`,
