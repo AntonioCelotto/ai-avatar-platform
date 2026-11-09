@@ -14,6 +14,17 @@ export default function CupDemoPanel({tenant,messages}) {
  const [receipt,setReceipt]=useState(false);
  const last=messages[messages.length-1]?.content||"";
  useEffect(()=>{const m=[...messages].reverse().find(x=>x.role==="assistant"&&/CONFERMA DEMO:/.test(x.content));if(!m)return;const p=m.content.match(/CONFERMA DEMO: (.+?) \| (.+?) \|/);if(p){setSelected(p[1]);setSlot(p[2]);setOpen(true)}},[messages]);
+ useEffect(()=>{
+  if(!services.length||!messages.length)return;
+  const recent=messages.slice(-3);
+  const user=[...recent].reverse().find(m=>m.role==="user")?.content||"";
+  const reply=[...recent].reverse().find(m=>m.role==="assistant")?.content||"";
+  const inquiry=/prenot|disponibil|appuntament|visita|cardiolog|dermatolog|ortoped/i.test(user);
+  if(!inquiry)return;
+  const matching=services.find(s=>[user,reply].some(t=>t.toLocaleLowerCase("it").includes(s.service.toLocaleLowerCase("it").replace("visita ",""))));
+  if(matching){setSelected(matching.service);setSlot(current=>matching.slots.includes(current)?current:"");}
+  setOpen(true);
+ },[messages,services]);
  const code=localCode||[...messages].reverse().map(m=>m.content.match(/DEMO-[A-F0-9]{24}/)?.[0]).find(Boolean);
  useEffect(()=>{
   if(tenant.slug!==SLUG)return;
