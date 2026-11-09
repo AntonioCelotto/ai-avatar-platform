@@ -5,13 +5,14 @@ export default function CupDemoPanel({tenant,messages}) {
  const [services,setServices]=useState([]);
  const [booking,setBooking]=useState(null);
  const [status,setStatus]=useState("");
- const [open,setOpen]=useState(true);
+ const [open,setOpen]=useState(false);
  const [selected,setSelected]=useState("");
  const [slot,setSlot]=useState("");
  const [localCode,setLocalCode]=useState("");
  const [notice,setNotice]=useState("");
  const [busy,setBusy]=useState(false);
  const last=messages[messages.length-1]?.content||"";
+ useEffect(()=>{const m=[...messages].reverse().find(x=>x.role==="assistant"&&/CONFERMA DEMO:/.test(x.content));if(!m)return;const p=m.content.match(/CONFERMA DEMO: (.+?) \| (.+?) \|/);if(p){setSelected(p[1]);setSlot(p[2]);setOpen(true)}},[messages]);
  const code=localCode||[...messages].reverse().map(m=>m.content.match(/DEMO-[A-F0-9]{24}/)?.[0]).find(Boolean);
  useEffect(()=>{
   if(tenant.slug!==SLUG)return;
@@ -39,7 +40,7 @@ export default function CupDemoPanel({tenant,messages}) {
  .cup-demo-card{background:white;border:1px solid #d5e8e3;border-radius:11px;padding:10px;display:grid;gap:5px;font-size:12px}
  .cup-demo-card strong{font-size:13px}.cup-demo-card small{color:#52736d}.cup-demo-code{font-weight:700;overflow-wrap:anywhere;font-size:13px}
  .cup-demo-panel p{font-size:11px;line-height:1.45;margin:8px 0 0;color:#4d6d68}
- .avatar-immersive .cup-demo-panel{display:block!important;position:fixed!important;z-index:40!important;bottom:14px!important;left:14px!important;width:min(420px,calc(100vw - 90px))!important;max-height:58dvh!important;overflow-y:auto!important;box-shadow:0 12px 38px #0009!important;margin:0!important;padding:12px!important}.cup-demo-form{display:grid;gap:7px;margin-top:10px}.cup-demo-form select,.cup-demo-form input{width:100%;min-width:0;padding:10px;border:1px solid #b7d9d2;border-radius:8px;background:white;color:#123e39;font-size:14px}.cup-demo-form button{background:#087d70;color:white;border:0;border-radius:9px;padding:10px;font-weight:700;cursor:pointer}.cup-demo-form button:disabled{opacity:.5}.cup-demo-form label{font-size:12px;font-weight:650}@media(max-width:600px){.avatar-immersive .cup-demo-panel{bottom:12px!important;left:10px!important;width:calc(100vw - 78px)!important;max-height:48dvh!important}}
+ .avatar-immersive .cup-demo-panel{display:block!important;position:fixed!important;z-index:40!important;top:155px!important;right:12px!important;bottom:auto!important;left:auto!important;width:min(390px,calc(100vw - 100px))!important;max-height:calc(100dvh - 260px)!important;overflow-y:auto!important;box-shadow:0 12px 38px #0009!important;margin:0!important;padding:12px!important}.cup-demo-form{display:grid;gap:7px;margin-top:10px}.cup-demo-form select,.cup-demo-form input{width:100%;min-width:0;padding:10px;border:1px solid #b7d9d2;border-radius:8px;background:white;color:#123e39;font-size:14px}.cup-demo-form button{background:#087d70;color:white;border:0;border-radius:9px;padding:10px;font-weight:700;cursor:pointer}.cup-demo-form button:disabled{opacity:.5}.cup-demo-form label{font-size:12px;font-weight:650}@media(max-width:600px){.avatar-immersive .cup-demo-panel{top:155px!important;right:8px!important;bottom:auto!important;left:auto!important;width:calc(100vw - 90px)!important;max-height:calc(100dvh - 260px)!important}}
  `}</style>
  <div className="cup-demo-heading"><strong>🏥 CUP · Prenotazioni e ticket</strong><span className="cup-demo-tag">SIMULAZIONE</span><button className="cup-demo-toggle" onClick={()=>setOpen(v=>!v)} type="button" aria-expanded={open}>{open?"Riduci":"Apri"}</button></div>
  {open&&<>
