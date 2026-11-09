@@ -3,6 +3,9 @@ import { useEffect, useState } from "react";
 const SLUG="giulia-new-digital-app";
 export default function CupDemoPanel({tenant,messages}) {
  const [services,setServices]=useState([]);
+ const [loading,setLoading]=useState(true);
+ const [loadError,setLoadError]=useState("");
+ const [retry,setRetry]=useState(0);
  const [booking,setBooking]=useState(null);
  const [status,setStatus]=useState("");
  const [open,setOpen]=useState(false);
@@ -29,9 +32,10 @@ export default function CupDemoPanel({tenant,messages}) {
  useEffect(()=>{
   if(tenant.slug!==SLUG)return;
   let active=true;
-  fetch("/api/cup-demo?slug="+SLUG+"&action=availability",{cache:"no-store"}).then(r=>r.json()).then(d=>{if(active)setServices(d.results||[])}).catch(()=>{});
+  setLoading(true);setLoadError("");
+  fetch("/api/cup-demo?slug="+SLUG+"&action=availability",{cache:"no-store"}).then(async r=>{const d=await r.json();if(!r.ok||!Array.isArray(d.results))throw Error(d.error||"Disponibilità non disponibili");return d;}).then(d=>{if(active){setServices(d.results);setLoading(false);if(!d.results.length)setLoadError("Nessuna visita dimostrativa disponibile");}}).catch(e=>{if(active){setLoading(false);setLoadError(e.message||"Impossibile caricare le visite");}});
   return()=>{active=false};
- },[tenant.slug]);
+ },[tenant.slug,retry]);
  useEffect(()=>{
   if(!code)return;
   let active=true;
@@ -56,9 +60,11 @@ export default function CupDemoPanel({tenant,messages}) {
  `}</style>
  <div className="cup-demo-heading"><strong>🏥 CUP · Prenotazioni e ticket</strong><span className="cup-demo-tag">SIMULAZIONE</span><button className="cup-demo-toggle" onClick={()=>setOpen(v=>!v)} type="button" aria-expanded={open}>{open?"Riduci":"Apri"}</button></div>
  {open&&<>
+ {loading&&<p role="status">Caricamento delle visite disponibili…</p>}
+ {loadError&&<p role="alert">{loadError} <button type="button" onClick={()=>setRetry(v=>v+1)}>Riprova</button></p>}
  {booking&&<div className="cup-demo-grid"><div className="cup-demo-card"><strong>La tua prenotazione demo</strong><span className="cup-demo-code">{booking.booking_code}</span><span>{booking.service_id}</span><span>{date(booking.appointment_at)}</span><span>Stato: {booking.booking_status==="confirmed"?"Confermata":"Annullata"}</span><span>Ticket: {Number(booking.ticket_amount).toLocaleString("it-IT",{style:"currency",currency:"EUR"})} · {booking.ticket_status==="paid_demo"?"Pagato (demo)":"Da pagare (demo)"}</span></div></div>}
  {!booking&&<div className="cup-demo-grid">{services.map(s=><div className="cup-demo-card" key={s.service}><strong>{s.service}</strong><small>{s.doctor}</small>{s.slots?.map(t=><span key={t}>📅 {date(t)}</span>)}<span>Ticket {Number(s.ticketEUR).toLocaleString("it-IT",{style:"currency",currency:"EUR"})}</span><small>{s.location}</small></div>)}</div>}
- <div className="cup-demo-form"><label htmlFor="cup-service">Prestazione</label><select id="cup-service" value={selected} onChange={e=>{setSelected(e.target.value);setSlot("");}}><option value="">Scegli una visita</option>{services.map(s=><option key={s.service} value={s.service}>{s.service}</option>)}</select><label htmlFor="cup-slot">Data e ora</label><select id="cup-slot" value={slot} onChange={e=>setSlot(e.target.value)}><option value="">Scegli disponibilità</option>{services.find(s=>s.service===selected)?.slots?.map(t=><option key={t} value={t}>{date(t)}</option>)}</select><button type="button" disabled={!selected||!slot||busy} onClick={bookDemo}>Conferma prenotazione demo</button><label htmlFor="cup-code">Codice prenotazione</label><input id="cup-code" value={localCode} onChange={e=>setLocalCode(e.target.value.toUpperCase())} placeholder="DEMO-..." autoComplete="off"/><button type="button" disabled={!code||busy} onClick={payDemo}>Simula pagamento ticket</button></div>
+ <div className="cup-demo-form"><label htmlFor="cup-service">Prestazione</label><select id="cup-service" value={selected} onChange={e=>{setSelected(e.target.value);setSlot("");}}><option value="">{loading?"Caricamento visite…":services.length?"Scegli una visita":"Nessuna visita caricata"}</option>{services.map(s=><option key={s.service} value={s.service}>{s.service}</option>)}</select><label htmlFor="cup-slot">Data e ora</label><select id="cup-slot" value={slot} onChange={e=>setSlot(e.target.value)}><option value="">Scegli disponibilità</option>{services.find(s=>s.service===selected)?.slots?.map(t=><option key={t} value={t}>{date(t)}</option>)}</select><button type="button" disabled={!selected||!slot||busy} onClick={bookDemo}>Conferma prenotazione demo</button><label htmlFor="cup-code">Codice prenotazione</label><input id="cup-code" value={localCode} onChange={e=>setLocalCode(e.target.value.toUpperCase())} placeholder="DEMO-..." autoComplete="off"/><button type="button" disabled={!code||busy} onClick={payDemo}>Simula pagamento ticket</button></div>
  {notice&&<p role="status">{notice}</p>}{status&&<p>{status}</p>}
  {receipt&&booking&&<div className="cup-demo-card" role="status"><strong>Ricevuta ticket · DEMO</strong><span>{booking.booking_code}</span><span>Importo: {Number(booking.ticket_amount).toLocaleString("it-IT",{style:"currency",currency:"EUR"})}</span><span>ESITO: PAGATO NELLA SIMULAZIONE</span><small>Nessun pagamento reale effettuato.</small></div>}
  <p>Questi appuntamenti, importi e pagamenti sono fittizi. Per prenotare o pagare parla con Giulia e conferma l'operazione.</p>
