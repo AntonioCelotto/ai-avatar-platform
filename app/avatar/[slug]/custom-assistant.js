@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import CupDemoPanel from "./cup-demo-panel";
 
 export default function CustomAssistant({ tenant }) {
   const [messages, setMessages] = useState([{ role: "assistant", content: tenant.welcomeMessage }]);
@@ -257,6 +258,7 @@ export default function CustomAssistant({ tenant }) {
         </div>
         <div className="assistant-status">{micError ? `Microfono: ${micError}` : speaking ? "Sta parlando" : loading ? "Sta pensando" : listening ? "Ti ascolta" : micEnabled ? "Ascolto continuo attivo" : "Pronta"}</div>
       </header>
+      <CupDemoPanel tenant={tenant} messages={messages} />
       <div className="messages" aria-live="polite">
         <div className="message-list">
           {messages.map((message, index) => <div className={`message message--${message.role}`} key={`${message.role}-${index}`}>{message.content}</div>)}
