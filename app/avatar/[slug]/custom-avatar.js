@@ -152,7 +152,7 @@ export default function CustomAvatar({ slug, initialAvatar }) {
         /* The compact view needs a bounded, visible video stage on mobile. */
         @media (max-width: 860px) {
           .custom-avatar-shell:not(.avatar-immersive) { display: flex !important; flex-direction: column !important; min-height: 100dvh !important; }
-          .custom-avatar-shell:not(.avatar-immersive) .avatar-stage { display: flex !important; position: relative !important; flex: 0 0 auto !important; height: 48dvh !important; min-height: 330px !important; max-height: 520px !important; padding: 10px !important; overflow: visible !important; }
+          .custom-avatar-shell:not(.avatar-immersive) .avatar-stage { display: flex !important; position: relative !important; flex: 0 0 auto !important; height: 58dvh !important; min-height: 410px !important; max-height: 650px !important; padding: 10px !important; overflow: visible !important; }
           .custom-avatar-shell:not(.avatar-immersive) .avatar-frame { position: relative !important; display: block !important; flex: 1 1 auto !important; height: 100% !important; min-height: 0 !important; overflow: hidden !important; }
           .custom-avatar-shell:not(.avatar-immersive) .avatar-frame > div:first-child { width: 100% !important; height: 100% !important; }
           .custom-avatar-shell:not(.avatar-immersive) .avatar-frame video { display: block !important; width: 100% !important; height: 100% !important; object-fit: cover !important; object-position: center center !important; }
