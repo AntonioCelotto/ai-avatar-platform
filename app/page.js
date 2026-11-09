@@ -18,8 +18,8 @@ const features = [
 ];
 
 const plans = [
-  { name: "AvatarOne Smart", price: "Attivazione su preventivo", monthly: "€39/mese", items: ["Avatar AI personalizzato con chat e voce", "Risposte basate sulle informazioni dell'azienda", "Conoscenza da siti web, PDF, cataloghi e FAQ", "Voce personalizzabile", "Link pubblico, QR code e WhatsApp", "Dashboard per aggiornare la conoscenza"] },
-  { name: "AvatarOne Connect", price: "Attivazione su preventivo", monthly: "€99/mese", featured: true, items: ["Tutte le funzionalità Smart", "Integrazioni API con CRM, gestionali, software e database", "Collegamento a e-commerce e sistemi di prenotazione", "Informazioni dinamiche dai sistemi autorizzati", "Integrazioni da progettare e quotare separatamente", "Link pubblico e QR code"] },
+  { name: "AvatarOne Smart", price: "Attivazione da €1.490", monthly: "€39/mese", items: ["Avatar AI personalizzato con chat e voce", "Risposte basate sulle informazioni dell'azienda", "Conoscenza da siti web, PDF, cataloghi e FAQ", "Voce personalizzabile", "Link pubblico, QR code e WhatsApp", "Dashboard per aggiornare la conoscenza"] },
+  { name: "AvatarOne Connect", price: "Attivazione da €2.900", monthly: "€99/mese", featured: true, items: ["Tutte le funzionalità Smart", "Integrazioni API con CRM, gestionali, software e database", "Collegamento a e-commerce e sistemi di prenotazione", "Informazioni dinamiche dai sistemi autorizzati", "Integrazioni da progettare e quotare separatamente", "Link pubblico e QR code"] },
   { name: "AvatarOne Experience", price: "Su preventivo", monthly: "Progetto e canone personalizzati", items: ["Tutte le funzionalità Connect", "Video respirazione e video durante il parlato", "Ascolto continuo e modalità immersiva", "Esperienza su tablet, totem e monitor touch", "Possibilità di creare API e integrazioni avanzate con gestionali e software", "Hardware, integrazioni e lip-sync Live Premium su preventivo"] }
 ];
 
