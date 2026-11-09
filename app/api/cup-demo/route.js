@@ -1,6 +1,6 @@
-import { getAvatarClientBySlug } from "../../../lib/supabase-server";
-import { demoCupQuery, DEMO_SLUG } from "../../../lib/cup-demo";
-import { enforceRateLimit } from "../../../lib/rate-limit";
+import { getAvatarClientBySlug } from "../../lib/supabase-server";
+import { demoCupQuery, DEMO_SLUG } from "../../lib/cup-demo";
+import { enforceRateLimit } from "../../lib/rate-limit";
 export async function GET(request) {
  const limited=enforceRateLimit(request,"cup-demo",{limit:30,windowMs:60000}); if(limited)return limited;
  const url=new URL(request.url);
