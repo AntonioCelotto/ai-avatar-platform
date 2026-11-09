@@ -13,7 +13,7 @@ const fields = [
 ];
 
 export default function ExperienceStudio() {
-  const [name, setName] = useState("Experience Demo NDA");
+  const [name, setName] = useState("Giulia · CUP Ospedaliero");
   const [media, setMedia] = useState({});
   const [mode, setMode] = useState("idle");
   const urls = useRef({});
@@ -28,6 +28,7 @@ export default function ExperienceStudio() {
   return <main className="experience-studio" style={{ maxWidth: 1080, margin: "24px auto", padding: 16, fontFamily: "Arial, sans-serif" }}>
     <a href="/platform">← Torna alla dashboard</a>
     <h1>AvatarOne · Experience Studio</h1>
+    <section style={{ background:"#e8f5f1",color:"#123e39",padding:18,borderRadius:14,marginBottom:18 }}><h2>Giulia · Experience ospedaliera</h2><p>Preset pronto per il box verticale 9:16. Carica qui la foto e i due video Mango per verificare l’inquadratura e il passaggio tra riposo e parlato. Il motore conversazionale e il CUP dimostrativo restano disponibili nel link di Giulia.</p><a href="/avatar/giulia-new-digital-app" target="_blank" rel="noopener noreferrer" style={{fontWeight:700,color:"#087d70"}}>Apri Giulia con AI, voce e CUP ↗</a><p style={{fontSize:12}}>Questa anteprima usa file locali del browser: non sono ancora salvati in Experience né sincronizzati automaticamente con le risposte AI.</p></section>
     <p>Laboratorio di prova riservato agli amministratori. Questa versione non modifica gli avatar pubblicati e non salva file sul server.</p>
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
       <section style={style}>
