@@ -38,7 +38,7 @@ export async function POST(request) {
       return result("Prenotazione dimostrativa confermata. Il codice è "+res.data.booking.booking_code+". Conservalo per consultare o pagare il ticket demo.");
     }
     const service = demoCupQuery({action:"availability"}).results.find(s => q.includes(s.service.toLowerCase()) || q.includes(s.doctor.toLowerCase()));
-    const isBook = /prenot|fissa.*visita|voglio.*visita/.test(q);
+    const isBook = /prenot|fissa.*visita|voglio.*visita|vorrei.*visita/.test(q);
     if (isBook && service) {
       const slots = service.slots.filter(t=>new Date(t)>new Date());
       if(!slots.length)return result("Per questa prestazione non ci sono date future disponibili nella demo.");
