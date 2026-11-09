@@ -88,7 +88,7 @@ export async function POST(request) {
         },
         theme: { accent: /^#[0-9a-f]{6}$/i.test(avatar.accent || "") ? avatar.accent : "#0071e3" },
         notes: String(avatar.knowledgeSummary || "").slice(0, 10000),
-        features: { cloud: true, website: Boolean(avatar.knowledgeUrl), documents: false, idleVideoUrl: String(avatar.idleVideoUrl || "").slice(0, 2048), voiceSampleUrl: uploadedVoice || avatar.voiceSamplePath || "" }
+        features: { packageType: ["start", "smart", "experience"].includes(avatar.packageType) ? avatar.packageType : "smart", cloud: true, website: Boolean(avatar.knowledgeUrl), documents: false, idleVideoUrl: String(avatar.idleVideoUrl || "").slice(0, 2048), voiceSampleUrl: uploadedVoice || avatar.voiceSamplePath || "" }
       });
       if (!saved?.id) throw new Error("Salvataggio cloud non completato.");
       if (avatar.websiteKnowledge || avatar.knowledgeSummary) {
