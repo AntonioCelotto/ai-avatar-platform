@@ -11,6 +11,7 @@ export default function CupDemoPanel({tenant,messages}) {
  const [localCode,setLocalCode]=useState("");
  const [notice,setNotice]=useState("");
  const [busy,setBusy]=useState(false);
+ const [receipt,setReceipt]=useState(false);
  const last=messages[messages.length-1]?.content||"";
  useEffect(()=>{const m=[...messages].reverse().find(x=>x.role==="assistant"&&/CONFERMA DEMO:/.test(x.content));if(!m)return;const p=m.content.match(/CONFERMA DEMO: (.+?) \| (.+?) \|/);if(p){setSelected(p[1]);setSlot(p[2]);setOpen(true)}},[messages]);
  const code=localCode||[...messages].reverse().map(m=>m.content.match(/DEMO-[A-F0-9]{24}/)?.[0]).find(Boolean);
@@ -28,7 +29,7 @@ export default function CupDemoPanel({tenant,messages}) {
   return()=>{active=false};
  },[code,last]);
  async function bookDemo(){if(!selected||!slot)return;setBusy(true);setNotice("");try{const r=await fetch("/api/cup-demo",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({slug:SLUG,action:"book",service:selected,slot,confirm:true})});const d=await r.json();if(!r.ok)throw Error(d.error||"Operazione non disponibile");setLocalCode(d.booking.booking_code);setBooking(d.booking);setNotice("Prenotazione dimostrativa confermata. Nessuna prenotazione reale.");}catch(e){setNotice(e.message)}finally{setBusy(false)}}
- async function payDemo(){if(!code)return;setBusy(true);try{const r=await fetch("/api/cup-demo",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({slug:SLUG,action:"pay",code,confirm:true})});const d=await r.json();if(!r.ok)throw Error(d.error||"Errore");setBooking(d.booking);setNotice("Ticket pagato nella simulazione. Nessun addebito.");}catch(e){setNotice(e.message)}finally{setBusy(false)}}
+ async function payDemo(){if(!code)return;setBusy(true);try{const r=await fetch("/api/cup-demo",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({slug:SLUG,action:"pay",code,confirm:true})});const d=await r.json();if(!r.ok)throw Error(d.error||"Errore");setBooking(d.booking);setReceipt(true);setNotice("Ticket pagato nella simulazione. Nessun addebito.");}catch(e){setNotice(e.message)}finally{setBusy(false)}}
  if(tenant.slug!==SLUG)return null;
  const date=(v)=>new Intl.DateTimeFormat("it-IT",{dateStyle:"medium",timeStyle:"short",timeZone:"Europe/Rome"}).format(new Date(v));
  return <section className="cup-demo-panel" aria-label="CUP dimostrativo">
@@ -48,6 +49,7 @@ export default function CupDemoPanel({tenant,messages}) {
  {!booking&&<div className="cup-demo-grid">{services.map(s=><div className="cup-demo-card" key={s.service}><strong>{s.service}</strong><small>{s.doctor}</small>{s.slots?.map(t=><span key={t}>📅 {date(t)}</span>)}<span>Ticket {Number(s.ticketEUR).toLocaleString("it-IT",{style:"currency",currency:"EUR"})}</span><small>{s.location}</small></div>)}</div>}
  <div className="cup-demo-form"><label htmlFor="cup-service">Prestazione</label><select id="cup-service" value={selected} onChange={e=>{setSelected(e.target.value);setSlot("");}}><option value="">Scegli una visita</option>{services.map(s=><option key={s.service} value={s.service}>{s.service}</option>)}</select><label htmlFor="cup-slot">Data e ora</label><select id="cup-slot" value={slot} onChange={e=>setSlot(e.target.value)}><option value="">Scegli disponibilità</option>{services.find(s=>s.service===selected)?.slots?.map(t=><option key={t} value={t}>{date(t)}</option>)}</select><button type="button" disabled={!selected||!slot||busy} onClick={bookDemo}>Conferma prenotazione demo</button><label htmlFor="cup-code">Codice prenotazione</label><input id="cup-code" value={localCode} onChange={e=>setLocalCode(e.target.value.toUpperCase())} placeholder="DEMO-..." autoComplete="off"/><button type="button" disabled={!code||busy} onClick={payDemo}>Simula pagamento ticket</button></div>
  {notice&&<p role="status">{notice}</p>}{status&&<p>{status}</p>}
+ {receipt&&booking&&<div className="cup-demo-card" role="status"><strong>Ricevuta ticket · DEMO</strong><span>{booking.booking_code}</span><span>Importo: {Number(booking.ticket_amount).toLocaleString("it-IT",{style:"currency",currency:"EUR"})}</span><span>ESITO: PAGATO NELLA SIMULAZIONE</span><small>Nessun pagamento reale effettuato.</small></div>}
  <p>Questi appuntamenti, importi e pagamenti sono fittizi. Per prenotare o pagare parla con Giulia e conferma l'operazione.</p>
  </>}
  </section>;
