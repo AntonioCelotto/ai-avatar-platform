@@ -7,7 +7,7 @@ const KEY=process.env.SUPABASE_SERVICE_ROLE_KEY;
 const table="avatar_cup_demo_bookings";
 async function db(path,method="GET",body) {
  if(!URL||!KEY)throw Error("Database not configured");
- const response=await fetch(URL.replace(/\\/$/,"")+"/rest/v1/"+table+path,{method,headers:{apikey:KEY,Authorization:"Bearer "+KEY,"Content-Type":"application/json",Prefer:"return=representation"},body:body?JSON.stringify(body):undefined,cache:"no-store"});
+ const response=await fetch((URL.endsWith("/")?URL.slice(0,-1):URL)+"/rest/v1/"+table+path,{method,headers:{apikey:KEY,Authorization:"Bearer "+KEY,"Content-Type":"application/json",Prefer:"return=representation"},body:body?JSON.stringify(body):undefined,cache:"no-store"});
  if(!response.ok)throw Error("Database operation failed "+response.status);
  return response.json();
 }
