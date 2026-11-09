@@ -22,6 +22,7 @@ export default function CustomAssistant({ tenant }) {
   const restartListeningRef = useRef(() => {});
   const sendRef = useRef(() => {});
   const loadingRef = useRef(false);
+  const micSessionRef = useRef(0);
 
   const lastAssistantMessage = [...messages].reverse().find((item) => item.role === "assistant")?.content || tenant.orderFallbackText;
   const whatsappUrl = tenant.whatsappPhone
@@ -127,6 +128,9 @@ export default function CustomAssistant({ tenant }) {
     setInput("");
     busyRef.current = true;
     loadingRef.current = true;
+    // Invalidate callbacks from the recognition instance deliberately stopped for playback.
+    micSessionRef.current += 1;
+    recognitionRef.current = null;
     clearTimeout(restartTimerRef.current);
     try { recognitionRef.current?.abort(); } catch {}
     setListening(false);
@@ -180,16 +184,19 @@ export default function CustomAssistant({ tenant }) {
     recognition.interimResults = false;
     recognition.continuous = true;
     recognition.maxAlternatives = 1;
-    recognition.onstart = () => { setMicError(""); setListening(true); };
+    const session = micSessionRef.current;
+    recognition.onstart = () => { if (session !== micSessionRef.current) return; setMicError(""); setListening(true); };
     recognition.onresult = (event) => {
       const transcript = event.results?.[0]?.[0]?.transcript || "";
-      if (transcript.trim() && continuousRef.current && !busyRef.current) {
+      if (session === micSessionRef.current && transcript.trim() && continuousRef.current && !busyRef.current) {
         setInput(transcript);
         sendRef.current(transcript);
       }
     };
     recognition.onerror = (event) => {
+      if (session !== micSessionRef.current) return;
       setListening(false);
+      if (busyRef.current || speakingRef.current || !continuousRef.current || event.error === "aborted") return;
       setMicError(event.error || "errore sconosciuto");
       if (event.error === "not-allowed" || event.error === "service-not-allowed") {
         continuousRef.current = false;
@@ -198,6 +205,7 @@ export default function CustomAssistant({ tenant }) {
     };
     recognition.onend = () => {
       if (recognitionRef.current === recognition) recognitionRef.current = null;
+      if (session !== micSessionRef.current) return;
       setListening(false);
       if (continuousRef.current && !busyRef.current && !speakingRef.current) restartListeningRef.current();
     };
@@ -224,6 +232,7 @@ export default function CustomAssistant({ tenant }) {
   function toggleListening() {
     if (!canUseSpeech) return;
     if (continuousRef.current) {
+      micSessionRef.current += 1;
       continuousRef.current = false;
       setMicEnabled(false);
       clearTimeout(restartTimerRef.current);
@@ -232,6 +241,7 @@ export default function CustomAssistant({ tenant }) {
       setListening(false);
       return;
     }
+    micSessionRef.current += 1;
     continuousRef.current = true;
     setMicError("");
     setMicEnabled(true);
