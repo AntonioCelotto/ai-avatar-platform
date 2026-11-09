@@ -1,5 +1,6 @@
 import { getAvatarClientBySlug, getAvatarKnowledgeText, insertUsageEvent, listUsageSummary } from "../../lib/supabase-server";
 import { enforceRateLimit, requestIp } from "../../lib/rate-limit";
+import { demoCupQuery, DEMO_SLUG } from "../../lib/cup-demo";
 
 export async function POST(request) {
   const limited = enforceRateLimit(request, "custom-chat", { limit: 18, windowMs: 60_000 });
@@ -19,6 +20,8 @@ export async function POST(request) {
   if (!messages.some((item) => item.role === "user" && item.content.trim())) return Response.json({ error: "Messaggio mancante." }, { status: 400 });
   if (!process.env.OPENAI_API_KEY) return Response.json({ error: "Motore AI non configurato." }, { status: 503 });
   const knowledge = await getAvatarKnowledgeText(avatar.id).catch(() => "");
+  const latestQuestion = [...messages].reverse().find((item) => item.role === "user")?.content || "";
+  const cupContext = slug === DEMO_SLUG ? JSON.stringify({ services: demoCupQuery({action:"services"}), availability: demoCupQuery({action:"availability"}), directions: demoCupQuery({action:"directions"}), tickets: demoCupQuery({action:"ticket"}) }) : "";
   const instructions = [
     `Sei ${String(avatar.spoken_avatar_name || avatar.avatar_name).slice(0, 50)}, assistente digitale di ${String(avatar.company_name).slice(0, 120)}.`,
     `Ruolo: ${String(avatar.personality?.role || "assistente digitale").slice(0, 500)}.`,
@@ -26,7 +29,8 @@ export async function POST(request) {
     `Conoscenza aziendale verificata:\n${knowledge || String(avatar.notes || "").slice(0, 1200)}`,
     "Rispondi in italiano in 2 o 3 frasi complete, chiare e naturali, senza Markdown. Mantieni ogni risposta entro 350 caratteri, così l’avatar può pronunciarla interamente. Non interrompere mai una frase.",
     "Usa solo i fatti della conoscenza di questo avatar. Non utilizzare dati di altri clienti.",
-    "Non inventare prezzi, orari, indirizzi, disponibilità o servizi. Se il dato manca, proponi il contatto con l’azienda."
+    "Non inventare prezzi, orari, indirizzi, disponibilità o servizi. Se il dato manca, proponi il contatto con l’azienda.",
+    ...(cupContext ? [`CUP DIMOSTRATIVO (DATI TOTALMENTE FITTIZI, API INTERNA): ${cupContext}`, "Per domande su CUP, visite, dottori, ambulatori e ticket usa soltanto i dati demo sopra. Specifica chiaramente che si tratta di una dimostrazione. Non dichiarare di aver verificato appuntamenti personali o effettuato prenotazioni, cancellazioni o pagamenti: non sono ancora attivi. Puoi mostrare l’importo del ticket ma non richiedere carte, dati sanitari o codici fiscali. Per prevenzione offri informazioni generali, non diagnosi né indicazioni cliniche personalizzate."] : [])
   ].join("\n");
   try {
     const response = await fetch("https://api.openai.com/v1/responses", { method: "POST", headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ model: process.env.OPENAI_MODEL || "gpt-5.2", instructions, input: messages }) });
