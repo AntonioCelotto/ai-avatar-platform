@@ -21,8 +21,9 @@ const codeValid=(code)=>/^DEMO-[A-F0-9]{24}$/.test(code);
 export async function GET(request) {
  const limited=enforceRateLimit(request,"cup-demo",{limit:30,windowMs:60000});if(limited)return limited;
  const u=new URL(request.url),slug=u.searchParams.get("slug");
- if(!await authorize(slug))return fail("Demo non disponibile",404);
  const action=u.searchParams.get("action")||"services";
+ if(slug===DEMO_SLUG&&["services","availability","directions","ticket"].includes(action))return Response.json(demoCupQuery({action,service:u.searchParams.get("service")||""}),{headers:{"Cache-Control":"no-store"}});
+ if(!await authorize(slug))return fail("Demo non disponibile",404);
  if(action==="booking"){
   const code=String(u.searchParams.get("code")||"").toUpperCase();
   if(!codeValid(code))return fail("Codice prenotazione non valido");
