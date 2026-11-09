@@ -10,6 +10,7 @@ function dataUrlToBlob(dataUrl) { const [header, encoded] = String(dataUrl || ""
 async function readJsonResponse(response, fallback) { const text = await response.text(); try { return JSON.parse(text); } catch { throw new Error(response.status === 413 ? "Il file è troppo grande per la pubblicazione." : fallback); } }
 
 export function AvatarCreator() {
+  const [packageType, setPackageType] = useState("smart");
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -124,7 +125,7 @@ export function AvatarCreator() {
         verifiedKnowledgeUrl = data.website.url;
         setWebsiteStatus(`Sito importato: ${data.website.hostname}`);
       }
-      const completed = { ...draft, imageDataUrl: "", imageUrl: imageUpload?.publicUrl || imageUrl.trim(), imageName: media.imageName, videoDataUrl: "", videoUrl: videoUpload?.publicUrl || videoUrl.trim(), videoName: media.videoName, idleDataUrl: "", idleVideoUrl: idleUpload?.publicUrl || idleUrl.trim(), idleName: media.idleName, voiceDataUrl: "", voiceName: media.voiceName, voiceSamplePath: voiceUpload?.storagePath || "", voice: voice === "elevenlabs" ? `elevenlabs:${elevenVoiceId.trim()}` : voice, whatsappPhone: whatsappPhone.replace(/\D/g, ""), knowledgeUrl: verifiedKnowledgeUrl, websiteKnowledge, knowledgeSummary: knowledgeNotes.trim() || draft.knowledgeSummary, mediaMode: preview.video ? "video" : preview.image ? "image" : "placeholder", syncMode: preview.video ? "speaking-loop" : "still-image", publishedAt: new Date().toISOString() };
+      const completed = { ...draft, packageType, imageDataUrl: "", imageUrl: imageUpload?.publicUrl || imageUrl.trim(), imageName: media.imageName, videoDataUrl: "", videoUrl: videoUpload?.publicUrl || videoUrl.trim(), videoName: media.videoName, idleDataUrl: "", idleVideoUrl: idleUpload?.publicUrl || idleUrl.trim(), idleName: media.idleName, voiceDataUrl: "", voiceName: media.voiceName, voiceSamplePath: voiceUpload?.storagePath || "", voice: voice === "elevenlabs" ? `elevenlabs:${elevenVoiceId.trim()}` : voice, whatsappPhone: whatsappPhone.replace(/\D/g, ""), knowledgeUrl: verifiedKnowledgeUrl, websiteKnowledge, knowledgeSummary: knowledgeNotes.trim() || draft.knowledgeSummary, mediaMode: preview.video ? "video" : preview.image ? "image" : "placeholder", syncMode: preview.video ? "speaking-loop" : "still-image", publishedAt: new Date().toISOString() };
       setWebsiteStatus("Salvataggio sicuro nel cloud…"); setPublishStep("Salvataggio nel cloud…");
       const cloudResponse = await fetch("/api/avatar-creator", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "publish", avatar: completed }) });
       const cloudData = await readJsonResponse(cloudResponse, "Il server non ha restituito una risposta valida.");
@@ -135,6 +136,7 @@ export function AvatarCreator() {
   }
 
   return <div className="creator-flow">
+    <div className="platform-creator-card"><label htmlFor="avatarPackageType"><strong>Pacchetto acquistato dal cliente</strong></label><select id="avatarPackageType" value={packageType} onChange={(event) => setPackageType(event.target.value)}><option value="start">AvatarOne Start · AI essenziale</option><option value="smart">AvatarOne Smart · AI avanzata</option><option value="experience">AvatarOne Experience · AI animata e integrazioni API</option></select><p>{packageType === "start" ? "Chat e voce AI, conoscenza aziendale, link e QR code." : packageType === "smart" ? "Tutte le funzioni Start, conoscenza avanzata, assistenza AI e voce personalizzata." : "Tutte le funzioni Smart, video di riposo e parlato, ascolto continuo, modalità immersiva e integrazioni API su progetto."}</p></div>
     <form className="platform-creator-card" onSubmit={createConfiguration}><label htmlFor="creatorPrompt">Descrivi cosa vuoi creare</label><textarea id="creatorPrompt" onChange={(e) => setPrompt(e.target.value)} placeholder="Esempio: crea Ettore, assistente commerciale che presenta prodotti e servizi alle aziende." value={prompt} /><button disabled={loading} type="submit">{loading ? "Sto creando…" : draft ? "↻ Rigenera con AI" : "✨ Crea con AI"}</button></form>
     {error ? <p role="alert" className="creator-message creator-message--error" style={{background:"#fff1f2",color:"#9f1239",border:"2px solid #fb7185",padding:16,borderRadius:12,fontWeight:700}}>{error}</p> : null}
     {publishStep ? <p role="status" style={{background:"#eaf2ff",color:"#123e75",padding:16,borderRadius:12,fontWeight:700}}>{publishStep}</p> : null}
