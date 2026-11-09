@@ -8,6 +8,7 @@ export default function CustomAssistant({ tenant }) {
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
   const [micEnabled, setMicEnabled] = useState(false);
+  const [micError, setMicError] = useState("");
   const [speaking, setSpeaking] = useState(false);
   const [canUseSpeech, setCanUseSpeech] = useState(false);
   const [shareNotice, setShareNotice] = useState("");
@@ -177,9 +178,9 @@ export default function CustomAssistant({ tenant }) {
     recognitionRef.current = recognition;
     recognition.lang = "it-IT";
     recognition.interimResults = false;
-    recognition.continuous = false;
+    recognition.continuous = true;
     recognition.maxAlternatives = 1;
-    recognition.onstart = () => setListening(true);
+    recognition.onstart = () => { setMicError(""); setListening(true); };
     recognition.onresult = (event) => {
       const transcript = event.results?.[0]?.[0]?.transcript || "";
       if (transcript.trim() && continuousRef.current && !busyRef.current) {
@@ -189,6 +190,7 @@ export default function CustomAssistant({ tenant }) {
     };
     recognition.onerror = (event) => {
       setListening(false);
+      setMicError(event.error || "errore sconosciuto");
       if (event.error === "not-allowed" || event.error === "service-not-allowed") {
         continuousRef.current = false;
         setMicEnabled(false);
@@ -199,7 +201,8 @@ export default function CustomAssistant({ tenant }) {
       setListening(false);
       if (continuousRef.current && !busyRef.current && !speakingRef.current) restartListeningRef.current();
     };
-    try { recognition.start(); } catch {
+    try { recognition.start(); } catch (error) {
+      setMicError(error?.name || "avvio non riuscito");
       recognitionRef.current = null;
       setListening(false);
       if (continuousRef.current) restartTimerRef.current = setTimeout(() => restartListeningRef.current(), 1200);
@@ -230,6 +233,7 @@ export default function CustomAssistant({ tenant }) {
       return;
     }
     continuousRef.current = true;
+    setMicError("");
     setMicEnabled(true);
     startRecognition();
   }
@@ -241,7 +245,7 @@ export default function CustomAssistant({ tenant }) {
           <strong>Parla o scrivi a {tenant.assistantName}</strong>
           <span>Scegli come iniziare</span>
         </div>
-        <div className="assistant-status">{speaking ? "Sta parlando" : loading ? "Sta pensando" : listening ? "Ti ascolta" : micEnabled ? "Ascolto continuo attivo" : "Pronta"}</div>
+        <div className="assistant-status">{micError ? `Microfono: ${micError}` : speaking ? "Sta parlando" : loading ? "Sta pensando" : listening ? "Ti ascolta" : micEnabled ? "Ascolto continuo attivo" : "Pronta"}</div>
       </header>
       <div className="messages" aria-live="polite">
         <div className="message-list">
