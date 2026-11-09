@@ -8,8 +8,8 @@ import AvatarInstall from "./install-avatar";
 
 const STORAGE_KEY = "avatarone:custom-avatars";
 
-export default function CustomAvatar({ slug, initialAvatar }) {
-  const [immersive, setImmersive] = useState(false);
+export default function CustomAvatar({ slug, initialAvatar, initialImmersive = false }) {
+  const [immersive, setImmersive] = useState(initialImmersive);
   const [avatar, setAvatar] = useState(() => initialAvatar ? {
     slug: initialAvatar.slug,
     companyName: initialAvatar.company_name,
