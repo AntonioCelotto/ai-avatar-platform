@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 const mediaStyle = {
   width: "100%", height: "100%", display: "block", objectFit: "cover",
-  objectPosition: "center 35%", filter: "saturate(1.03) contrast(1.02)",
+  objectPosition: "center top", filter: "saturate(1.03) contrast(1.02)",
   background: "#050505"
 };
 
@@ -124,8 +124,8 @@ export function AvatarVideo({ label = "Avatar video Mia", poster, idleSrc = "", 
 
   return <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden" }}>
     {idleSrc
-      ? <video src={idleSrc} poster={poster} aria-label={`${label} in attesa`} autoPlay loop muted playsInline preload="auto" style={{ ...mediaStyle, position: "absolute", inset: 0, opacity: speaking ? 0 : 1, transition: "none", pointerEvents: "none" }} />
+      ? <video src={idleSrc} poster={poster} aria-label={`${label} in attesa`} autoPlay loop muted playsInline preload="auto" style={{ ...mediaStyle, position: "absolute", inset: 0, opacity: speaking ? 0 : 1, transition: "opacity 250ms ease", pointerEvents: "none" }} />
       : poster ? <img src={poster} alt={`${label} in attesa`} style={{ ...mediaStyle, position: "absolute", inset: 0, opacity: speaking ? 0 : 1, transition: "opacity 250ms ease" }} /> : null}
-    <video src={src} poster={poster} aria-label={label} autoPlay loop muted playsInline preload="auto" style={{ ...mediaStyle, position: "absolute", inset: 0, opacity: speaking ? 1 : 0, transition: "none", pointerEvents: "none" }} />
+    <video src={src} poster={poster} aria-label={label} autoPlay loop muted playsInline preload="auto" style={{ ...mediaStyle, position: "absolute", inset: 0, opacity: speaking ? 1 : 0, transition: "opacity 250ms ease", pointerEvents: "none" }} />
   </div>;
 }
