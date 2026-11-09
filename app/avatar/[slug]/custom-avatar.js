@@ -103,7 +103,7 @@ export default function CustomAvatar({ slug, initialAvatar }) {
   };
 
   return (
-    <main className={`mobile-chat-shell custom-avatar-shell ${immersive ? "avatar-immersive" : ""}`} style={tenant.theme}>
+    <main className={`mobile-chat-shell custom-avatar-shell ${immersive ? "avatar-immersive" : ""} ${slug === "giulia-new-digital-app" ? "giulia-framing" : ""}`} style={tenant.theme}>
       <style>{`
         .custom-avatar-shell.avatar-immersive { position: fixed !important; inset: 0 !important; width: 100vw !important; height: 100dvh !important; max-width: none !important; max-height: none !important; margin: 0 !important; padding: 0 !important; border-radius: 0 !important; overflow: hidden !important; z-index: 2147483000 !important; display: flex !important; flex-direction: column !important; background: #06121e !important; }
         .avatar-immersive .avatar-stage { flex: 1 1 auto !important; min-height: 0 !important; height: auto !important; width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; display: flex !important; align-items: center !important; justify-content: center !important; }
@@ -152,10 +152,13 @@ export default function CustomAvatar({ slug, initialAvatar }) {
         /* The compact view needs a bounded, visible video stage on mobile. */
         @media (max-width: 860px) {
           .custom-avatar-shell:not(.avatar-immersive) { display: flex !important; flex-direction: column !important; min-height: 100dvh !important; }
-          .custom-avatar-shell:not(.avatar-immersive) .avatar-stage { display: flex !important; position: relative !important; flex: 0 0 auto !important; height: clamp(360px, 53dvh, 590px) !important; min-height: 0 !important; max-height: none !important; padding: 10px !important; overflow: visible !important; }
+          .giulia-framing .avatar-frame video, .giulia-framing .avatar-frame img { object-fit: contain !important; object-position: center center !important; }
+        .giulia-framing .avatar-frame > div:first-child { width: 100% !important; height: 100% !important; }
+        .giulia-framing .avatar-frame { background: #06121e !important; }
+        .custom-avatar-shell:not(.avatar-immersive) .avatar-stage { display: flex !important; position: relative !important; flex: 0 0 auto !important; height: clamp(360px, 53dvh, 590px) !important; min-height: 0 !important; max-height: none !important; padding: 10px !important; overflow: visible !important; }
           .custom-avatar-shell:not(.avatar-immersive) .avatar-frame { position: relative !important; display: block !important; flex: 1 1 auto !important; height: 100% !important; min-height: 0 !important; overflow: hidden !important; }
           .custom-avatar-shell:not(.avatar-immersive) .avatar-frame > div:first-child { width: 100% !important; height: 100% !important; }
-          .custom-avatar-shell:not(.avatar-immersive) .avatar-frame video, .custom-avatar-shell:not(.avatar-immersive) .avatar-frame img { display: block !important; width: 100% !important; height: 100% !important; object-fit: cover !important; object-position: center 24% !important; }
+          .custom-avatar-shell:not(.avatar-immersive):not(.giulia-framing) .avatar-frame video, .custom-avatar-shell:not(.avatar-immersive):not(.giulia-framing) .avatar-frame img { display: block !important; width: 100% !important; height: 100% !important; object-fit: cover !important; object-position: center 24% !important; }
           .custom-avatar-shell:not(.avatar-immersive) .mia-name-mark { top: auto !important; bottom: 14px !important; }
           .custom-avatar-shell:not(.avatar-immersive) .mia-name-mark span { font-size: clamp(38px, 12vw, 60px) !important; }
           .custom-avatar-shell:not(.avatar-immersive) .assistant-workspace { flex: 1 1 auto !important; height: auto !important; min-height: 0 !important; padding-bottom: max(12px, env(safe-area-inset-bottom)) !important; }
