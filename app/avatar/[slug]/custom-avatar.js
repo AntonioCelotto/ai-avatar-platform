@@ -158,7 +158,11 @@ export default function CustomAvatar({ slug, initialAvatar }) {
           .custom-avatar-shell:not(.avatar-immersive) .avatar-frame video { display: block !important; width: 100% !important; height: 100% !important; object-fit: cover !important; object-position: center top !important; }
           .custom-avatar-shell:not(.avatar-immersive) .mia-name-mark { top: auto !important; bottom: 14px !important; }
           .custom-avatar-shell:not(.avatar-immersive) .mia-name-mark span { font-size: clamp(38px, 12vw, 60px) !important; }
-          .custom-avatar-shell:not(.avatar-immersive) .assistant-workspace { flex: 1 0 auto !important; height: auto !important; min-height: 440px !important; }
+          .custom-avatar-shell:not(.avatar-immersive) .assistant-workspace { flex: 1 1 auto !important; height: auto !important; min-height: 0 !important; padding-bottom: calc(106px + env(safe-area-inset-bottom)) !important; }
+          .custom-avatar-shell:not(.avatar-immersive) .assistant-panel { height: auto !important; min-height: 210px !important; max-height: none !important; padding-bottom: 8px !important; }
+          .custom-avatar-shell:not(.avatar-immersive) .assistant-panel .messages { max-height: 230px !important; min-height: 90px !important; overflow-y: auto !important; }
+          .custom-avatar-shell:not(.avatar-immersive) .assistant-panel .action-dock { position: fixed !important; left: 12px !important; right: 12px !important; bottom: calc(8px + env(safe-area-inset-bottom)) !important; z-index: 100 !important; width: auto !important; max-width: none !important; margin: 0 !important; padding: 9px !important; border-radius: 22px !important; background: #071825f5 !important; border: 1px solid #64e9f744 !important; box-shadow: 0 6px 24px #0008 !important; display: flex !important; align-items: center !important; }
+          .custom-avatar-shell:not(.avatar-immersive) .assistant-panel .order-bar { display: none !important; }
         }
 
       `}</style>
