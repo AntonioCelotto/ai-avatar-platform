@@ -6,8 +6,13 @@ export default function CupDemoPanel({tenant,messages}) {
  const [booking,setBooking]=useState(null);
  const [status,setStatus]=useState("");
  const [open,setOpen]=useState(true);
+ const [selected,setSelected]=useState("");
+ const [slot,setSlot]=useState("");
+ const [localCode,setLocalCode]=useState("");
+ const [notice,setNotice]=useState("");
+ const [busy,setBusy]=useState(false);
  const last=messages[messages.length-1]?.content||"";
- const code=[...messages].reverse().map(m=>m.content.match(/DEMO-[A-F0-9]{24}/)?.[0]).find(Boolean);
+ const code=localCode||[...messages].reverse().map(m=>m.content.match(/DEMO-[A-F0-9]{24}/)?.[0]).find(Boolean);
  useEffect(()=>{
   if(tenant.slug!==SLUG)return;
   let active=true;
@@ -21,6 +26,8 @@ export default function CupDemoPanel({tenant,messages}) {
   fetch("/api/cup-demo?"+params,{cache:"no-store"}).then(r=>r.json()).then(d=>{if(active){setBooking(d.booking||null);setStatus(d.booking?"":"Codice demo non ancora registrato")}}).catch(()=>{if(active)setStatus("Verifica prenotazione non disponibile")});
   return()=>{active=false};
  },[code,last]);
+ async function bookDemo(){if(!selected||!slot)return;setBusy(true);setNotice("");try{const r=await fetch("/api/cup-demo",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({slug:SLUG,action:"book",service:selected,slot,confirm:true})});const d=await r.json();if(!r.ok)throw Error(d.error||"Operazione non disponibile");setLocalCode(d.booking.booking_code);setBooking(d.booking);setNotice("Prenotazione dimostrativa confermata. Nessuna prenotazione reale.");}catch(e){setNotice(e.message)}finally{setBusy(false)}}
+ async function payDemo(){if(!code)return;setBusy(true);try{const r=await fetch("/api/cup-demo",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({slug:SLUG,action:"pay",code,confirm:true})});const d=await r.json();if(!r.ok)throw Error(d.error||"Errore");setBooking(d.booking);setNotice("Ticket pagato nella simulazione. Nessun addebito.");}catch(e){setNotice(e.message)}finally{setBusy(false)}}
  if(tenant.slug!==SLUG)return null;
  const date=(v)=>new Intl.DateTimeFormat("it-IT",{dateStyle:"medium",timeStyle:"short",timeZone:"Europe/Rome"}).format(new Date(v));
  return <section className="cup-demo-panel" aria-label="CUP dimostrativo">
@@ -32,13 +39,14 @@ export default function CupDemoPanel({tenant,messages}) {
  .cup-demo-card{background:white;border:1px solid #d5e8e3;border-radius:11px;padding:10px;display:grid;gap:5px;font-size:12px}
  .cup-demo-card strong{font-size:13px}.cup-demo-card small{color:#52736d}.cup-demo-code{font-weight:700;overflow-wrap:anywhere;font-size:13px}
  .cup-demo-panel p{font-size:11px;line-height:1.45;margin:8px 0 0;color:#4d6d68}
- .avatar-immersive .cup-demo-panel{display:none!important}
+ .avatar-immersive .cup-demo-panel{display:block!important;position:fixed!important;z-index:40!important;bottom:14px!important;left:14px!important;width:min(420px,calc(100vw - 90px))!important;max-height:58dvh!important;overflow-y:auto!important;box-shadow:0 12px 38px #0009!important;margin:0!important;padding:12px!important}.cup-demo-form{display:grid;gap:7px;margin-top:10px}.cup-demo-form select,.cup-demo-form input{width:100%;min-width:0;padding:10px;border:1px solid #b7d9d2;border-radius:8px;background:white;color:#123e39;font-size:14px}.cup-demo-form button{background:#087d70;color:white;border:0;border-radius:9px;padding:10px;font-weight:700;cursor:pointer}.cup-demo-form button:disabled{opacity:.5}.cup-demo-form label{font-size:12px;font-weight:650}@media(max-width:600px){.avatar-immersive .cup-demo-panel{bottom:12px!important;left:10px!important;width:calc(100vw - 78px)!important;max-height:48dvh!important}}
  `}</style>
  <div className="cup-demo-heading"><strong>🏥 CUP · Prenotazioni e ticket</strong><span className="cup-demo-tag">SIMULAZIONE</span><button className="cup-demo-toggle" onClick={()=>setOpen(v=>!v)} type="button" aria-expanded={open}>{open?"Riduci":"Apri"}</button></div>
  {open&&<>
  {booking&&<div className="cup-demo-grid"><div className="cup-demo-card"><strong>La tua prenotazione demo</strong><span className="cup-demo-code">{booking.booking_code}</span><span>{booking.service_id}</span><span>{date(booking.appointment_at)}</span><span>Stato: {booking.booking_status==="confirmed"?"Confermata":"Annullata"}</span><span>Ticket: {Number(booking.ticket_amount).toLocaleString("it-IT",{style:"currency",currency:"EUR"})} · {booking.ticket_status==="paid_demo"?"Pagato (demo)":"Da pagare (demo)"}</span></div></div>}
  {!booking&&<div className="cup-demo-grid">{services.map(s=><div className="cup-demo-card" key={s.service}><strong>{s.service}</strong><small>{s.doctor}</small>{s.slots?.map(t=><span key={t}>📅 {date(t)}</span>)}<span>Ticket {Number(s.ticketEUR).toLocaleString("it-IT",{style:"currency",currency:"EUR"})}</span><small>{s.location}</small></div>)}</div>}
- {status&&<p>{status}</p>}
+ <div className="cup-demo-form"><label htmlFor="cup-service">Prestazione</label><select id="cup-service" value={selected} onChange={e=>{setSelected(e.target.value);setSlot("");}}><option value="">Scegli una visita</option>{services.map(s=><option key={s.service} value={s.service}>{s.service}</option>)}</select><label htmlFor="cup-slot">Data e ora</label><select id="cup-slot" value={slot} onChange={e=>setSlot(e.target.value)}><option value="">Scegli disponibilità</option>{services.find(s=>s.service===selected)?.slots?.map(t=><option key={t} value={t}>{date(t)}</option>)}</select><button type="button" disabled={!selected||!slot||busy} onClick={bookDemo}>Conferma prenotazione demo</button><label htmlFor="cup-code">Codice prenotazione</label><input id="cup-code" value={localCode} onChange={e=>setLocalCode(e.target.value.toUpperCase())} placeholder="DEMO-..." autoComplete="off"/><button type="button" disabled={!code||busy} onClick={payDemo}>Simula pagamento ticket</button></div>
+ {notice&&<p role="status">{notice}</p>}{status&&<p>{status}</p>}
  <p>Questi appuntamenti, importi e pagamenti sono fittizi. Per prenotare o pagare parla con Giulia e conferma l'operazione.</p>
  </>}
  </section>;
