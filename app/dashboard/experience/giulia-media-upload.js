@@ -16,11 +16,11 @@ export default function GiuliaMediaUpload(){
   setMessage("Caricamento respirazione…");const rest=await upload(idle,"idle");
   setMessage("Caricamento parlato…");const speaking=await upload(talk,"video");
   setMessage("Collegamento alla Giulia Experience…");
-  const res=await fetch("/api/avatar-clients",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({slug:SLUG,avatarPosterUrl:image,idleVideoUrl:rest,avatarVideoUrl:speaking,mediaMode:"video"})});
+  const res=await fetch("/api/avatar-clients",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({slug:SLUG,avatarPosterUrl:image,idleVideoUrl:rest,avatarVideoUrl:speaking,experienceOnly:true})});
   const d=await res.json();if(!res.ok)throw Error(d.error||"Impossibile salvare i media");
   setMessage("Media collegati. Verifica la versione Experience nel link sottostante.");
  }catch(e){setError(e.message||"Errore");setMessage("");}finally{setBusy(false)}}
- return <section style={{padding:20,borderRadius:16,background:"#edf6f4",color:"#123e39",marginTop:22}}><h2>Giulia Experience · Media definitivi</h2><p>Carica i tre file Mango per la versione a corpo intero. I file vengono collegati alla Giulia esistente: anche la demo standard userà i nuovi media. AI, voce e CUP rimangono invariati.</p>
+ return <section style={{padding:20,borderRadius:16,background:"#edf6f4",color:"#123e39",marginTop:22}}><h2>Giulia Experience · Media definitivi</h2><p>Carica i tre file Mango per la versione a corpo intero. I file sono salvati solo per Giulia Experience. La Giulia standard rimane invariata; AI, voce e CUP sono condivisi.</p>
  <label style={{display:"block",marginBottom:12}}>Foto Giulia (PNG/JPG)<input type="file" accept="image/png,image/jpeg,image/webp" onChange={e=>setPortrait(e.target.files?.[0]||null)}/></label>
  <label style={{display:"block",marginBottom:12}}>Video respirazione (MP4/WebM)<input type="file" accept="video/mp4,video/webm" onChange={e=>setIdle(e.target.files?.[0]||null)}/></label>
  <label style={{display:"block",marginBottom:12}}>Video parlato (MP4/WebM)<input type="file" accept="video/mp4,video/webm" onChange={e=>setTalk(e.target.files?.[0]||null)}/></label>
