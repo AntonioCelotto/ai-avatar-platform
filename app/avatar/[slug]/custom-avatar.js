@@ -147,6 +147,20 @@ export default function CustomAvatar({ slug, initialAvatar }) {
         .avatar-expand-toggle { position: absolute; top: max(12px, env(safe-area-inset-top)); right: 14px; z-index: 10; border: 1px solid #ffffff80; border-radius: 999px; padding: 10px 15px; background: #081a2dd9; color: white; font: 600 14px system-ui, sans-serif; cursor: pointer; }
         .avatar-immersive .avatar-share-button { flex: 0 0 44px !important; width: 44px !important; height: 44px !important; }
         .avatar-immersive .mia-commercial-badge { right: 12px !important; max-width: calc(100% - 150px) !important; }
+        /* Keep the avatar label clear of the bottom listening/speaking indicator. */
+        .custom-avatar-shell.avatar-immersive .mia-name-mark { top: auto !important; bottom: max(105px, calc(env(safe-area-inset-bottom) + 105px)) !important; }
+        /* The compact view needs a bounded, visible video stage on mobile. */
+        @media (max-width: 860px) {
+          .custom-avatar-shell:not(.avatar-immersive) { display: flex !important; flex-direction: column !important; min-height: 100dvh !important; }
+          .custom-avatar-shell:not(.avatar-immersive) .avatar-stage { display: flex !important; position: relative !important; flex: 0 0 auto !important; height: 48dvh !important; min-height: 330px !important; max-height: 520px !important; padding: 10px !important; overflow: visible !important; }
+          .custom-avatar-shell:not(.avatar-immersive) .avatar-frame { position: relative !important; display: block !important; flex: 1 1 auto !important; height: 100% !important; min-height: 0 !important; overflow: hidden !important; }
+          .custom-avatar-shell:not(.avatar-immersive) .avatar-frame > div:first-child { width: 100% !important; height: 100% !important; }
+          .custom-avatar-shell:not(.avatar-immersive) .avatar-frame video { display: block !important; width: 100% !important; height: 100% !important; object-fit: contain !important; }
+          .custom-avatar-shell:not(.avatar-immersive) .mia-name-mark { top: auto !important; bottom: 14px !important; }
+          .custom-avatar-shell:not(.avatar-immersive) .mia-name-mark span { font-size: clamp(38px, 12vw, 60px) !important; }
+          .custom-avatar-shell:not(.avatar-immersive) .assistant-workspace { flex: 1 0 auto !important; height: auto !important; min-height: 440px !important; }
+        }
+
       `}</style>
       <div className="aurora aurora--coral" />
       <div className="aurora aurora--cyan" />
