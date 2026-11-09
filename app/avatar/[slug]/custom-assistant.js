@@ -105,9 +105,12 @@ export default function CustomAssistant({ tenant }) {
       const audio = new Audio(url);
       audioRef.current = audio;
       audio.onplaying = () => { speakingRef.current = true; reveal(); setSpeaking(true); };
-      audio.onended = () => { speakingRef.current = false; setSpeaking(false); busyRef.current = false; URL.revokeObjectURL(url); restartListeningRef.current(); };
-      audio.onerror = () => { speakingRef.current = false; setSpeaking(false); busyRef.current = false; URL.revokeObjectURL(url); restartListeningRef.current(); };
+      let finishPlayback;
+      const playbackDone = new Promise((resolve) => { finishPlayback = resolve; });
+      audio.onended = () => { speakingRef.current = false; setSpeaking(false); URL.revokeObjectURL(url); finishPlayback(); };
+      audio.onerror = () => { speakingRef.current = false; setSpeaking(false); URL.revokeObjectURL(url); finishPlayback(); };
       await audio.play();
+      await playbackDone;
     } catch {
       setSpeaking(false);
       reveal();
@@ -145,7 +148,7 @@ export default function CustomAssistant({ tenant }) {
     } finally {
       loadingRef.current = false;
       setLoading(false);
-      if (!speakingRef.current && (audioRef.current?.paused !== false) && !("speechSynthesis" in window && window.speechSynthesis.speaking)) {
+      if (!speakingRef.current && !("speechSynthesis" in window && window.speechSynthesis.speaking)) {
         busyRef.current = false;
         restartListeningRef.current();
       }
