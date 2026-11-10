@@ -70,8 +70,13 @@ export default function CupDemoPanel({tenant,messages,immersive=false}) {
  .cup-demo-panel--immersive{position:fixed!important;z-index:2147483500!important;left:50%!important;right:auto!important;top:auto!important;bottom:max(100px,env(safe-area-inset-bottom))!important;transform:translateX(-50%)!important;width:min(92vw,880px)!important;max-height:70dvh!important;overflow:auto!important;pointer-events:auto!important;box-shadow:0 18px 55px #0009!important}
  .cup-demo-panel--immersive .cup-demo-toggle{background:#008c86!important;color:white!important;border-color:#008c86!important;padding:9px 16px!important;border-radius:12px!important}
  @media(min-width:650px){.cup-demo-panel--immersive{bottom:110px!important}}
+
+ .cup-demo-panel--immersive:has(.cup-mini-trigger){left:auto!important;right:18px!important;top:192px!important;bottom:auto!important;transform:none!important;width:48px!important;height:48px!important;min-height:0!important;max-height:none!important;padding:0!important;border:0!important;border-radius:50%!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}
+ .cup-mini-trigger{width:48px;height:48px;border-radius:50%;background:#102638e8;color:#fff;border:1px solid #ffffff70;font-size:25px;cursor:pointer;display:grid;place-items:center;box-shadow:0 6px 25px #0008}
+ .cup-mini-trigger:focus-visible{outline:3px solid #64e9f7;outline-offset:2px}
+ @media(max-width:600px){.cup-demo-panel--immersive:has(.cup-mini-trigger){right:18px!important;top:192px!important;width:48px!important}}
  `}</style>
- <div className="cup-demo-heading"><strong>🏥 CUP · Prenotazioni e ticket</strong><span className="cup-demo-tag">SIMULAZIONE</span><button className="cup-demo-toggle" onClick={()=>setOpen(v=>!v)} type="button" aria-expanded={open}>{open?"Riduci":"Apri"}</button></div>
+ {immersive && !open ? <button type="button" className="cup-mini-trigger" onClick={()=>setOpen(true)} aria-label="Apri servizi e prenotazioni" title="Apri servizi e prenotazioni">▦</button> : <><div className="cup-demo-heading"><strong>🏥 CUP · Prenotazioni e ticket</strong><span className="cup-demo-tag">SIMULAZIONE</span><button className="cup-demo-toggle" onClick={()=>setOpen(v=>!v)} type="button" aria-expanded={open}>{open?"Riduci":"Apri"}</button></div>
  {open&&<>
  {loading&&<p role="status">Caricamento delle visite disponibili…</p>}
  {loadError&&<p role="alert">{loadError} <button type="button" onClick={()=>setRetry(v=>v+1)}>Riprova</button></p>}
@@ -81,6 +86,7 @@ export default function CupDemoPanel({tenant,messages,immersive=false}) {
  {notice&&<p role="status">{notice}</p>}{status&&<p>{status}</p>}
  {receipt&&booking&&<div className="cup-demo-card" role="status"><strong>Ricevuta ticket · DEMO</strong><span>{booking.booking_code}</span><span>Importo: {Number(booking.ticket_amount).toLocaleString("it-IT",{style:"currency",currency:"EUR"})}</span><span>ESITO: PAGATO NELLA SIMULAZIONE</span><small>Nessun pagamento reale effettuato.</small></div>}
  <p>Questi appuntamenti, importi e pagamenti sono fittizi. Per prenotare o pagare parla con Giulia e conferma l'operazione.</p>
+ </>}
  </>}
  </section>;
  return immersive && mounted ? createPortal(panel,document.body) : panel;
