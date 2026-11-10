@@ -135,6 +135,7 @@ export default function CustomAvatar({ slug, initialAvatar, initialImmersive = f
         .avatar-immersive .assistant-panel .whatsapp-link { width: 42px !important; height: 42px !important; min-width: 42px !important; }
         .avatar-immersive .avatar-stage, .avatar-immersive .avatar-frame { height: 100dvh !important; }
         .avatar-immersive .avatar-expand-toggle { padding: 8px 11px !important; font-size: 12px !important; }
+        .avatar-immersive.giulia-framing .avatar-frame video, .avatar-immersive.giulia-framing .avatar-frame .custom-avatar-image { width:100%!important;height:100%!important;object-fit:cover!important;object-position:center!important; }
         /* Giulia Experience only: simulated holographic depth and green-screen key. */
         .giulia-depth-demo .avatar-frame { isolation: isolate; background: radial-gradient(ellipse at 50% 42%, #164454 0%, #071b27 50%, #02070c 100%) !important; }
         .giulia-depth-demo .avatar-frame::before { content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 78%, #6ce7d52b, transparent 47%), linear-gradient(90deg, #8bfff510, transparent 18%, transparent 82%, #8bfff510); }
