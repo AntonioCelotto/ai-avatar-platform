@@ -10,7 +10,6 @@ const STORAGE_KEY = "avatarone:custom-avatars";
 
 export default function CustomAvatar({ slug, initialAvatar, initialImmersive = false, experienceMode = false }) {
   const [immersive, setImmersive] = useState(initialImmersive);
-  const [depthEffect, setDepthEffect] = useState(true);
   const [avatar, setAvatar] = useState(() => initialAvatar ? {
     slug: initialAvatar.slug,
     companyName: initialAvatar.company_name,
@@ -105,7 +104,7 @@ export default function CustomAvatar({ slug, initialAvatar, initialImmersive = f
   };
 
   return (
-    <main className={`mobile-chat-shell custom-avatar-shell ${immersive ? "avatar-immersive" : ""} ${slug === "giulia-new-digital-app" ? "giulia-framing" : ""} ${experienceMode && depthEffect ? "giulia-depth-demo" : ""}`} style={tenant.theme}>
+    <main className={`mobile-chat-shell custom-avatar-shell ${immersive ? "avatar-immersive" : ""} ${slug === "giulia-new-digital-app" ? "giulia-framing" : ""}`} style={tenant.theme}>
       <style>{`
         .custom-avatar-shell.avatar-immersive { position: fixed !important; inset: 0 !important; width: 100vw !important; height: 100dvh !important; max-width: none !important; max-height: none !important; margin: 0 !important; padding: 0 !important; border-radius: 0 !important; overflow: hidden !important; z-index: 2147483000 !important; display: flex !important; flex-direction: column !important; background: #06121e !important; }
         .avatar-immersive .avatar-stage { flex: 1 1 auto !important; min-height: 0 !important; height: auto !important; width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; display: flex !important; align-items: center !important; justify-content: center !important; }
@@ -192,12 +191,10 @@ export default function CustomAvatar({ slug, initialAvatar, initialImmersive = f
         .custom-avatar-shell.avatar-immersive.giulia-framing .avatar-install-control { top:58px !important;left:14px !important;z-index:25 !important;max-width:min(65vw,240px) !important; }
         .custom-avatar-shell.avatar-immersive.giulia-framing .mia-commercial-badge { top:12px !important;left:14px !important;right:auto !important;max-width:calc(100vw - 130px) !important; }
       `}</style>
-      {experienceMode && <svg width="0" height="0" aria-hidden="true" style={{ position: "absolute", pointerEvents: "none" }}><defs><filter id="giulia-experience-key" colorInterpolationFilters="sRGB"><feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  3 -5 3 0 0.25" /></filter></defs></svg>}
       <div className="aurora aurora--coral" />
       <div className="aurora aurora--cyan" />
       <section className="avatar-stage" aria-label={tenant.assistantName} style={{ position: "relative" }}>
         <button type="button" className="avatar-expand-toggle" aria-label={immersive ? "Esci dalla modalità a tutto schermo" : "Espandi avatar a tutto schermo"} aria-pressed={immersive} onClick={() => setImmersive((value) => !value)}>{immersive ? "↙ Riduci" : "⛶ Espandi"}</button>
-        {experienceMode && <button type="button" className="giulia-depth-toggle" onClick={() => setDepthEffect(value => !value)}>{depthEffect ? "Effetto 3D: ON" : "Effetto 3D: OFF"}</button>}
         <AvatarInstall name={tenant.assistantName} />
         <div className="avatar-frame" aria-label={`Avatar ${tenant.spokenAssistantName}`}>
           {Boolean(tenant.avatarVideo || tenant.avatarIdleVideo)
@@ -205,7 +202,7 @@ export default function CustomAvatar({ slug, initialAvatar, initialImmersive = f
             : tenant.avatarPoster
               ? <img className="custom-avatar-image" alt={`Avatar ${tenant.spokenAssistantName}`} src={tenant.avatarPoster} />
               : <div className="custom-avatar-placeholder" aria-label="Immagine avatar non disponibile">{tenant.spokenAssistantName.slice(0, 1)}</div>}
-          <div className="mia-name-mark" aria-hidden="true"><span>{tenant.brandMark}</span></div>
+          {!experienceMode && <div className="mia-name-mark" aria-hidden="true"><span>{tenant.brandMark}</span></div>}
           <div className="mia-commercial-badge" aria-label={`${tenant.assistantName} è online`}>
             <span className="mia-commercial-dot" aria-hidden="true" />
             {tenant.assistantName.toUpperCase()} · ASSISTENTE AI ONLINE
