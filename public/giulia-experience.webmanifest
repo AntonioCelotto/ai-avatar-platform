@@ -1,0 +1,23 @@
+{
+  "name": "Giulia Experience · AvatarOne",
+  "short_name": "Giulia",
+  "description": "Giulia, assistente AI Experience",
+  "start_url": "/experience/giulia",
+  "scope": "/experience/giulia",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#06121e",
+  "theme_color": "#06121e",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
