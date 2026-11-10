@@ -35,3 +35,19 @@
 .experience-spotlight-frame strong{font-size:17px;letter-spacing:.13em;color:#173e63;margin:0}
 .experience-spotlight-frame a{margin:0;color:#1264a2}
 @media(max-width:900px){.experience-spotlight{grid-template-columns:1fr;padding:30px 24px 42px;gap:28px;min-height:0}.experience-spotlight-visual{order:0}.experience-spotlight-frame{width:min(100%,340px);height:410px}.experience-spotlight-copy h2{font-size:clamp(34px,8vw,48px)}}
+
+/* Giulia Experience: add a real clickable phone showcase without touching the hero above. */
+.experience-devices{display:flex;align-items:flex-end;justify-content:center;gap:14px;width:100%;min-width:0}
+.experience-devices .experience-spotlight-frame{flex:0 1 210px;width:210px;height:355px;min-width:0;padding:16px 8px 15px}
+.experience-devices .experience-spotlight-frame .experience-giulia-photo{height:78%}
+.experience-devices .experience-spotlight-frame strong{font-size:12px;letter-spacing:.06em}
+.experience-devices .experience-spotlight-frame a{font-size:12px}
+.experience-giulia-phone{position:relative;flex:0 1 205px;width:205px;height:410px;min-width:0;padding:13px 9px 38px;border:8px solid #07131f;border-radius:36px;background:#07131f;box-shadow:0 22px 52px #0008,0 0 0 2px #405b73;display:flex;flex-direction:column;align-items:center}
+.experience-phone-speaker{width:45px;height:5px;border-radius:8px;background:#536b81;margin:0 auto 9px}
+.experience-phone-screen{position:relative;flex:1;width:100%;min-height:0;border-radius:16px;overflow:hidden;background:linear-gradient(#dceafb,#f8fcff);display:flex;align-items:center;justify-content:center}
+.experience-phone-screen img{width:100%;height:100%;object-fit:contain;object-position:center}
+.experience-phone-status,.experience-phone-listening{position:absolute;z-index:1;left:8px;border-radius:12px;padding:6px 9px;font-size:10px;font-weight:800;background:#08263bd9;color:#a3f7ff}
+.experience-phone-status{top:9px}.experience-phone-listening{bottom:9px}
+.experience-phone-link{color:#a9f4ff!important;font-size:12px;font-weight:800;margin-top:12px}
+@media(max-width:900px){.experience-devices{gap:10px}.experience-giulia-phone{flex-basis:175px;height:350px}.experience-devices .experience-spotlight-frame{flex-basis:165px;height:320px}}
+@media(max-width:430px){.experience-giulia-phone{flex-basis:155px;height:315px}.experience-devices .experience-spotlight-frame{flex-basis:145px;height:280px}.experience-devices .experience-spotlight-frame strong{font-size:10px}}
