@@ -1,7 +1,7 @@
 import CustomAvatar from "../../avatar/[slug]/custom-avatar";
 import { getAvatarClientBySlug, getAvatarKnowledgeText } from "../../lib/supabase-server";
 
-export const metadata={title:"Giulia Experience · CUP Ospedaliero · AvatarOne",description:"Demo ospedaliera interattiva di Giulia con AI, voce e prenotazioni CUP dimostrative"};
+export const metadata={manifest:"/giulia-experience.webmanifest",title:"Giulia Experience · CUP Ospedaliero · AvatarOne",description:"Demo ospedaliera interattiva di Giulia con AI, voce e prenotazioni CUP dimostrative"};
 export const dynamic="force-dynamic";
 export default async function GiuliaExperiencePage(){
  let avatar=null;
