@@ -182,7 +182,7 @@ export default function CustomAvatar({ slug, initialAvatar, initialImmersive = f
         }
 
       `}</style>
-      {experienceMode && <svg width="0" height="0" aria-hidden="true" style={{ position: "absolute", pointerEvents: "none" }}><defs><filter id="giulia-experience-key" colorInterpolationFilters="sRGB"><feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0.5 -1.2 0.5 0 0.8" /></filter></defs></svg>}
+      {experienceMode && <svg width="0" height="0" aria-hidden="true" style={{ position: "absolute", pointerEvents: "none" }}><defs><filter id="giulia-experience-key" colorInterpolationFilters="sRGB"><feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  3 -5 3 0 0.25" /></filter></defs></svg>}
       <div className="aurora aurora--coral" />
       <div className="aurora aurora--cyan" />
       <section className="avatar-stage" aria-label={tenant.assistantName} style={{ position: "relative" }}>
