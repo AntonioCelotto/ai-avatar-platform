@@ -24,6 +24,9 @@ export default function CustomAssistant({ tenant, immersive = false }) {
   const sendRef = useRef(() => {});
   const loadingRef = useRef(false);
   const micSessionRef = useRef(0);
+  const fillerRef = useRef(null);
+  const stopRecognitionRef = useRef(null);
+  const stoppedRef = useRef(false);
 
   const lastAssistantMessage = [...messages].reverse().find((item) => item.role === "assistant")?.content || tenant.orderFallbackText;
   const whatsappUrl = tenant.whatsappPhone
@@ -37,6 +40,7 @@ export default function CustomAssistant({ tenant, immersive = false }) {
       clearTimeout(restartTimerRef.current);
       try { recognitionRef.current?.abort(); } catch {}
       audioRef.current?.pause();
+      try { stopRecognitionRef.current?.abort(); } catch {}
       if ("speechSynthesis" in window) window.speechSynthesis.cancel();
       delete document.documentElement.dataset.miaAvatarState;
     };
@@ -57,6 +61,37 @@ export default function CustomAssistant({ tenant, immersive = false }) {
       restartListeningRef.current();
     }
   }, [speaking, loading]);
+
+  function stopSpeech() {
+    stoppedRef.current = true;
+    speechSequenceRef.current += 1;
+    try { audioRef.current?.pause(); } catch {}
+    try { stopRecognitionRef.current?.abort(); } catch {}
+    stopRecognitionRef.current = null;
+    try { window.speechSynthesis?.cancel(); } catch {}
+    speakingRef.current = false;
+    busyRef.current = false;
+    setSpeaking(false);
+    setLoading(false);
+    restartListeningRef.current();
+  }
+
+  function listenForStop() {
+    if (!immersive || !continuousRef.current || stopRecognitionRef.current) return;
+    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!Recognition) return;
+    const rec = new Recognition();
+    stopRecognitionRef.current = rec;
+    rec.lang = "it-IT";
+    rec.continuous = true;
+    rec.interimResults = true;
+    rec.onresult = (event) => {
+      const spoken = Array.from(event.results || []).map((r) => r[0]?.transcript || "").join(" ").toLowerCase();
+      if (/\\b(?:giulia\\s+)?(?:stop|fermati|basta)\\b/i.test(spoken)) stopSpeech();
+    };
+    rec.onend = () => { if (stopRecognitionRef.current === rec) stopRecognitionRef.current = null; };
+    try { rec.start(); } catch { stopRecognitionRef.current = null; }
+  }
 
   function cleanSpeech(text) {
     return String(text || "").replace(/\*\*|__|`|[#>~]/g, "").replace(/\s+/g, " ").trim().slice(0, 420);
@@ -82,6 +117,7 @@ export default function CustomAssistant({ tenant, immersive = false }) {
 
   async function speak(text, onAudioStart = () => {}) {
     const sequence = ++speechSequenceRef.current;
+    if (stoppedRef.current) return;
     let revealed = false;
     const reveal = () => { if (!revealed && sequence === speechSequenceRef.current) { revealed = true; onAudioStart(); } };
     const clean = cleanSpeech(text).replace(/new\s+digital\s+app/gi, tenant.slug === "mia-nda" ? "enne di a" : "New Digital App");
@@ -105,9 +141,10 @@ export default function CustomAssistant({ tenant, immersive = false }) {
       });
       if (!response.ok) throw new Error("speech");
       const url = URL.createObjectURL(await response.blob());
+      if (sequence !== speechSequenceRef.current || stoppedRef.current) { URL.revokeObjectURL(url); return; }
       const audio = new Audio(url);
       audioRef.current = audio;
-      audio.onplaying = () => { speakingRef.current = true; reveal(); setSpeaking(true); };
+      audio.onplaying = () => { speakingRef.current = true; reveal(); setSpeaking(true); listenForStop(); };
       let finishPlayback;
       const playbackDone = new Promise((resolve) => { finishPlayback = resolve; });
       audio.onended = () => { speakingRef.current = false; setSpeaking(false); URL.revokeObjectURL(url); finishPlayback(); };
@@ -123,10 +160,12 @@ export default function CustomAssistant({ tenant, immersive = false }) {
 
   async function send(content) {
     const clean = String(content || "").trim();
+    if (/^(?:giulia[ ,]*)?(?:stop|fermati|basta)[.! ]*$/i.test(clean)) { stopSpeech(); return; }
     if (!clean || loadingRef.current || busyRef.current) return;
     const next = [...messages, { role: "user", content: clean }];
     setMessages(next);
     setInput("");
+    stoppedRef.current = false;
     busyRef.current = true;
     loadingRef.current = true;
     // Invalidate callbacks from the recognition instance deliberately stopped for playback.
@@ -136,6 +175,12 @@ export default function CustomAssistant({ tenant, immersive = false }) {
     try { recognitionRef.current?.abort(); } catch {}
     setListening(false);
     setLoading(true);
+    if (immersive && "speechSynthesis" in window) {
+      const filler = new SpeechSynthesisUtterance("Grazie per la domanda.");
+      filler.lang = "it-IT"; filler.rate = 1.08;
+      fillerRef.current = filler;
+      window.speechSynthesis.speak(filler);
+    }
     try {
       const response = await fetch("/api/custom-chat", {
         method: "POST",
@@ -144,10 +189,16 @@ export default function CustomAssistant({ tenant, immersive = false }) {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error);
+      try { if (fillerRef.current) window.speechSynthesis.cancel(); } catch {}
+      fillerRef.current = null;
+      if (stoppedRef.current) return;
       const reply = data.reply || "Non ho trovato una risposta.";
       await speak(reply, () => setMessages((current) => [...current, { role: "assistant", content: reply }]));
       setLoading(false);
     } catch {
+      try { if (fillerRef.current) window.speechSynthesis.cancel(); } catch {}
+      fillerRef.current = null;
+      if (stoppedRef.current) return;
       const fallback = "Non riesco a rispondere in questo momento. Riprova tra poco.";
       setMessages((current) => [...current, { role: "assistant", content: fallback }]);
       speakWithBrowser(fallback);
@@ -189,6 +240,7 @@ export default function CustomAssistant({ tenant, immersive = false }) {
     recognition.onstart = () => { if (session !== micSessionRef.current) return; setMicError(""); setListening(true); };
     recognition.onresult = (event) => {
       const transcript = event.results?.[0]?.[0]?.transcript || "";
+      if (/^(?:giulia[ ,]*)?(?:stop|fermati|basta)[.! ]*$/i.test(transcript.trim())) { stopSpeech(); return; }
       if (session === micSessionRef.current && transcript.trim() && continuousRef.current && !busyRef.current) {
         setInput(transcript);
         sendRef.current(transcript);
@@ -270,7 +322,7 @@ export default function CustomAssistant({ tenant, immersive = false }) {
       </div>
       <div className={`action-dock ${whatsappUrl ? "" : "action-dock--chat-only"}`}>
         <form className="composer" onSubmit={(event) => { event.preventDefault(); send(input); }}>
-          <button className={`icon-button ${micEnabled ? "is-listening" : ""}`} disabled={!canUseSpeech} onClick={toggleListening} type="button" aria-label={micEnabled ? "Disattiva ascolto continuo" : `Attiva ascolto continuo con ${tenant.assistantName}`}>
+          <button className={`icon-button ${micEnabled ? "is-listening" : ""}`} disabled={!canUseSpeech} onClick={speaking ? stopSpeech : toggleListening} type="button" aria-label={speaking ? "Ferma Giulia" : micEnabled ? "Disattiva ascolto continuo" : `Attiva ascolto continuo con ${tenant.assistantName}`}>
             <span className="mic-symbol" aria-hidden="true" />
             <span className="voice-label">{micEnabled ? "Stop" : "Parla"}</span>
           </button>
