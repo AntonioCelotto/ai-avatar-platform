@@ -88,7 +88,7 @@ export default function CustomAssistant({ tenant, immersive = false }) {
     rec.interimResults = true;
     rec.onresult = (event) => {
       const spoken = Array.from(event.results || []).map((r) => r[0]?.transcript || "").join(" ").toLowerCase();
-      if (/\\b(?:giulia\\s+)?(?:stop|fermati|basta)\\b/i.test(spoken)) stopSpeech();
+      if (/\b(?:giulia\s+)?(?:stop|fermati|basta)\b/i.test(spoken)) stopSpeech();
     };
     rec.onend = () => { if (stopRecognitionRef.current === rec) stopRecognitionRef.current = null; };
     try { rec.start(); } catch { stopRecognitionRef.current = null; }
