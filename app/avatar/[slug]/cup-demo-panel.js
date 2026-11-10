@@ -71,10 +71,10 @@ export default function CupDemoPanel({tenant,messages,immersive=false}) {
  .cup-demo-panel--immersive .cup-demo-toggle{background:#008c86!important;color:white!important;border-color:#008c86!important;padding:9px 16px!important;border-radius:12px!important}
  @media(min-width:650px){.cup-demo-panel--immersive{bottom:110px!important}}
 
- .cup-demo-panel--immersive:has(.cup-mini-trigger){left:auto!important;right:14px!important;top:180px!important;bottom:auto!important;transform:none!important;width:44px!important;height:44px!important;min-height:0!important;max-height:none!important;padding:0!important;border:0!important;border-radius:50%!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}
+ .cup-demo-panel--immersive:has(.cup-mini-trigger){left:auto!important;right:21px!important;top:194px!important;bottom:auto!important;transform:none!important;width:44px!important;height:44px!important;min-height:0!important;max-height:none!important;padding:0!important;border:0!important;border-radius:50%!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}
  .cup-mini-trigger{width:44px;height:44px;border-radius:50%;background:#102638e8;color:#fff;border:1px solid #ffffff70;font-size:25px;cursor:pointer;display:grid;place-items:center;box-shadow:0 6px 25px #0008}
  .cup-mini-trigger:focus-visible{outline:3px solid #64e9f7;outline-offset:2px}
- @media(max-width:600px){.cup-demo-panel--immersive:has(.cup-mini-trigger){right:14px!important;top:180px!important;width:44px!important}}
+ @media(max-width:600px){.cup-demo-panel--immersive:has(.cup-mini-trigger){right:21px!important;top:194px!important;width:44px!important}}
  `}</style>
  {immersive && !open ? <button type="button" className="cup-mini-trigger" onClick={()=>setOpen(true)} aria-label="Apri servizi e prenotazioni" title="Apri servizi e prenotazioni">▦</button> : <><div className="cup-demo-heading"><strong>🏥 CUP · Prenotazioni e ticket</strong><span className="cup-demo-tag">SIMULAZIONE</span><button className="cup-demo-toggle" onClick={()=>setOpen(v=>!v)} type="button" aria-expanded={open}>{open?"Riduci":"Apri"}</button></div>
  {open&&<>
