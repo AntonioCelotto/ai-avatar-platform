@@ -182,6 +182,15 @@ export default function CustomAvatar({ slug, initialAvatar, initialImmersive = f
           .custom-avatar-shell:not(.avatar-immersive) .assistant-panel .order-bar { display: none !important; }
         }
 
+
+        /* Tablet-specific fix: the <=860px contain rule must not override immersive cover. */
+        .custom-avatar-shell.avatar-immersive.giulia-framing .avatar-frame,
+        .custom-avatar-shell.avatar-immersive.giulia-framing .avatar-frame > div:first-child { width:100% !important;height:100% !important;max-width:none !important;overflow:hidden !important; }
+        .custom-avatar-shell.avatar-immersive.giulia-framing .avatar-frame video,
+        .custom-avatar-shell.avatar-immersive.giulia-framing .avatar-frame img { width:100% !important;height:100% !important;object-fit:cover !important;object-position:center center !important; }
+        /* Give the install prompt its own line below the online badge. */
+        .custom-avatar-shell.avatar-immersive.giulia-framing .avatar-install-control { top:58px !important;left:14px !important;z-index:25 !important;max-width:min(65vw,240px) !important; }
+        .custom-avatar-shell.avatar-immersive.giulia-framing .mia-commercial-badge { top:12px !important;left:14px !important;right:auto !important;max-width:calc(100vw - 130px) !important; }
       `}</style>
       {experienceMode && <svg width="0" height="0" aria-hidden="true" style={{ position: "absolute", pointerEvents: "none" }}><defs><filter id="giulia-experience-key" colorInterpolationFilters="sRGB"><feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  3 -5 3 0 0.25" /></filter></defs></svg>}
       <div className="aurora aurora--coral" />
