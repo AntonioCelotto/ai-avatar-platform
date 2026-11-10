@@ -552,3 +552,13 @@ body:has(.knowledge-shell) {
 .creator-voice-upload { width: 100%; }
 .creator-inline { align-items: stretch; min-width: 0; }
 .creator-inline button { min-height: 46px; white-space: nowrap; }
+
+/* Dashboard visual refinement: consistent polished cards and clear actions */
+.platform-shell--mobile-first .platform-main{background:linear-gradient(165deg,#f5f9ff 0%,#f8fafc 48%,#f0f6fa 100%)}
+.platform-shell--mobile-first .platform-section{border:1px solid rgba(24,62,101,.09);box-shadow:0 12px 38px rgba(24,62,101,.055);border-radius:26px}
+.platform-shell--mobile-first .platform-card,.platform-shell--mobile-first .platform-action-card,.platform-shell--mobile-first .platform-client-card,.platform-shell--mobile-first .launch-client-card{border:1px solid rgba(24,62,101,.10);box-shadow:0 8px 24px rgba(25,54,92,.06);transition:transform .2s ease,box-shadow .2s ease}
+@media(hover:hover){.platform-shell--mobile-first .platform-action-card:hover,.platform-shell--mobile-first .platform-client-card:hover{transform:translateY(-3px);box-shadow:0 16px 32px rgba(25,54,92,.12)}}
+.platform-shell--mobile-first .platform-nav a:focus-visible,.platform-shell--mobile-first a:focus-visible,.platform-shell--mobile-first button:focus-visible{outline:3px solid #56b6ed;outline-offset:3px}
+.platform-experience-highlight{margin:22px 0;padding:23px 26px;border-radius:24px;background:linear-gradient(115deg,#0c2441,#175b83);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:20px;box-shadow:0 14px 32px rgba(18,65,107,.17)}
+.platform-experience-highlight strong{display:block;font-size:19px;margin:6px 0}.platform-experience-highlight p{color:#d2e6f7;margin:0;font-size:13px;line-height:1.6}.platform-experience-highlight small{color:#8de6ee;font-weight:800;letter-spacing:.1em}.platform-experience-highlight a{display:inline-flex;padding:13px 18px;border-radius:12px;background:#d8faff;color:#0b3e58;font-weight:800;white-space:nowrap}
+@media(max-width:680px){.platform-experience-highlight{flex-direction:column;align-items:stretch}.platform-experience-highlight a{justify-content:center}}
