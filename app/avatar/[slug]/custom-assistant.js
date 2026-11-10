@@ -69,6 +69,7 @@ export default function CustomAssistant({ tenant, immersive = false }) {
     try { stopRecognitionRef.current?.abort(); } catch {}
     stopRecognitionRef.current = null;
     try { window.speechSynthesis?.cancel(); } catch {}
+    try { fillerRef.current = null; } catch {}
     speakingRef.current = false;
     busyRef.current = false;
     setSpeaking(false);
