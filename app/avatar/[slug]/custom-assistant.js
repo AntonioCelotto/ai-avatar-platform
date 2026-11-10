@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import CupDemoPanel from "./cup-demo-panel";
 
-export default function CustomAssistant({ tenant }) {
+export default function CustomAssistant({ tenant, immersive = false }) {
   const [messages, setMessages] = useState([{ role: "assistant", content: tenant.welcomeMessage }]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -258,7 +258,7 @@ export default function CustomAssistant({ tenant }) {
         </div>
         <div className="assistant-status">{micError ? `Microfono: ${micError}` : speaking ? "Sta parlando" : loading ? "Sta pensando" : listening ? "Ti ascolta" : micEnabled ? "Ascolto continuo attivo" : "Pronta"}</div>
       </header>
-      <CupDemoPanel tenant={tenant} messages={messages} />
+      <CupDemoPanel tenant={tenant} messages={messages} immersive={immersive} />
       <div className="messages" aria-live="polite">
         <div className="message-list">
           {messages.map((message, index) => <div className={`message message--${message.role}`} key={`${message.role}-${index}`}>{message.content}</div>)}
