@@ -213,7 +213,7 @@ export default function CustomAvatar({ slug, initialAvatar, initialImmersive = f
         </div>
       </section>
       <section className="assistant-workspace" aria-label={`Chat con ${tenant.assistantName}`}>
-        <CustomAssistant tenant={tenant} />
+        <CustomAssistant tenant={tenant} immersive={immersive} />
       </section>
     </main>
   );
