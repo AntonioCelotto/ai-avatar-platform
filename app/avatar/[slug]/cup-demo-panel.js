@@ -1,9 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { demoCupQuery } from "../../lib/cup-demo";
 const SLUG="giulia-new-digital-app";
 const FALLBACK=demoCupQuery({action:"availability"}).results;
-export default function CupDemoPanel({tenant,messages}) {
+export default function CupDemoPanel({tenant,messages,immersive=false}) {
+ const [mounted,setMounted]=useState(false);
+ useEffect(()=>setMounted(true),[]);
  const [services,setServices]=useState(FALLBACK);
  const [loading,setLoading]=useState(true);
  const [loadError,setLoadError]=useState("");
@@ -49,20 +52,24 @@ export default function CupDemoPanel({tenant,messages}) {
  async function payDemo(){if(!code)return;setBusy(true);try{const r=await fetch("/api/cup-demo",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({slug:SLUG,action:"pay",code,confirm:true})});const d=await r.json();if(!r.ok)throw Error(d.error||"Errore");setBooking(d.booking);setReceipt(true);setNotice("Ticket pagato nella simulazione. Nessun addebito.");}catch(e){setNotice(e.message)}finally{setBusy(false)}}
  if(tenant.slug!==SLUG)return null;
  const date=(v)=>new Intl.DateTimeFormat("it-IT",{dateStyle:"medium",timeStyle:"short",timeZone:"Europe/Rome"}).format(new Date(v));
- return <section className="cup-demo-panel" aria-label="CUP dimostrativo">
+ const panel = <section className={`cup-demo-panel ${immersive ? "cup-demo-panel--immersive" : ""}`} aria-label="CUP dimostrativo">
  <style>{`
  .cup-demo-panel{margin:8px 0 12px;padding:12px;border:1px solid #9ccfc8;border-radius:16px;background:#f4fcfa;color:#123e39;font:inherit}
  .cup-demo-panel *{box-sizing:border-box}.cup-demo-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}.cup-demo-heading strong{font-size:14px}.cup-demo-tag{font-size:10px;background:#d3eee8;padding:4px 7px;border-radius:12px;font-weight:700}
- .avatar-immersive .assistant-workspace:has(.cup-demo-panel),.avatar-immersive .assistant-panel:has(.cup-demo-panel){pointer-events:auto!important}.avatar-immersive .cup-demo-panel button,.avatar-immersive .cup-demo-panel input,.avatar-immersive .cup-demo-panel select{pointer-events:auto!important;position:relative;z-index:2}.cup-demo-toggle{border:1px solid #b7d9d2;background:white;color:#14564c;border-radius:9px;padding:5px 9px;cursor:pointer}
+ .avatar-immersive .assistant-workspace:has(.cup-demo-panel),.avatar-immersive .assistant-panel:has(.cup-demo-panel){pointer-events:auto!important}.cup-demo-panel--immersive button,.cup-demo-panel--immersive input,.cup-demo-panel--immersive select{pointer-events:auto!important;position:relative;z-index:2}.cup-demo-toggle{border:1px solid #b7d9d2;background:white;color:#14564c;border-radius:9px;padding:5px 9px;cursor:pointer}
  .cup-demo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:10px}
  .cup-demo-card{background:white;border:1px solid #d5e8e3;border-radius:11px;padding:10px;display:grid;gap:5px;font-size:12px}
  .cup-demo-slot{display:block;width:100%;text-align:left;padding:10px;border:1px solid #a8d5ca;border-radius:9px;background:#effaf6;color:#15594e;cursor:pointer;font-weight:650}.cup-demo-slot--selected{background:#087d70;color:white;border-color:#087d70}.cup-demo-card strong{font-size:13px}.cup-demo-card small{color:#52736d}.cup-demo-code{font-weight:700;overflow-wrap:anywhere;font-size:13px}
  .cup-demo-panel p{font-size:11px;line-height:1.45;margin:8px 0 0;color:#4d6d68}
- .avatar-immersive .cup-demo-panel{display:block!important;position:fixed!important;z-index:40!important;pointer-events:auto!important;top:auto!important;bottom:185px!important;right:12px!important;left:auto!important;width:min(390px,calc(100vw - 100px))!important;max-height:45dvh!important;overflow-y:auto!important;box-shadow:0 12px 38px #0009!important;margin:0!important;padding:12px!important}.cup-demo-form{display:grid;gap:7px;margin-top:10px}.cup-demo-form select,.cup-demo-form input{width:100%;min-width:0;padding:10px;border:1px solid #b7d9d2;border-radius:8px;background:white;color:#123e39;font-size:14px}.cup-demo-form button{background:#087d70;color:white;border:0;border-radius:9px;padding:10px;font-weight:700;cursor:pointer}.cup-demo-form button:disabled{opacity:.5}.cup-demo-form label{font-size:12px;font-weight:650}@media(max-width:600px){.avatar-immersive .cup-demo-panel{top:auto!important;bottom:185px!important;right:8px!important;left:auto!important;width:calc(100vw - 90px)!important;max-height:45dvh!important}}
+ .cup-demo-panel--immersive{display:block!important;position:fixed!important;z-index:40!important;pointer-events:auto!important;top:auto!important;bottom:185px!important;right:12px!important;left:auto!important;width:min(390px,calc(100vw - 100px))!important;max-height:45dvh!important;overflow-y:auto!important;box-shadow:0 12px 38px #0009!important;margin:0!important;padding:12px!important}.cup-demo-form{display:grid;gap:7px;margin-top:10px}.cup-demo-form select,.cup-demo-form input{width:100%;min-width:0;padding:10px;border:1px solid #b7d9d2;border-radius:8px;background:white;color:#123e39;font-size:14px}.cup-demo-form button{background:#087d70;color:white;border:0;border-radius:9px;padding:10px;font-weight:700;cursor:pointer}.cup-demo-form button:disabled{opacity:.5}.cup-demo-form label{font-size:12px;font-weight:650}@media(max-width:600px){.cup-demo-panel--immersive{top:auto!important;bottom:185px!important;right:8px!important;left:auto!important;width:calc(100vw - 90px)!important;max-height:45dvh!important}}
 
- .avatar-immersive .cup-demo-panel{left:50%!important;right:auto!important;transform:translateX(-50%)!important;width:min(92vw,880px)!important;bottom:clamp(110px,13dvh,180px)!important;max-height:65dvh!important;border-radius:20px!important}
+ .cup-demo-panel--immersive{left:50%!important;right:auto!important;transform:translateX(-50%)!important;width:min(92vw,880px)!important;bottom:clamp(110px,13dvh,180px)!important;max-height:65dvh!important;border-radius:20px!important}
  .cup-demo-toggle{background:#008c86!important;color:#fff!important;border:1px solid #008c86!important;border-radius:12px!important;padding:9px 17px!important;font-weight:800!important}
- @media(max-width:600px){.avatar-immersive .cup-demo-panel{width:calc(100vw - 28px)!important;bottom:110px!important}}
+ @media(max-width:600px){.cup-demo-panel--immersive{width:calc(100vw - 28px)!important;bottom:110px!important}}
+
+ .cup-demo-panel--immersive{position:fixed!important;z-index:2147483500!important;left:50%!important;right:auto!important;top:auto!important;bottom:max(100px,env(safe-area-inset-bottom))!important;transform:translateX(-50%)!important;width:min(92vw,880px)!important;max-height:70dvh!important;overflow:auto!important;pointer-events:auto!important;box-shadow:0 18px 55px #0009!important}
+ .cup-demo-panel--immersive .cup-demo-toggle{background:#008c86!important;color:white!important;border-color:#008c86!important;padding:9px 16px!important;border-radius:12px!important}
+ @media(min-width:650px){.cup-demo-panel--immersive{bottom:110px!important}}
  `}</style>
  <div className="cup-demo-heading"><strong>🏥 CUP · Prenotazioni e ticket</strong><span className="cup-demo-tag">SIMULAZIONE</span><button className="cup-demo-toggle" onClick={()=>setOpen(v=>!v)} type="button" aria-expanded={open}>{open?"Riduci":"Apri"}</button></div>
  {open&&<>
@@ -76,4 +83,5 @@ export default function CupDemoPanel({tenant,messages}) {
  <p>Questi appuntamenti, importi e pagamenti sono fittizi. Per prenotare o pagare parla con Giulia e conferma l'operazione.</p>
  </>}
  </section>;
+ return immersive && mounted ? createPortal(panel,document.body) : panel;
 }
