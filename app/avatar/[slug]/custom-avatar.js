@@ -142,6 +142,8 @@ export default function CustomAvatar({ slug, initialAvatar, initialImmersive = f
         .giulia-depth-demo .avatar-frame > div:first-child { position: relative; z-index: 1; }
         .giulia-depth-demo .avatar-frame > div:first-child video, .giulia-depth-demo .avatar-frame > div:first-child img { filter: url(#giulia-experience-key) drop-shadow(0 10px 16px #0009) !important; }
         .giulia-depth-demo .avatar-frame .mia-name-mark, .giulia-depth-demo .avatar-frame .mia-commercial-badge { z-index: 4; }
+        /* Giulia banner compact test. */
+        .custom-avatar-shell.giulia-framing.avatar-immersive .mia-commercial-badge { left: 14px !important; right: auto !important; width: max-content !important; max-width: min(47vw, 245px) !important; padding: 5px 9px !important; font-size: 10px !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
         .giulia-depth-toggle { position: absolute; z-index: 12; top: 14px; left: 14px; padding: 9px 12px; border-radius: 999px; border: 1px solid #a8f6e980; color: white; background: #071923dc; font: 600 12px system-ui,sans-serif; cursor: pointer; }
         /* Keep the compact controls fully visible inside the portrait viewport. */
         .avatar-immersive .assistant-workspace { top: 82px !important; right: 18px !important; width: 56px !important; max-width: 56px !important; overflow: visible !important; }
