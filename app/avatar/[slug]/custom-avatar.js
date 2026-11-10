@@ -10,6 +10,7 @@ const STORAGE_KEY = "avatarone:custom-avatars";
 
 export default function CustomAvatar({ slug, initialAvatar, initialImmersive = false, experienceMode = false }) {
   const [immersive, setImmersive] = useState(initialImmersive);
+  const [depthEffect, setDepthEffect] = useState(true);
   const [avatar, setAvatar] = useState(() => initialAvatar ? {
     slug: initialAvatar.slug,
     companyName: initialAvatar.company_name,
@@ -104,7 +105,7 @@ export default function CustomAvatar({ slug, initialAvatar, initialImmersive = f
   };
 
   return (
-    <main className={`mobile-chat-shell custom-avatar-shell ${immersive ? "avatar-immersive" : ""} ${slug === "giulia-new-digital-app" ? "giulia-framing" : ""}`} style={tenant.theme}>
+    <main className={`mobile-chat-shell custom-avatar-shell ${immersive ? "avatar-immersive" : ""} ${slug === "giulia-new-digital-app" ? "giulia-framing" : ""} ${experienceMode && depthEffect ? "giulia-depth-demo" : ""}`} style={tenant.theme}>
       <style>{`
         .custom-avatar-shell.avatar-immersive { position: fixed !important; inset: 0 !important; width: 100vw !important; height: 100dvh !important; max-width: none !important; max-height: none !important; margin: 0 !important; padding: 0 !important; border-radius: 0 !important; overflow: hidden !important; z-index: 2147483000 !important; display: flex !important; flex-direction: column !important; background: #06121e !important; }
         .avatar-immersive .avatar-stage { flex: 1 1 auto !important; min-height: 0 !important; height: auto !important; width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; display: flex !important; align-items: center !important; justify-content: center !important; }
@@ -134,6 +135,14 @@ export default function CustomAvatar({ slug, initialAvatar, initialImmersive = f
         .avatar-immersive .assistant-panel .whatsapp-link { width: 42px !important; height: 42px !important; min-width: 42px !important; }
         .avatar-immersive .avatar-stage, .avatar-immersive .avatar-frame { height: 100dvh !important; }
         .avatar-immersive .avatar-expand-toggle { padding: 8px 11px !important; font-size: 12px !important; }
+        /* Giulia Experience only: simulated holographic depth and green-screen key. */
+        .giulia-depth-demo .avatar-frame { isolation: isolate; background: radial-gradient(ellipse at 50% 42%, #164454 0%, #071b27 50%, #02070c 100%) !important; }
+        .giulia-depth-demo .avatar-frame::before { content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 78%, #6ce7d52b, transparent 47%), linear-gradient(90deg, #8bfff510, transparent 18%, transparent 82%, #8bfff510); }
+        .giulia-depth-demo .avatar-frame::after { content: ""; position: absolute; left: 14%; right: 14%; bottom: 3%; height: 14%; border-radius: 50%; background: radial-gradient(ellipse, #86f9eb45, #20474b22 42%, transparent 73%); transform: perspective(320px) rotateX(64deg); z-index: 0; pointer-events: none; }
+        .giulia-depth-demo .avatar-frame > div:first-child { position: relative; z-index: 1; }
+        .giulia-depth-demo .avatar-frame > div:first-child video, .giulia-depth-demo .avatar-frame > div:first-child img { filter: url(#giulia-experience-key) drop-shadow(0 10px 16px #0009) !important; }
+        .giulia-depth-demo .avatar-frame .mia-name-mark, .giulia-depth-demo .avatar-frame .mia-commercial-badge { z-index: 4; }
+        .giulia-depth-toggle { position: absolute; z-index: 12; top: 14px; left: 14px; padding: 9px 12px; border-radius: 999px; border: 1px solid #a8f6e980; color: white; background: #071923dc; font: 600 12px system-ui,sans-serif; cursor: pointer; }
         /* Keep the compact controls fully visible inside the portrait viewport. */
         .avatar-immersive .assistant-workspace { top: 82px !important; right: 18px !important; width: 56px !important; max-width: 56px !important; overflow: visible !important; }
         .avatar-immersive .assistant-panel { width: 56px !important; max-width: 56px !important; overflow: visible !important; }
@@ -171,10 +180,12 @@ export default function CustomAvatar({ slug, initialAvatar, initialImmersive = f
         }
 
       `}</style>
+      {experienceMode && <svg width="0" height="0" aria-hidden="true" style={{ position: "absolute", pointerEvents: "none" }}><defs><filter id="giulia-experience-key" colorInterpolationFilters="sRGB"><feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0.5 -1.2 0.5 0 0.8" /></filter></defs></svg>}
       <div className="aurora aurora--coral" />
       <div className="aurora aurora--cyan" />
       <section className="avatar-stage" aria-label={tenant.assistantName} style={{ position: "relative" }}>
         <button type="button" className="avatar-expand-toggle" aria-label={immersive ? "Esci dalla modalità a tutto schermo" : "Espandi avatar a tutto schermo"} aria-pressed={immersive} onClick={() => setImmersive((value) => !value)}>{immersive ? "↙ Riduci" : "⛶ Espandi"}</button>
+        {experienceMode && <button type="button" className="giulia-depth-toggle" onClick={() => setDepthEffect(value => !value)}>{depthEffect ? "Effetto 3D: ON" : "Effetto 3D: OFF"}</button>}
         <AvatarInstall name={tenant.assistantName} />
         <div className="avatar-frame" aria-label={`Avatar ${tenant.spokenAssistantName}`}>
           {Boolean(tenant.avatarVideo || tenant.avatarIdleVideo)
