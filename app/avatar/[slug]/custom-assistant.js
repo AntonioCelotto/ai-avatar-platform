@@ -67,7 +67,8 @@ export default function CustomAssistant({ tenant, immersive = false }) {
     stoppedRef.current = true;
     speechSequenceRef.current += 1;
     try { audioRef.current?.pause(); } catch {}
-    try { stopRecognitionRef.current?.abort(); } catch {}
+    const stopListener = stopRecognitionRef.current;
+    try { stopListener?.abort(); } catch {}
     stopRecognitionRef.current = null;
     try { window.speechSynthesis?.cancel(); } catch {}
     try { fillerRef.current = null; } catch {}
@@ -75,7 +76,8 @@ export default function CustomAssistant({ tenant, immersive = false }) {
     busyRef.current = false;
     setSpeaking(false);
     setLoading(false);
-    restartListeningRef.current();
+    // A speech-stop listener may still own the Android microphone; wait for its onend.
+    if (!stopRecognitionRef.current) restartListeningRef.current();
   }
 
   function listenForStop() {
