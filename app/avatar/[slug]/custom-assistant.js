@@ -76,8 +76,8 @@ export default function CustomAssistant({ tenant, immersive = false }) {
     busyRef.current = false;
     setSpeaking(false);
     setLoading(false);
-    // A speech-stop listener may still own the Android microphone; wait for its onend.
-    if (!stopRecognitionRef.current) restartListeningRef.current();
+    // Allow Android speech recognition to release the microphone before restarting.
+    setTimeout(() => restartListeningRef.current(), 550);
   }
 
   function listenForStop() {
@@ -91,9 +91,9 @@ export default function CustomAssistant({ tenant, immersive = false }) {
     rec.interimResults = true;
     rec.onresult = (event) => {
       const spoken = Array.from(event.results || []).map((r) => r[0]?.transcript || "").join(" ").toLowerCase();
-      if (/\b(?:giulia\s+)?(?:stop|fermati|basta)\b/i.test(spoken)) stopSpeech();
+      if (/\b(?:stop|fermati|basta)\b/i.test(spoken)) stopSpeech();
     };
-    rec.onend = () => { if (stopRecognitionRef.current === rec) stopRecognitionRef.current = null; };
+    rec.onend = () => { if (stopRecognitionRef.current === rec) { stopRecognitionRef.current = null; if (!speakingRef.current) restartListeningRef.current(); } };
     try { rec.start(); } catch { stopRecognitionRef.current = null; }
   }
 
