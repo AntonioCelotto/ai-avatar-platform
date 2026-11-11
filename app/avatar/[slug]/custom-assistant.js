@@ -176,12 +176,6 @@ export default function CustomAssistant({ tenant, immersive = false }) {
     try { recognitionRef.current?.abort(); } catch {}
     setListening(false);
     setLoading(true);
-    if (immersive && "speechSynthesis" in window) {
-      const filler = new SpeechSynthesisUtterance("Grazie per la domanda.");
-      filler.lang = "it-IT"; filler.rate = 1.08;
-      fillerRef.current = filler;
-      window.speechSynthesis.speak(filler);
-    }
     try {
       const response = await fetch("/api/custom-chat", {
         method: "POST",
