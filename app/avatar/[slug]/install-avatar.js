@@ -6,7 +6,7 @@ export default function AvatarInstall({ name }) {
   const [help, setHelp] = useState(false);
   const [installed, setInstalled] = useState(false);
   useEffect(() => {
-    const standalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+    const standalone = window.matchMedia("(display-mode: standalone)").matches || window.matchMedia("(display-mode: fullscreen)").matches || window.navigator.standalone === true;
     setInstalled(standalone);
     const onPrompt = (event) => { event.preventDefault(); setPrompt(event); };
     const onInstalled = () => { setInstalled(true); setHelp(false); setPrompt(null); };
