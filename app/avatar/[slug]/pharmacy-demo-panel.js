@@ -11,11 +11,14 @@ export default function PharmacyDemoPanel({tenant,messages=[],immersive=false}){
  const [cart,setCart]=useState([]); const [dock,setDock]=useState(null),[mounted,setMounted]=useState(false),[open,setOpen]=useState(false),[tab,setTab]=useState("services"),[selected,setSelected]=useState(""),[slot,setSlot]=useState(""),[search,setSearch]=useState(""),[customer,setCustomer]=useState(""),[notice,setNotice]=useState(""),[bookings,setBookings]=useState([]);
  useEffect(()=>{setMounted(true);setDock(document.querySelector(".assistant-panel .action-dock"));},[]);
  useEffect(()=>{if(!enabled)return;const user=[...messages].reverse().find(m=>m.role==="user")?.content?.toLowerCase()||"";if(!user)return;
- if(/sito|informazioni sulla farmacia|orari|dove si trova|chi siete/.test(user)){setTab("pharmacy");setOpen(true)}
+ const add=/aggiung|metti|inserisc|compra|acquista/.test(user)&&/carrello|crema|kit|termometro|soluzione|prodotto/.test(user);
+ if(add){const found=CATALOG.find(p=>p.name.toLowerCase().split(" ").some(w=>w.length>3&&user.includes(w)));if(found){setCart(items=>[...items,found]);setNotice(found.name+" aggiunto al carrello demo.");setTab("cart")}else{setTab("products");setNotice("Quale prodotto desideri aggiungere?")}setOpen(true)}
+ else if(/carrello/.test(user)){setTab("cart");setOpen(true)}
+ else if(/(?:fammi vedere|mostra|apri|parlami|informazioni|sito).*(?:farmacia)|(?:farmacia).*(?:informazioni|sito|mostra)|orari|dove si trova|chi siete/.test(user)){setTab("pharmacy");setOpen(true)}
  else if(/prenot|appuntament|pressione|consulenza|controllo/.test(user)){setTab("services");setOpen(true)}
- else if(/medicin|disponibil|prodotto|magazzino|acquist|comprare|carrello/.test(user)){setTab("products");setOpen(true)}
- else if(/prevenzion|screening|salute/.test(user)){setTab("prevention");setOpen(true)}
  else if(/offert|scont|promozion/.test(user)){setTab("offers");setOpen(true)}
+ else if(/medicin|disponibil|prodotto|magazzino|acquist|comprare/.test(user)){setTab("products");setOpen(true)}
+ else if(/prevenzion|screening|salute/.test(user)){setTab("prevention");setOpen(true)}
  },[messages.length,enabled]);
  if(!enabled||!mounted)return null;
  const confirm=()=>{if(!customer.trim()){setNotice("Inserisci un nome per completare la simulazione.");return}if(tab==="services"&&(!selected||!slot)){setNotice("Seleziona servizio e orario.");return}if(tab==="products"&&!selected){setNotice("Seleziona un prodotto disponibile.");return}const code="DEMO-"+Math.random().toString(36).slice(2,8).toUpperCase();setBookings(v=>[{code,name:customer,kind:tab==="services"?selected+" · "+slot:selected},...v]);setNotice("Richiesta dimostrativa registrata: "+code+". Nessun ordine o appuntamento reale.");setCustomer("")};
