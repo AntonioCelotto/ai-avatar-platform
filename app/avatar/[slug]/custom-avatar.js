@@ -104,7 +104,7 @@ export default function CustomAvatar({ slug, initialAvatar, initialImmersive = f
   };
 
   return (
-    <main className={`mobile-chat-shell custom-avatar-shell ${immersive ? "avatar-immersive" : ""} ${slug === "giulia-new-digital-app" ? "giulia-framing" : ""}`} style={tenant.theme}>
+    <main className={`mobile-chat-shell custom-avatar-shell ${immersive ? "avatar-immersive" : ""} ${experienceMode ? "giulia-framing" : ""}`} style={tenant.theme}>
       <style>{`
         .custom-avatar-shell.avatar-immersive { position: fixed !important; inset: 0 !important; width: 100vw !important; height: 100dvh !important; max-width: none !important; max-height: none !important; margin: 0 !important; padding: 0 !important; border-radius: 0 !important; overflow: hidden !important; z-index: 2147483000 !important; display: flex !important; flex-direction: column !important; background: #06121e !important; }
         .avatar-immersive .avatar-stage { flex: 1 1 auto !important; min-height: 0 !important; height: auto !important; width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; display: flex !important; align-items: center !important; justify-content: center !important; }
@@ -123,7 +123,7 @@ export default function CustomAvatar({ slug, initialAvatar, initialImmersive = f
         .avatar-immersive .assistant-panel .whatsapp-link { width: 46px !important; height: 46px !important; min-width: 46px !important; padding: 0 !important; border-radius: 50% !important; font-size: 0 !important; overflow: hidden !important; justify-content: center !important; }
         .avatar-immersive .assistant-panel .whatsapp-link .whatsapp-icon { font-size: 20px !important; }
         .avatar-immersive .assistant-panel .action-dock--chat-only { justify-content: center !important; }
-        .avatar-immersive .avatar-frame .custom-avatar-image, .avatar-immersive .avatar-frame video { object-fit: contain !important; }
+        .avatar-immersive .avatar-frame .custom-avatar-image, .avatar-immersive .avatar-frame video { object-fit: cover !important; }
         .avatar-immersive .avatar-frame { background: #06121e !important; }
         .avatar-immersive .assistant-workspace { top: 76px !important; right: 12px !important; bottom: auto !important; left: auto !important; width: 48px !important; }
         .avatar-immersive .assistant-panel { width: 48px !important; padding: 0 !important; background: transparent !important; }
@@ -133,6 +133,8 @@ export default function CustomAvatar({ slug, initialAvatar, initialImmersive = f
         .avatar-immersive .assistant-panel .composer .voice-label { display: none !important; }
         .avatar-immersive .assistant-panel .whatsapp-link { width: 42px !important; height: 42px !important; min-width: 42px !important; }
         .avatar-immersive .avatar-stage, .avatar-immersive .avatar-frame { height: 100dvh !important; }
+        .custom-avatar-shell.avatar-immersive .mia-name-mark { display:none!important; }
+        .custom-avatar-shell.avatar-immersive .mia-commercial-badge { display:none!important; }
         .avatar-immersive .avatar-expand-toggle { padding: 8px 11px !important; font-size: 12px !important; }
         .avatar-immersive.giulia-framing .avatar-frame video, .avatar-immersive.giulia-framing .avatar-frame .custom-avatar-image { width:100%!important;height:100%!important;object-fit:cover!important;object-position:center!important; }
         /* Giulia Experience only: simulated holographic depth and green-screen key. */
