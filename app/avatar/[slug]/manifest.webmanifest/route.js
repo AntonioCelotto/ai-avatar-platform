@@ -11,7 +11,7 @@ export async function GET(request, { params }) {
     short_name: name.slice(0, 24),
     description: "Parla con " + name + " su AvatarOne",
     start_url: "/avatar/" + encodeURIComponent(slug) + "?source=pwa",
-    scope: "/",
+    scope: "/avatar/" + encodeURIComponent(slug),
     display: avatar.features?.packageType === "experience" ? "fullscreen" : "standalone",
     orientation: "portrait",
     background_color: "#06121e",
