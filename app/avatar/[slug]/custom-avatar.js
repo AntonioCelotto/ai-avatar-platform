@@ -134,7 +134,7 @@ export default function CustomAvatar({ slug, initialAvatar, initialImmersive = f
         .avatar-immersive .assistant-panel .whatsapp-link { width: 42px !important; height: 42px !important; min-width: 42px !important; }
         .avatar-immersive .avatar-stage, .avatar-immersive .avatar-frame { height: 100dvh !important; }
         .custom-avatar-shell.avatar-immersive .mia-name-mark { display:none!important; }
-        .custom-avatar-shell.avatar-immersive .mia-commercial-badge { display:none!important; }
+        .custom-avatar-shell.avatar-immersive .mia-commercial-badge { display:flex!important; position:absolute!important; top:12px!important; left:14px!important; right:auto!important; width:max-content!important; max-width:calc(100vw - 120px)!important; padding:5px 9px!important; font-size:10px!important; white-space:nowrap!important; z-index:20!important; }
         .avatar-immersive .avatar-expand-toggle { padding: 8px 11px !important; font-size: 12px !important; }
         .avatar-immersive.giulia-framing .avatar-frame video, .avatar-immersive.giulia-framing .avatar-frame .custom-avatar-image { width:100%!important;height:100%!important;object-fit:cover!important;object-position:center!important; }
         /* Giulia Experience only: simulated holographic depth and green-screen key. */
