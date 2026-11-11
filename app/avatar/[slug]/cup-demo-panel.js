@@ -6,7 +6,8 @@ const SLUG="giulia-new-digital-app";
 const FALLBACK=demoCupQuery({action:"availability"}).results;
 export default function CupDemoPanel({tenant,messages,immersive=false}) {
  const [mounted,setMounted]=useState(false);
- useEffect(()=>setMounted(true),[]);
+ const [actionDock,setActionDock]=useState(null);
+ useEffect(()=>{setMounted(true);setActionDock(document.querySelector(".assistant-panel .action-dock"));},[]);
  const [services,setServices]=useState(FALLBACK);
  const [loading,setLoading]=useState(true);
  const [loadError,setLoadError]=useState("");
@@ -75,6 +76,7 @@ export default function CupDemoPanel({tenant,messages,immersive=false}) {
  .cup-mini-trigger{width:44px;height:44px;border-radius:50%;background:#102638e8;color:#fff;border:1px solid #ffffff70;font-size:25px;cursor:pointer;display:grid;place-items:center;box-shadow:0 6px 25px #0008}
  .cup-mini-trigger:focus-visible{outline:3px solid #64e9f7;outline-offset:2px}
  @media(max-width:600px){.cup-demo-panel--immersive:has(.cup-mini-trigger){right:14px!important;top:202px!important;width:44px!important}}
+ .cup-dock-button{width:44px!important;height:44px!important;min-width:44px!important;flex:0 0 44px!important;padding:0!important;margin:0!important;border-radius:50%!important;align-self:center!important;box-sizing:border-box!important;}
  `}</style>
  {immersive && !open ? <button type="button" className="cup-mini-trigger" onClick={()=>setOpen(true)} aria-label="Apri servizi e prenotazioni" title="Apri servizi e prenotazioni">▦</button> : <><div className="cup-demo-heading"><strong>🏥 CUP · Prenotazioni e ticket</strong><span className="cup-demo-tag">SIMULAZIONE</span><button className="cup-demo-toggle" onClick={()=>setOpen(v=>!v)} type="button" aria-expanded={open}>{open?"Riduci":"Apri"}</button></div>
  {open&&<>
@@ -89,5 +91,8 @@ export default function CupDemoPanel({tenant,messages,immersive=false}) {
  </>}
  </>}
  </section>;
+ if (immersive && mounted && !open && actionDock) {
+   return createPortal(<button type="button" className="cup-mini-trigger cup-dock-button" style={{width:44,height:44,minWidth:44,flex:"0 0 44px",margin:0,padding:0,borderRadius:"50%",background:"#102638e8",color:"#fff",border:"1px solid #ffffff70",fontSize:25,cursor:"pointer",display:"grid",placeItems:"center",alignSelf:"center",boxSizing:"border-box"}} onClick={()=>setOpen(true)} aria-label="Apri servizi e prenotazioni" title="Apri servizi e prenotazioni">▦</button>,actionDock);
+ }
  return immersive && mounted ? createPortal(panel,document.body) : panel;
 }
