@@ -12,7 +12,7 @@ export async function GET(request, { params }) {
     description: "Parla con " + name + " su AvatarOne",
     start_url: "/avatar/" + encodeURIComponent(slug) + "?source=pwa",
     scope: "/",
-    display: "standalone",
+    display: avatar.features?.packageType === "experience" ? "fullscreen" : "standalone",
     orientation: "portrait",
     background_color: "#06121e",
     theme_color: "#06121e",
