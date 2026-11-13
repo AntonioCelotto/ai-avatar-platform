@@ -12,6 +12,14 @@ export async function PATCH(request) {
   const current = await getAvatarClientBySlug(slug);
   if (!current?.id) return Response.json({ error: "Persona digitale non trovata." }, { status: 404 });
 
+  if(payload.experienceOnly===true){
+    if(slug!=="giulia-new-digital-app")return Response.json({error:"Operazione riservata a Giulia Experience."},{status:400});
+    const base=`https://${process.env.NEXT_PUBLIC_SUPABASE_URL?.replace("https://","").replace("http://","")}/storage/v1/object/public/avatar-media/${slug}/`;
+    const media={poster:String(payload.avatarPosterUrl||""),idle:String(payload.idleVideoUrl||""),talking:String(payload.avatarVideoUrl||"")};
+    if(Object.values(media).some(url=>!url.startsWith(base)))return Response.json({error:"File Experience non validi."},{status:400});
+    const saved=await updateAvatarClient(slug,{features:{...(current.features||{}),experienceMedia:media},updated_at:new Date().toISOString()});
+    return Response.json({ok:true,avatar:saved});
+  }
   const allowedStatus = ["active", "paused", "draft"];
   const changes = {
     company_name: String(payload.companyName || current.company_name).trim().slice(0, 120),

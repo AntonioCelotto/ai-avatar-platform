@@ -29,5 +29,6 @@ export default async function CustomAvatarPage({ params }) {
     cloudAvatar = await getAvatarClientBySlug(slug);
     if (cloudAvatar?.id) cloudAvatar.website_knowledge = await getAvatarKnowledgeText(cloudAvatar.id);
   } catch {}
-  return <CustomAvatar slug={slug} initialAvatar={cloudAvatar} />;
+  const isExperience = cloudAvatar?.features?.packageType === "experience";
+  return <CustomAvatar slug={slug} initialAvatar={cloudAvatar} initialImmersive={isExperience} experienceMode={isExperience} />;
 }

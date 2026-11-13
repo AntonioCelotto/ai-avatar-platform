@@ -1,0 +1,65 @@
+/* The public fullscreen avatar locks document scrolling. Restore it only in Experience Studio. */
+html:has(.experience-studio),
+body:has(.experience-studio) {
+  height: auto !important;
+  min-height: 100% !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  position: static !important;
+  overscroll-behavior-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+.experience-studio {
+  display: block;
+  position: relative;
+  height: auto !important;
+  min-height: 100svh;
+  max-height: none !important;
+  overflow: visible !important;
+  padding-bottom: 96px !important;
+  touch-action: pan-y;
+}
+.experience-studio section { min-width: 0; }
+.experience-studio input[type="file"] { width: 100%; }
+
+/* Creator was designed for the light platform shell: restore readable controls
+   when embedded inside the dark Experience preview page. */
+.experience-studio .experience-create .creator-flow,
+.experience-studio .experience-create .creator-block,
+.experience-studio .experience-create .platform-creator-card,
+.experience-studio .experience-create .creator-result {
+  color: #17212b !important;
+}
+.experience-studio .experience-create .creator-flow button,
+.experience-studio .experience-create .creator-publish,
+.experience-studio .experience-create .creator-result-actions a {
+  background: #1769e0 !important;
+  color: #ffffff !important;
+  border: 1px solid #1769e0 !important;
+  opacity: 1;
+  visibility: visible;
+  text-shadow: none !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+.experience-studio .experience-create .creator-flow button:disabled { opacity: .55; }
+.experience-studio .experience-create input,
+.experience-studio .experience-create textarea,
+.experience-studio .experience-create select {
+  color: #17212b;
+  background: #ffffff;
+}
+.experience-studio .experience-create .creator-result {
+  border: 2px solid #1769e0;
+  padding: 18px;
+  border-radius: 16px;
+  margin-top: 24px;
+  background: #ffffff !important;
+}
+.experience-studio .experience-create .creator-result-actions a {
+  display: inline-flex !important;
+  padding: 12px 18px;
+  border-radius: 10px;
+  margin: 8px;
+  text-decoration: none;
+}
