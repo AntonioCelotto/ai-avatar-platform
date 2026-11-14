@@ -188,9 +188,10 @@ export default function CustomAssistant({ tenant, immersive = false }) {
     loadingRef.current = true;
     // Invalidate callbacks from the recognition instance deliberately stopped for playback.
     micSessionRef.current += 1;
+    const activeRecognition = recognitionRef.current;
     recognitionRef.current = null;
     clearTimeout(restartTimerRef.current);
-    try { recognitionRef.current?.abort(); } catch {}
+    try { activeRecognition?.abort(); } catch {}
     setListening(false);
     setLoading(true);
     try {
@@ -296,6 +297,8 @@ export default function CustomAssistant({ tenant, immersive = false }) {
 
   function toggleListening() {
     if (!canUseSpeech) return;
+    // Unlock playback on the microphone tap, before speech recognition starts.
+    unlockAudio();
     if (continuousRef.current) {
       micSessionRef.current += 1;
       continuousRef.current = false;
