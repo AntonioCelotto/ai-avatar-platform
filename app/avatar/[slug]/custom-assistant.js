@@ -16,6 +16,7 @@ export default function CustomAssistant({ tenant, immersive = false }) {
   const [shareNotice, setShareNotice] = useState("");
   const recognitionRef = useRef(null);
   const audioRef = useRef(null);
+  const audioUnlockedRef = useRef(false);
   const speechSequenceRef = useRef(0);
   const continuousRef = useRef(false);
   const busyRef = useRef(false);
@@ -119,6 +120,17 @@ export default function CustomAssistant({ tenant, immersive = false }) {
     window.speechSynthesis.speak(utterance);
   }
 
+  // Prime and reuse the same audio element from an actual user interaction on iOS Safari.
+  function unlockAudio() {
+    if (audioUnlockedRef.current) return;
+    const audio = audioRef.current || new Audio();
+    audioRef.current = audio;
+    audio.setAttribute("playsinline", "");
+    audio.src = "data:audio/wav;base64,UklGRjQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YRAAAACAgICAgICAgICAgICA";
+    const playing = audio.play();
+    if (playing?.then) playing.then(() => { audioUnlockedRef.current = true; }).catch(() => {});
+  }
+
   async function speak(text, onAudioStart = () => {}) {
     const sequence = ++speechSequenceRef.current;
     if (stoppedRef.current) return;
@@ -146,7 +158,8 @@ export default function CustomAssistant({ tenant, immersive = false }) {
       if (!response.ok) throw new Error("speech");
       const url = URL.createObjectURL(await response.blob());
       if (sequence !== speechSequenceRef.current || stoppedRef.current) { URL.revokeObjectURL(url); return; }
-      const audio = new Audio(url);
+      const audio = audioRef.current || new Audio();
+      audio.src = url;
       audioRef.current = audio;
       audio.onplaying = () => { speakingRef.current = true; reveal(); setSpeaking(true); listenForStop(); };
       let finishPlayback;
@@ -166,6 +179,7 @@ export default function CustomAssistant({ tenant, immersive = false }) {
     const clean = String(content || "").trim();
     if (/^(?:giulia[ ,]*)?(?:stop|fermati|basta)[.! ]*$/i.test(clean)) { stopSpeech(); return; }
     if (!clean || loadingRef.current || busyRef.current) return;
+    unlockAudio();
     const next = [...messages, { role: "user", content: clean }];
     setMessages(next);
     setInput("");
