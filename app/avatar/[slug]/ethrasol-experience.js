@@ -55,7 +55,7 @@ export default function EthrasolExperience({slug,initialAvatar}) {
     <header className={styles.header}><a href={ETHRASOL_URL} target="_blank" rel="noreferrer" className={styles.brand}>ETHRASOL<span>Entra nel nuovo sole</span></a><span className={styles.headerLabel}>Esmeralda · La tua assistente digitale</span><a href={ETHRASOL_URL} target="_blank" rel="noreferrer" className={styles.portalLink}>Accedi al gestionale ↗</a></header>
     <div className={styles.layout}>
       <div className={`ethra-avatar-column ${styles.avatarColumn}`}>
-        <CustomAvatar slug={slug} initialAvatar={initialAvatar} experienceMode initialImmersive={false} onPresentation={present} catalogContext={{productIds:products.map(p=>p.id),selectedId:selected?.id || ""}} />
+        <CustomAvatar slug={slug} initialAvatar={{...initialAvatar,suggestions:["Mostrami i pannelli fotovoltaici","Cerco una batteria","Come richiedo un preventivo?"]}} experienceMode initialImmersive={false} onPresentation={present} catalogContext={{productIds:products.map(p=>p.id),selectedId:selected?.id || ""}} />
       </div>
       <section className={styles.panel} ref={panelRef} aria-label="Informazioni e prodotti Ethrasol" aria-busy={loading}>
         <nav className={styles.tabs} aria-label="Sezioni"><button aria-pressed={section==="products"} onClick={()=>{setSection("products");setSelected(null);}}>Prodotti</button><button aria-pressed={section==="quote"} onClick={()=>{setSection("quote");setSelected(null);}}>Preventivi</button><button aria-pressed={section==="portal"} onClick={()=>{setSection("portal");setSelected(null);}}>Il gestionale</button><button aria-pressed={section==="avatarone"} onClick={()=>{setSection("avatarone");setSelected(null);}}>AvatarOne</button></nav>

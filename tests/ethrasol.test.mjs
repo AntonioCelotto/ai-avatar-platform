@@ -62,3 +62,19 @@ test("AI product opening handles contextual second item; failures cannot emit fa
     assert.equal(result.presentation?.type || null,fail?null:"product");
   }
 });
+test("A multi-product search leaves its results visible until the user chooses",async()=>{
+  let ai=0,reads=0;
+  const result=await ethrasolResponse({messages:[{role:"user",content:"Mostra i risultati FOX ESS"}],instructions:"Italiano",fetchImpl:async(url,options)=>{
+    if(String(url).startsWith("https://api.openai.com")) {
+      const round=ai++;
+      if(round===0)return Response.json({output:[{type:"function_call",name:"search_products",call_id:"search",arguments:'{"query":"FOX ESS"}'}]});
+      if(round===1)return Response.json({output:[{type:"function_call",name:"show_product",call_id:"show",arguments:JSON.stringify({id})}]});
+      const last=JSON.parse(JSON.parse(options.body).input.at(-1).output);
+      assert.equal(last.ok,false);
+      return Response.json({output_text:"Ecco i risultati. Quale vuoi vedere?",output:[]});
+    }
+    reads++;
+    return Response.json([row,{...row,id:"c0726cfc-e162-45df-bd35-8f9a01443f6e",name:"Secondo articolo"}]);
+  }});
+  assert.equal(result.presentation.type,"products");assert.equal(result.presentation.products.length,2);assert.equal(reads,1);
+});
