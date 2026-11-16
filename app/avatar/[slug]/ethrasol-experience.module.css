@@ -6,3 +6,4 @@
 /* Bound video players to the allocated flex stage, independent of legacy grid rules. */
 .experience.experience.experience :global(.ethra-avatar-column .avatar-stage){position:relative!important;display:flex!important;flex-direction:column!important;align-items:stretch!important}
 .experience.experience.experience :global(.ethra-avatar-column .avatar-frame){position:absolute!important;inset:0!important;aspect-ratio:auto!important;height:100%!important}
+.embedded .layout{min-height:100dvh}.embedded .avatarColumn{height:100dvh}.projectActions{display:flex;align-items:center;flex-wrap:wrap;gap:12px;padding-top:18px}.primary:disabled,.secondary:disabled{opacity:.5;cursor:wait}@media(max-width:860px){.embedded .avatarColumn{height:680px}}
