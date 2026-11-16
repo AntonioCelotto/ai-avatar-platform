@@ -339,7 +339,7 @@ export default function CustomAssistant({ tenant, immersive = false, onPresentat
       </div>
       <div className={`action-dock ${whatsappUrl ? "" : "action-dock--chat-only"}`}>
         <form className="composer" onSubmit={(event) => { event.preventDefault(); send(input); }}>
-          <button className={`icon-button ${micEnabled ? "is-listening" : ""}`} disabled={!canUseSpeech} onClick={speaking ? stopSpeech : toggleListening} type="button" aria-label={speaking ? "Ferma Giulia" : micEnabled ? "Disattiva ascolto continuo" : `Attiva ascolto continuo con ${tenant.assistantName}`}>
+          <button className={`icon-button ${micEnabled ? "is-listening" : ""}`} disabled={!canUseSpeech} onClick={speaking ? stopSpeech : toggleListening} type="button" aria-label={speaking ? `Ferma ${tenant.assistantName}` : micEnabled ? "Disattiva ascolto continuo" : `Attiva ascolto continuo con ${tenant.assistantName}`}>
             <span className="mic-symbol" aria-hidden="true" />
             <span className="voice-label">{micEnabled ? "Stop" : "Parla"}</span>
           </button>
