@@ -11,12 +11,20 @@ test("Catalog API selects only public fields, sanitizes filters, and excludes in
     assert.equal(url.searchParams.get("active"),"eq.true");
     assert.doesNotMatch(url.searchParams.get("select"),/purchase|commission|\*/);
     assert.ok(!options.headers.Authorization);
-    assert.doesNotMatch(url.searchParams.get("or"),/\)\(|--/);
+    assert.doesNotMatch(url.searchParams.get("and") || url.searchParams.get("or"),/\)\(|--/);
     return Response.json([row]);
   });
   assert.equal(products[0].price,null);
   assert.equal(products[0].image,"https://ethrasol.it/catalog/test.svg");
   assert.equal(products[0].purchase_price,undefined);
+});
+test("Brand and product type are combined instead of returning unrelated brands",async()=>{
+  await searchProducts("inverter AFORE","",async(url)=>{
+    assert.match(url.searchParams.get("and"),/inverter/);
+    assert.match(url.searchParams.get("and"),/afore/);
+    assert.equal(url.searchParams.get("or"),null);
+    return Response.json([]);
+  });
 });
 test("Invalid ids never reach database; safe images and zero prices",async()=>{
   assert.equal(await getProduct("id)or=(active.eq.false)",()=>{throw Error("must not fetch")}),null);

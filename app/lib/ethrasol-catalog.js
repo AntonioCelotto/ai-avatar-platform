@@ -49,7 +49,11 @@ export async function searchProducts(query = "", category = "", fetchImpl = fetc
   const terms = searchTerms(query);
   const filters = terms.flatMap(term => ["name", "code", "manufacturer_code", "brand", "category", "subcategory", "description"].map(field => `${field}.ilike.*${term}*`));
   const params = { limit: "48", order: "brand.asc,name.asc" };
-  if (filters.length) params.or = `(${filters.join(",")})`;
+  if (terms.length > 1) {
+    // A brand plus a type must both match; do not mix other brands into the result.
+    const groups = terms.map(term => `or(${["name", "code", "manufacturer_code", "brand", "category", "subcategory", "description"].map(field => `${field}.ilike.*${term}*`).join(",")})`);
+    params.and = `(${groups.join(",")})`;
+  } else if (filters.length) params.or = `(${filters.join(",")})`;
   if (CATEGORIES.includes(category)) params.category = `eq.${category}`;
   const products = await read(params, fetchImpl);
   const score = p => terms.reduce((n,term) => n + (String(p.name).toLowerCase().includes(term) ? 8 : 0) + (String(p.manufacturerCode).toLowerCase().includes(term) ? 7 : 0) + (String(p.brand).toLowerCase().includes(term) ? 5 : 0) + (`${p.description} ${p.category} ${p.subcategory}`.toLowerCase().includes(term) ? 1 : 0), 0);
