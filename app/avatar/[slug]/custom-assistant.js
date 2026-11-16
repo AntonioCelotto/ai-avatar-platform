@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import CupDemoPanel from "./cup-demo-panel";
 import PharmacyDemoPanel from "./pharmacy-demo-panel";
 
-export default function CustomAssistant({ tenant, immersive = false }) {
+export default function CustomAssistant({ tenant, immersive = false, onPresentation, catalogContext }) {
   const [messages, setMessages] = useState([{ role: "assistant", content: tenant.welcomeMessage }]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -198,13 +198,14 @@ export default function CustomAssistant({ tenant, immersive = false }) {
       const response = await fetch("/api/custom-chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slug: tenant.slug, messages: next })
+        body: JSON.stringify({ slug: tenant.slug, messages: next, ...(catalogContext ? {catalogContext} : {}) })
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error);
       try { if (fillerRef.current) window.speechSynthesis.cancel(); } catch {}
       fillerRef.current = null;
       if (stoppedRef.current) return;
+      if (data.presentation && onPresentation) onPresentation(data.presentation);
       const reply = data.reply || "Non ho trovato una risposta.";
       await speak(reply, () => setMessages((current) => [...current, { role: "assistant", content: reply }]));
       setLoading(false);

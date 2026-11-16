@@ -1,6 +1,8 @@
 import CustomAvatar from "./custom-avatar";
 import { getAvatarClientBySlug, getAvatarKnowledgeText } from "../../lib/supabase-server";
 import { redirect } from "next/navigation";
+import EthrasolExperience from "./ethrasol-experience";
+import { ETHRASOL_SLUG } from "../../lib/ethrasol-catalog";
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
@@ -29,6 +31,7 @@ export default async function CustomAvatarPage({ params }) {
     cloudAvatar = await getAvatarClientBySlug(slug);
     if (cloudAvatar?.id) cloudAvatar.website_knowledge = await getAvatarKnowledgeText(cloudAvatar.id);
   } catch {}
+  if (slug === ETHRASOL_SLUG && cloudAvatar?.status === "active") return <EthrasolExperience slug={slug} initialAvatar={cloudAvatar} />;
   const isExperience = cloudAvatar?.features?.packageType === "experience";
   return <CustomAvatar slug={slug} initialAvatar={cloudAvatar} initialImmersive={isExperience} experienceMode={isExperience} />;
 }

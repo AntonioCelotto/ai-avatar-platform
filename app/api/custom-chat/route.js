@@ -1,6 +1,10 @@
 import { getAvatarClientBySlug, getAvatarKnowledgeText, insertUsageEvent, listUsageSummary } from "../../lib/supabase-server";
 import { enforceRateLimit, requestIp } from "../../lib/rate-limit";
 import { demoCupQuery, DEMO_SLUG } from "../../lib/cup-demo";
+import { ETHRASOL_SLUG } from "../../lib/ethrasol-catalog.js";
+import { ethrasolResponse } from "../../lib/ethrasol-chat.js";
+
+export const maxDuration = 60;
 
 export async function POST(request) {
   const limited = enforceRateLimit(request, "custom-chat", { limit: 18, windowMs: 60_000 });
@@ -82,9 +86,14 @@ export async function POST(request) {
     ...(cupContext ? [`CUP DIMOSTRATIVO (DATI TOTALMENTE FITTIZI, API INTERNA): ${cupContext}`, "Per domande su CUP, visite, dottori, ambulatori e ticket usa soltanto i dati demo sopra. Specifica chiaramente che si tratta di una dimostrazione. Puoi guidare le prenotazioni demo; la conferma e il pagamento simulato richiedono comandi espliciti e un codice. Non dichiarare mai operazioni eseguite senza la risposta del sistema. Puoi mostrare l’importo del ticket ma non richiedere carte, dati sanitari o codici fiscali. Per prevenzione offri informazioni generali, non diagnosi né indicazioni cliniche personalizzate."] : [])
   ].join("\n");
   try {
-    const response = await fetch("https://api.openai.com/v1/responses", { method: "POST", headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ model: process.env.OPENAI_MODEL || "gpt-5.2", instructions, input: messages }) });
-    if (!response.ok) return Response.json({ error: "Risposta AI non disponibile." }, { status: 502 });
-    const data = await response.json();
+    let data, presentation = null;
+    if (slug === ETHRASOL_SLUG) {
+      ({data, presentation} = await ethrasolResponse({messages,instructions,context:payload.catalogContext}));
+    } else {
+      const response = await fetch("https://api.openai.com/v1/responses", { method: "POST", headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ model: process.env.OPENAI_MODEL || "gpt-5.2", instructions, input: messages }) });
+      if (!response.ok) return Response.json({ error: "Risposta AI non disponibile." }, { status: 502 });
+      data = await response.json();
+    }
     const rawReply = String(data.output_text || data.output?.flatMap((item) => item.content || []).map((item) => item.text || "").join("") || "").replace(/\*\*|__|`/g, "").trim();
     const speechLimit = 380;
     let reply = rawReply;
@@ -96,6 +105,6 @@ export async function POST(request) {
     }
     if (!reply) return Response.json({ error: "Risposta AI vuota." }, { status: 502 });
     insertUsageEvent({ clientId: avatar.id, eventType: "chat", units: 1, metadata: { ip: requestIp(request), inputCharacters: messages.at(-1)?.content?.length || 0, outputCharacters: reply.length } }).catch(() => {});
-    return Response.json({ reply }, { headers: { "Cache-Control": "no-store" } });
+    return Response.json({ reply, ...(presentation ? {presentation} : {}) }, { headers: { "Cache-Control": "no-store" } });
   } catch { return Response.json({ error: "Connessione AI non disponibile." }, { status: 502 }); }
 }
