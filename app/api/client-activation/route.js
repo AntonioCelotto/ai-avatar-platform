@@ -1,3 +1,4 @@
+import {withClearedCookie,ADMIN_SESSION_COOKIE} from '../../lib/session-mode';
 import {authAdmin,customerAccess,sameOrigin} from '../../lib/customer-store';
 import {clientCookieHeader} from '../../lib/client-auth';
 import {enforceRateLimit} from '../../lib/rate-limit';
@@ -12,6 +13,6 @@ export async function POST(request){
  if(error||!data.user?.id||!data.session?.access_token)throw new Error();
  const access=await customerAccess(data.user.id);if(!access.length)throw new Error();
  const updated=await admin.auth.updateUser({password:p.password});if(updated.error)throw new Error();
- return Response.json({ok:true},{headers:{...headers,'Set-Cookie':clientCookieHeader(data.session.access_token,Math.min(data.session.expires_in||3600,3600))}});
+ return withClearedCookie(Response.json({ok:true},{headers:{...headers,'Set-Cookie':clientCookieHeader(data.session.access_token,Math.min(data.session.expires_in||3600,3600))}}),ADMIN_SESSION_COOKIE);
  }catch{return Response.json({error:'Link scaduto, già utilizzato o accesso non attivo. Richiedi un nuovo invito a NDA.'},{status:400,headers});}
 }

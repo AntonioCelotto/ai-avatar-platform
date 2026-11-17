@@ -1,3 +1,4 @@
+import { customerMode, cookieValue, CUSTOMER_SESSION_COOKIE } from "./session-mode.js";
 import crypto from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -52,12 +53,13 @@ export function verifyAdminToken(token) {
 
 export function isAdminRequest(request) {
   const rawCookie = request.headers.get("cookie") || "";
-  const token = rawCookie.split(";").map((item) => item.trim()).find((item) => item.startsWith(`${ADMIN_COOKIE}=`))?.slice(ADMIN_COOKIE.length + 1);
-  return verifyAdminToken(token ? decodeURIComponent(token) : "");
+  if (customerMode(rawCookie)) return false;
+  return verifyAdminToken(cookieValue(rawCookie, ADMIN_COOKIE));
 }
 
 export async function requireAdminPage() {
   const cookieStore = await cookies();
+  if (cookieStore.get(CUSTOMER_SESSION_COOKIE)?.value) redirect("/client-area");
   if (!verifyAdminToken(cookieStore.get(ADMIN_COOKIE)?.value)) redirect("/admin-login");
 }
 

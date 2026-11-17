@@ -1,3 +1,4 @@
+import {withClearedCookie,CUSTOMER_SESSION_COOKIE} from "../../lib/session-mode";
 import {
   ADMIN_COOKIE,
   adminCookieHeader,
@@ -16,13 +17,13 @@ export async function POST(request) {
   if (!validateAdminCredentials(payload.email, payload.password)) {
     return Response.json({ error: "Email o password non corretti." }, { status: 401 });
   }
-  return new Response(JSON.stringify({ ok: true }), {
+  return withClearedCookie(new Response(JSON.stringify({ ok: true }), {
     headers: { "Content-Type": "application/json", "Set-Cookie": adminCookieHeader(createAdminToken()) }
-  });
+  }),CUSTOMER_SESSION_COOKIE);
 }
 
 export async function DELETE() {
-  return new Response(JSON.stringify({ ok: true }), {
+  return withClearedCookie(new Response(JSON.stringify({ ok: true }), {
     headers: { "Content-Type": "application/json", "Set-Cookie": `${ADMIN_COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0` }
-  });
+  }),CUSTOMER_SESSION_COOKIE);
 }

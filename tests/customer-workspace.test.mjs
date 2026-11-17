@@ -66,3 +66,21 @@ test('legacy knowledge stays byte-for-byte compatible until workspace publicatio
  global.fetch=async()=>Response.json(rows);
  try{assert.equal(await getAvatarKnowledgeText(clientA,'unrelated question'),rows.slice(0,12).map(r=>r.content.trim()).join('\n\n').slice(0,14000));}finally{global.fetch=previous;}
 });
+test('coexisting admin and customer cookies never grant admin access',async()=>{
+ const {isAdminRequest}=await import('../app/lib/admin-auth.js');const cookie=`avatarone_admin=${createAdminToken()}; avatarone_client_session=test-token`;
+ assert.equal(isAdminRequest(new Request('https://www.avatarone.it',{headers:{Cookie:cookie}})),false);
+ assert.equal((await accessRoute.GET(new Request('https://www.avatarone.it/api/client-access',{headers:{Cookie:cookie}}))).status,401);
+ role='editor';active=true;
+ assert.equal((await knowledge.GET(new Request('https://www.avatarone.it/api/client-knowledge?client=client-b',{headers:{Cookie:cookie}}))).status,403);
+ assert.equal((await knowledge.GET(new Request('https://www.avatarone.it/api/client-knowledge?client=client-a',{headers:{Cookie:cookie}}))).status,200);
+});
+test('customer login clears admin session; admin login clears customer session',async()=>{
+ const customerSession=await import('../app/api/client-session/route.js');const adminSession=await import('../app/api/admin-session/route.js');const previous=global.fetch;
+ global.fetch=async(input,options={})=>String(input).includes('/auth/v1/token')?Response.json({access_token:'customer-token',expires_in:3600,user:{id:'test-user'}}):previous(input,options);
+ try{active=true;role='editor';const r=await customerSession.POST(new Request('https://www.avatarone.it/api/client-session',{method:'POST',headers:{Origin:'https://www.avatarone.it','Content-Type':'application/json'},body:JSON.stringify({email:'test@example.invalid',password:'test-only-password'})}));assert.equal(r.status,200);assert.ok(r.headers.getSetCookie().some(c=>c.startsWith('avatarone_admin=;')&&c.includes('Max-Age=0')));
+ const a=await adminSession.POST(new Request('https://www.avatarone.it/api/admin-session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:'a.celotto@newdigitalapp.com',password:'test-pin-only'})}));assert.equal(a.status,200);assert.ok(a.headers.getSetCookie().some(c=>c.startsWith('avatarone_client_session=;')&&c.includes('Max-Age=0')));
+ }finally{global.fetch=previous;}
+});
+test('customer logout clears both cookies so an old admin session cannot reappear',async()=>{
+ const {DELETE}=await import('../app/api/client-session/route.js');const r=await DELETE();assert.equal(r.headers.getSetCookie().filter(c=>c.includes('Max-Age=0')).length,2);
+});
