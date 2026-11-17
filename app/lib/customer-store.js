@@ -17,5 +17,6 @@ export async function customerAccess(userId) {
 }
 export function sameOrigin(request) {const origin=request.headers.get('origin');return Boolean(origin && origin===new URL(request.url).origin);}
 export function canEdit(role){return role==='owner'||role==='editor';}
-export function safeClient(client){return {id:client.id,slug:client.slug,company_name:client.company_name,avatar_name:client.avatar_name,spoken_avatar_name:client.spoken_avatar_name,plan_code:client.plan_code,avatar_poster_url:client.avatar_poster_url};}
+export function customerModules(client){return {restaurantMenu:client?.features?.customerModules?.restaurantMenu===true};}
+export function safeClient(client){return {id:client.id,slug:client.slug,company_name:client.company_name,avatar_name:client.avatar_name,spoken_avatar_name:client.spoken_avatar_name,plan_code:client.plan_code,avatar_poster_url:client.avatar_poster_url,modules:customerModules(client)};}
 export function publicAvatarPath(slug){return slug==='new-digital-app'?'/mia':slug==='demo-cliente-01'?'/demo-cliente-01':`/avatar/${encodeURIComponent(slug)}`;}

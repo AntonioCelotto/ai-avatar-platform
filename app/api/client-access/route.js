@@ -1,6 +1,6 @@
 import {isAdminRequest} from '../../lib/admin-auth';
 import {authAdmin,customerDb,sameOrigin} from '../../lib/customer-store';
-import {getAvatarClientBySlug} from '../../lib/supabase-server';
+import {getAvatarClientBySlug,updateAvatarClient} from '../../lib/supabase-server';
 import {enforceRateLimit} from '../../lib/rate-limit';
 export const dynamic='force-dynamic';
 const headers={'Cache-Control':'no-store'};
@@ -31,7 +31,14 @@ export async function POST(request){
 export async function PATCH(request){
  if(!isAdminRequest(request))return Response.json({error:'Accesso amministratore richiesto.'},{status:401,headers});
  if(!sameOrigin(request))return Response.json({error:'Origine non valida.'},{status:403,headers});
- try{const p=await request.json();if(!/^[\da-f-]{36}$/i.test(p.userId)||!/^[\da-f-]{36}$/i.test(p.clientId))throw new Error();
+ try{const p=await request.json();
+ if(p.action==='configure_modules'){
+  if(typeof p.menuEnabled!=='boolean'||!/^[a-zA-Z0-9_-]{1,80}$/.test(p.slug||''))throw new Error();
+  const client=await getAvatarClientBySlug(p.slug);if(!client?.id)throw new Error();
+  await updateAvatarClient(p.slug,{features:{...(client.features||{}),customerModules:{...(client.features?.customerModules||{}),restaurantMenu:p.menuEnabled}}});
+  return Response.json({ok:true},{headers});
+ }
+ if(!/^[\da-f-]{36}$/i.test(p.userId)||!/^[\da-f-]{36}$/i.test(p.clientId))throw new Error();
  const role=['owner','editor','viewer'].includes(p.role)?p.role:undefined;
  await customerDb(`avatar_customer_access?user_id=eq.${p.userId}&client_id=eq.${p.clientId}`,{method:'PATCH',body:JSON.stringify({...(role?{role}:{}),...(typeof p.active==='boolean'?{active:p.active}:{})})});
  return Response.json({ok:true},{headers});}catch{return Response.json({error:'Aggiornamento non riuscito.'},{status:400,headers});}

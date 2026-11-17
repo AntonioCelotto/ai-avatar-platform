@@ -84,3 +84,14 @@ test('customer login clears admin session; admin login clears customer session',
 test('customer logout clears both cookies so an old admin session cannot reappear',async()=>{
  const {DELETE}=await import('../app/api/client-session/route.js');const r=await DELETE();assert.equal(r.headers.getSetCookie().filter(c=>c.includes('Max-Age=0')).length,2);
 });
+test('restaurant editor is opt-in for each avatar and hidden by default',async()=>{
+ const {customerModules,safeClient}=await import('../app/lib/customer-store.js');
+ assert.equal(customerModules({slug:'ugo-new-digital-app',features:{}}).restaurantMenu,false);
+ assert.equal(customerModules({category:'Ristorante'}).restaurantMenu,false);
+ assert.equal(customerModules({features:{customerModules:{restaurantMenu:true}}}).restaurantMenu,true);
+ assert.equal(safeClient({id:clientA,features:{internalKey:'private',customerModules:{restaurantMenu:true}}}).features,undefined);
+ role='editor';active=true;const r=await knowledge.POST(request('client-a','menu',{menu:[{name:'Carbonara',price:'12'}]}));assert.equal(r.status,403);
+});
+test('customers cannot activate restaurant modules themselves',async()=>{
+ const r=await accessRoute.PATCH(new Request('https://www.avatarone.it/api/client-access',{method:'PATCH',headers:{Origin:'https://www.avatarone.it',Cookie:'avatarone_client_session=test-token','Content-Type':'application/json'},body:JSON.stringify({action:'configure_modules',slug:'client-a',menuEnabled:true})}));assert.equal(r.status,401);
+});

@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import {knowledgeContext} from '../../lib/knowledge-context.js';
 import {isAdminRequest} from '../../lib/admin-auth';
 import {getClientSessionFromRequest} from '../../lib/client-auth';
-import {customerDb,canEdit,sameOrigin,safeClient} from '../../lib/customer-store';
+import {customerDb,canEdit,sameOrigin,safeClient,customerModules} from '../../lib/customer-store';
 import {readWorkspace,validateDraft,menuText,validateMenu,importPublicWebsite} from '../../lib/customer-knowledge';
 import {getAvatarClientBySlug,createAvatarKnowledgeSignedUpload,downloadKnowledgeFile} from '../../lib/supabase-server';
 import {enforceRateLimit} from '../../lib/rate-limit';
@@ -50,7 +50,7 @@ export async function POST(request){
  const rows=await customerDb(`avatar_knowledge_releases?id=eq.${p.releaseId}&client_id=eq.${client.id}&select=content`);
  if(!rows[0])throw new Error('Versione non trovata.');return Response.json({draft:rows[0].content},{headers});
  }
- if(p.action==='menu'){const menu=validateMenu(p.menu);if(!menu.length)throw new Error('Aggiungi almeno un piatto.');return Response.json({source:{id:p.id||crypto.randomUUID(),type:'text',title:'Menu del ristorante',url:'',content:menuText(menu),metadata:{menu}}},{headers});}
+ if(p.action==='menu'){if(!customerModules(client).restaurantMenu)return Response.json({error:'Il modulo menu non è attivo per questo avatar.'},{status:403,headers});const menu=validateMenu(p.menu);if(!menu.length)throw new Error('Aggiungi almeno un piatto.');return Response.json({source:{id:p.id||crypto.randomUUID(),type:'text',title:'Menu del ristorante',url:'',content:menuText(menu),metadata:{menu}}},{headers});}
  if(p.action==='website')return Response.json({source:await importPublicWebsite(String(p.url||'').trim())},{headers});
  if(p.action==='prepare_pdf'){
  if(!String(p.fileName).toLowerCase().endsWith('.pdf')||!(p.fileSize>0&&p.fileSize<=10485760))throw new Error('Scegli un PDF fino a 10 MB.');
