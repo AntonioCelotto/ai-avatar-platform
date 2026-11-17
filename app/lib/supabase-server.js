@@ -1,3 +1,4 @@
+import { knowledgeContext } from "./knowledge-context.js";
 import { defaultTenantSlug, getTenant } from "../tenant-config";
 
 const supabaseUrl =
@@ -82,12 +83,13 @@ export async function listUsageSummary(clientId) {
   return (rows || []).reduce((summary, row) => { summary[row.event_type] = (summary[row.event_type] || 0) + Number(row.units || 0); return summary; }, {});
 }
 
-export async function getAvatarKnowledgeText(clientId) {
+export async function getAvatarKnowledgeText(clientId, question = "") {
   if (!isSupabaseConfigured() || !clientId) return "";
   const rows = await supabaseFetch(
-    `/rest/v1/avatar_client_knowledge_sources?client_id=eq.${clientId}&status=eq.active&select=content&order=updated_at.desc&limit=12`
+    `/rest/v1/avatar_client_knowledge_sources?client_id=eq.${clientId}&status=eq.active&select=content,title,metadata&order=updated_at.desc&limit=50`
   );
-  return (rows || []).map((row) => String(row.content || "").trim()).filter(Boolean).join("\n\n").slice(0, 14000);
+  if ((rows || []).some(row => row.metadata?.workspaceItemId)) return knowledgeContext(rows, question);
+  return (rows || []).slice(0, 12).map((row) => String(row.content || "").trim()).filter(Boolean).join("\n\n").slice(0, 14000);
 }
 
 export async function upsertAvatarClient(avatar) {

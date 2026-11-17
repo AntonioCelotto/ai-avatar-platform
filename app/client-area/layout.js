@@ -1,2 +1,2 @@
-import { requireClientPage } from "../lib/client-auth";
-export default async function ClientAreaLayout({children}){await requireClientPage();return children}
+export const metadata={robots:{index:false,follow:false}};
+export default function ClientAreaLayout({children}){return children;}

@@ -22,6 +22,7 @@ export default function ResponsiveNav({ sectorPage = false }) {
       <Link href="/avatar#settori" onClick={() => setOpen(false)}>Settori</Link>
       {!sectorPage && <a href="/#pacchetti" onClick={() => setOpen(false)}>Pacchetti</a>}
       <Link href="/avatar/mia-nda" onClick={() => setOpen(false)}>Prova MIA</Link>
+      <Link href="/client-login" onClick={() => setOpen(false)}>Area clienti</Link>
       <a className="nav-cta" href={sectorPage ? "#contatti" : "/#contatti"} onClick={() => setOpen(false)}>{sectorPage ? "Richiedi una demo" : "Richiedi preventivo"}</a>
     </div>
   </nav>;
