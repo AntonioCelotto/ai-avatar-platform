@@ -1,4 +1,5 @@
 import { isAdminRequest } from "../../lib/admin-auth";
+import { canEdit } from "../../lib/customer-store";
 import { getClientSessionFromRequest } from "../../lib/client-auth";
 import dns from "node:dns/promises";
 import net from "node:net";
@@ -69,7 +70,8 @@ async function requireAccess(request, slug) {
   if (isAdminRequest(request)) return null;
   const session = await getClientSessionFromRequest(request);
   const client = session?.profile?.avatar_client_id ? await getAvatarClientBySlug(String(slug || "")) : null;
-  return client?.id === session?.profile?.avatar_client_id ? null : Response.json({ error: "Accesso non autorizzato." }, { status: 401, headers: { "Cache-Control": "no-store" } });
+  const access = session?.access?.find(item => item.client_id === client?.id);
+  return access && (request.method === "GET" || canEdit(access.role)) ? null : Response.json({ error: "Accesso non autorizzato." }, { status: 401, headers: { "Cache-Control": "no-store" } });
 }
 
 async function clientFor(slug) {

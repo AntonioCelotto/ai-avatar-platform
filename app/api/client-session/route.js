@@ -1,7 +1,9 @@
 import { CLIENT_COOKIE, clientCookieHeader, signInClient } from "../../lib/client-auth";
+import { sameOrigin } from "../../lib/customer-store";
 import { enforceRateLimit } from "../../lib/rate-limit";
 
 export async function POST(request){
+  if(!sameOrigin(request))return Response.json({error:"Origine non valida."},{status:403});
   const limited=enforceRateLimit(request,"client-login",{limit:5,windowMs:15*60_000}); if(limited)return limited;
   let payload; try{payload=await request.json()}catch{return Response.json({error:"Richiesta non valida."},{status:400})}
   try{const session=await signInClient(String(payload.email||"").trim().toLowerCase(),String(payload.password||""));return Response.json({ok:true},{headers:{"Set-Cookie":clientCookieHeader(session.token,session.maxAge),"Cache-Control":"no-store"}})}catch(error){return Response.json({error:error.message||"Accesso non riuscito."},{status:401})}

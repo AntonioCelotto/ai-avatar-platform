@@ -23,8 +23,8 @@ export async function POST(request) {
     : [];
   if (!messages.some((item) => item.role === "user" && item.content.trim())) return Response.json({ error: "Messaggio mancante." }, { status: 400 });
   if (!process.env.OPENAI_API_KEY) return Response.json({ error: "Motore AI non configurato." }, { status: 503 });
-  const knowledge = await getAvatarKnowledgeText(avatar.id).catch(() => "");
   const latestQuestion = [...messages].reverse().find((item) => item.role === "user")?.content || "";
+  const knowledge = await getAvatarKnowledgeText(avatar.id, latestQuestion).catch(() => "");
   // CUP demo actions are explicit, confirmed, and isolated to Giulia.
   if (slug === DEMO_SLUG) {
     const q = latestQuestion.toLocaleLowerCase("it").trim();

@@ -6,3 +6,5 @@ dist
 coverage
 .vercel
 *.log
+
+supabase/.temp/
