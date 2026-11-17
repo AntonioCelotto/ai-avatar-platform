@@ -56,6 +56,9 @@ export async function POST(request) {
     if (!isSupabaseConfigured()) return Response.json({ error: "Archivio cloud non configurato." }, { status: 503 });
     const avatar = payload.avatar && typeof payload.avatar === "object" ? payload.avatar : null;
     if (!avatar?.slug || !avatar?.name || !avatar?.companyName) return Response.json({ error: "Configurazione avatar incompleta." }, { status: 400 });
+    const plan = ["smart", "connect", "experience"].includes(avatar.packageType) ? avatar.packageType : "smart";
+    if (plan !== "experience" && (avatar.idleVideoUrl || avatar.idleDataUrl || avatar.mediaMode === "liveavatar")) return Response.json({ error: "Video di respirazione e LiveAvatar sono riservati al pacchetto Experience." }, { status: 400 });
+
     if (String(avatar.voice || "").startsWith("elevenlabs:") && !/^elevenlabs:[a-zA-Z0-9]{15,40}$/.test(avatar.voice)) return Response.json({ error: "Voice ID ElevenLabs non valido." }, { status: 400 });
     try {
       const [uploadedImage, uploadedVideo, uploadedVoice] = await Promise.all([
@@ -88,7 +91,7 @@ export async function POST(request) {
         },
         theme: { accent: /^#[0-9a-f]{6}$/i.test(avatar.accent || "") ? avatar.accent : "#0071e3" },
         notes: String(avatar.knowledgeSummary || "").slice(0, 10000),
-        features: { cloud: true, website: Boolean(avatar.knowledgeUrl), documents: false, idleVideoUrl: String(avatar.idleVideoUrl || "").slice(0, 2048), voiceSampleUrl: uploadedVoice || avatar.voiceSamplePath || "" }
+        features: { packageType: ["smart", "connect", "experience"].includes(avatar.packageType) ? avatar.packageType : "smart", cloud: true, website: Boolean(avatar.knowledgeUrl), documents: false, idleVideoUrl: plan === "experience" ? String(avatar.idleVideoUrl || "").slice(0, 2048) : "", voiceSampleUrl: uploadedVoice || avatar.voiceSamplePath || "" }
       });
       if (!saved?.id) throw new Error("Salvataggio cloud non completato.");
       if (avatar.websiteKnowledge || avatar.knowledgeSummary) {

@@ -133,6 +133,7 @@ function extractMemoryFromText(text, currentMemory = {}) {
 export function Assistant({ tenant: tenantConfig = fallbackTenant }) {
   const tenant = { ...fallbackTenant, ...tenantConfig };
   const audioRef = useRef(null);
+  const audioUnlockedRef = useRef(false);
   const recognitionRef = useRef(null);
   const continuousVoiceRef = useRef(false);
   const lastAutoSentRef = useRef("");
@@ -246,6 +247,20 @@ export function Assistant({ tenant: tenantConfig = fallbackTenant }) {
     window.speechSynthesis.speak(utterance);
   }
 
+  // iOS Safari requires audio playback to be initiated by a user gesture.
+  // Reuse the unlocked element for subsequent asynchronous TTS responses.
+  function unlockAudio() {
+    if (audioUnlockedRef.current) return;
+    const audio = audioRef.current || new Audio();
+    audioRef.current = audio;
+    audio.playsInline = true;
+    // A short silent WAV primes playback while still inside the tap handler.
+    const silentWav = "data:audio/wav;base64,UklGRjQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YRAAAACAgICAgICAgICAgICA";
+    audio.src = silentWav;
+    const result = audio.play();
+    if (result?.then) result.then(() => { audioUnlockedRef.current = true; }).catch(() => {});
+  }
+
   async function speakReply(text, forceSpeak = false) {
     if (!forceSpeak && !voiceEnabled) return;
     const cleanText = getFastSpeechText(text);
@@ -266,7 +281,8 @@ export function Assistant({ tenant: tenantConfig = fallbackTenant }) {
       });
       if (!response.ok) throw new Error(`Speech request failed: ${response.status}`);
       const audioUrl = URL.createObjectURL(await response.blob());
-      const audio = new Audio(audioUrl);
+      const audio = audioRef.current || new Audio();
+      audio.src = audioUrl;
       audioRef.current = audio;
       audio.onplaying = beginSpeaking;
       audio.onended = () => { URL.revokeObjectURL(audioUrl); finishSpeaking(); };
@@ -285,6 +301,7 @@ export function Assistant({ tenant: tenantConfig = fallbackTenant }) {
   async function sendMessage(content) {
     const cleanContent = content.trim();
     if (!cleanContent || loading || sendingRef.current) return;
+    unlockAudio();
     sendingRef.current = true;
     setVoiceEnabled(true);
     const updatedMemory = extractMemoryFromText(cleanContent, clientMemory);
@@ -382,6 +399,7 @@ export function Assistant({ tenant: tenantConfig = fallbackTenant }) {
   }
 
   function toggleContinuousVoice() {
+    unlockAudio();
     if (continuousVoiceRef.current) { stopVoiceInput(true); return; }
     startVoiceInput({ continuous: true });
   }
