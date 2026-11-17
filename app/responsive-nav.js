@@ -18,6 +18,7 @@ export default function ResponsiveNav({ sectorPage = false }) {
     <div className="nav-links">
       <Link href="/avatar" onClick={() => setOpen(false)}>Avatar</Link>
       {sectorPage ? <a href="#vantaggi" onClick={() => setOpen(false)}>Vantaggi</a> : <a href="/#funzioni" onClick={() => setOpen(false)}>Funzioni</a>}
+      <a href="/#skill" onClick={() => setOpen(false)}>Skill</a>
       <Link href="/avatar#settori" onClick={() => setOpen(false)}>Settori</Link>
       {!sectorPage && <a href="/#pacchetti" onClick={() => setOpen(false)}>Pacchetti</a>}
       <Link href="/avatar/mia-nda" onClick={() => setOpen(false)}>Prova MIA</Link>
