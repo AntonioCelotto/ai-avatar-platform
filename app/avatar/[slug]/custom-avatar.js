@@ -8,7 +8,7 @@ import AvatarInstall from "./install-avatar";
 
 const STORAGE_KEY = "avatarone:custom-avatars";
 
-export default function CustomAvatar({ slug, initialAvatar, initialImmersive = false, experienceMode = false, onPresentation, catalogContext }) {
+export default function CustomAvatar({ slug, initialAvatar, initialImmersive = false, experienceMode = false, onPresentation, catalogContext, ethrasolToken }) {
   const [immersive, setImmersive] = useState(initialImmersive);
   const [avatar, setAvatar] = useState(() => initialAvatar ? {
     slug: initialAvatar.slug,
@@ -212,8 +212,9 @@ export default function CustomAvatar({ slug, initialAvatar, initialImmersive = f
         </div>
       </section>
       <section className="assistant-workspace" aria-label={`Chat con ${tenant.assistantName}`}>
-        <CustomAssistant tenant={tenant} immersive={immersive} onPresentation={onPresentation} catalogContext={catalogContext} />
+        <CustomAssistant tenant={tenant} immersive={immersive} onPresentation={onPresentation} catalogContext={catalogContext} ethrasolToken={ethrasolToken} />
       </section>
     </main>
   );
 }
+

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import CupDemoPanel from "./cup-demo-panel";
 import PharmacyDemoPanel from "./pharmacy-demo-panel";
 
-export default function CustomAssistant({ tenant, immersive = false, onPresentation, catalogContext }) {
+export default function CustomAssistant({ tenant, immersive = false, onPresentation, catalogContext, ethrasolToken }) {
   const [messages, setMessages] = useState([{ role: "assistant", content: tenant.welcomeMessage }]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -197,7 +197,7 @@ export default function CustomAssistant({ tenant, immersive = false, onPresentat
     try {
       const response = await fetch("/api/custom-chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json",...(ethrasolToken?{Authorization:`Bearer ${ethrasolToken}`}:{}) },
         body: JSON.stringify({ slug: tenant.slug, messages: next, ...(catalogContext ? {catalogContext} : {}) })
       });
       const data = await response.json();
@@ -356,3 +356,4 @@ export default function CustomAssistant({ tenant, immersive = false, onPresentat
     </div>
   );
 }
+

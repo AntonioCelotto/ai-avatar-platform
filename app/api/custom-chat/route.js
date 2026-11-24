@@ -1,3 +1,4 @@
+import {portalScope,scopeInstructions} from '../../lib/ethrasol-scope.js';
 import { getAvatarClientBySlug, getAvatarKnowledgeText, insertUsageEvent, listUsageSummary } from "../../lib/supabase-server";
 import { enforceRateLimit, requestIp } from "../../lib/rate-limit";
 import { demoCupQuery, DEMO_SLUG } from "../../lib/cup-demo";
@@ -23,6 +24,10 @@ export async function POST(request) {
     : [];
   if (!messages.some((item) => item.role === "user" && item.content.trim())) return Response.json({ error: "Messaggio mancante." }, { status: 400 });
   if (!process.env.OPENAI_API_KEY) return Response.json({ error: "Motore AI non configurato." }, { status: 503 });
+  let verifiedPortalScope=null;
+  if(slug===ETHRASOL_SLUG&&(request.headers.get('authorization')||payload.catalogContext?.embedded)){
+    try{verifiedPortalScope=await portalScope(request,payload.catalogContext?.networkId);}catch(error){return Response.json({error:error.message},{status:error.status||403,headers:{'Cache-Control':'no-store'}});}
+  }
   const latestQuestion = [...messages].reverse().find((item) => item.role === "user")?.content || "";
   const knowledge = await getAvatarKnowledgeText(avatar.id, latestQuestion).catch(() => "");
   // CUP demo actions are explicit, confirmed, and isolated to Giulia.
@@ -88,7 +93,7 @@ export async function POST(request) {
   try {
     let data, presentation = null;
     if (slug === ETHRASOL_SLUG) {
-      ({data, presentation} = await ethrasolResponse({messages,instructions,context:payload.catalogContext}));
+      ({data, presentation} = await ethrasolResponse({messages,instructions:scopeInstructions(verifiedPortalScope),context:{...payload.catalogContext,portalScope:verifiedPortalScope}}));
     } else {
       const response = await fetch("https://api.openai.com/v1/responses", { method: "POST", headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ model: process.env.OPENAI_MODEL || "gpt-5.2", instructions, input: messages }) });
       if (!response.ok) return Response.json({ error: "Risposta AI non disponibile." }, { status: 502 });
@@ -108,3 +113,4 @@ export async function POST(request) {
     return Response.json({ reply, ...(presentation ? {presentation} : {}) }, { headers: { "Cache-Control": "no-store" } });
   } catch { return Response.json({ error: "Connessione AI non disponibile." }, { status: 502 }); }
 }
+

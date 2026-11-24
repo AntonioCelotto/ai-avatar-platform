@@ -12,6 +12,8 @@ function ProductImage({product,large=false}) {
   return product.image && !failed ? <img className={large ? styles.heroImage : styles.productImage} src={product.image} alt={product.name} onError={() => setFailed(true)} /> : <div className={large ? styles.heroPlaceholder : styles.placeholder} aria-label="Foto non disponibile"><span>ETHRASOL</span><small>Immagine non disponibile</small></div>;
 }
 export default function EthrasolExperience({slug,initialAvatar,embedded=false}) {
+  const [ethrasolToken,setEthrasolToken]=useState("");
+  const [networkId,setNetworkId]=useState(null);
   const [hostOrigin,setHostOrigin]=useState("");
   const [draftItems,setDraftItems]=useState([]);
   const [products,setProducts] = useState([]);
@@ -31,6 +33,7 @@ export default function EthrasolExperience({slug,initialAvatar,embedded=false}) 
       if(event.data?.type==="ETHRASOL_HOST_READY"){
         setHostOrigin(event.origin);window.parent.postMessage({type:"ESMERALDA_READY"},event.origin);
       }
+      if(event.data?.type==="ETHRASOL_AUTH_CONTEXT"&&typeof event.data.token==='string'&&/^[A-Za-z0-9_.-]{40,8000}$/.test(event.data.token)){setEthrasolToken(event.data.token);setNetworkId(event.data.networkId||null);}
       if(event.data?.type==="ETHRASOL_DRAFT_CONTEXT"&&Array.isArray(event.data.items))setDraftItems(event.data.items.slice(0,40));
     };
     window.addEventListener("message",receive);return()=>window.removeEventListener("message",receive);
@@ -72,7 +75,7 @@ export default function EthrasolExperience({slug,initialAvatar,embedded=false}) 
     {!embedded&&<header className={styles.header}><a href={ETHRASOL_URL} target="_blank" rel="noreferrer" className={styles.brand}>ETHRASOL<span>Entra nel nuovo sole</span></a><span className={styles.headerLabel}>Esmeralda · La tua assistente digitale</span><a href={ETHRASOL_URL} target="_blank" rel="noreferrer" className={styles.portalLink}>Accedi al gestionale ↗</a></header>}
     <div className={styles.layout}>
       <div className={`ethra-avatar-column ${styles.avatarColumn}`}>
-        <CustomAvatar slug={slug} initialAvatar={{...initialAvatar,suggestions:["Mostrami i pannelli fotovoltaici","Cerco una batteria","Come richiedo un preventivo?"]}} experienceMode initialImmersive={false} onPresentation={present} catalogContext={{productIds:products.map(p=>p.id),selectedId:selected?.id || "",embedded:Boolean(hostOrigin),draftItems}} />
+        <CustomAvatar slug={slug} initialAvatar={{...initialAvatar,suggestions:["Mostrami i pannelli fotovoltaici","Cerco una batteria","Come richiedo un preventivo?"]}} experienceMode initialImmersive={false} onPresentation={present} ethrasolToken={ethrasolToken} catalogContext={{networkId,productIds:products.map(p=>p.id),selectedId:selected?.id || "",embedded:Boolean(hostOrigin),draftItems}} />
       </div>
       <section className={styles.panel} ref={panelRef} aria-label="Informazioni e prodotti Ethrasol" aria-busy={loading}>
         <nav className={styles.tabs} aria-label="Sezioni"><button aria-pressed={section==="products"} onClick={()=>{setSection("products");setSelected(null);}}>Prodotti</button><button aria-pressed={section==="quote"} onClick={()=>{setSection("quote");setSelected(null);}}>Preventivi</button><button aria-pressed={section==="portal"} onClick={()=>{setSection("portal");setSelected(null);}}>Il gestionale</button><button aria-pressed={section==="avatarone"} onClick={()=>{setSection("avatarone");setSelected(null);}}>AvatarOne</button></nav>
@@ -103,3 +106,4 @@ export default function EthrasolExperience({slug,initialAvatar,embedded=false}) 
     </div>
   </div>;
 }
+

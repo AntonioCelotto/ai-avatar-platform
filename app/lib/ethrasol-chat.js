@@ -1,3 +1,4 @@
+import {blockedService,unavailableReply,scopeInstructions} from './ethrasol-scope.js';
 import { searchProducts, getProduct, ETHRASOL_URL } from "./ethrasol-catalog.js";
 
 const tool = (name, description, properties) => ({type:"function",name,description,strict:true,parameters:{type:"object",properties,required:Object.keys(properties),additionalProperties:false}});
@@ -10,10 +11,14 @@ const tools = [
 
 export async function ethrasolResponse({ messages, instructions, context = {}, fetchImpl = fetch }) {
   context = context && typeof context === "object" ? context : {};
+  const scope=context.portalScope||null;
+  const question=[...messages].reverse().find(m=>m.role==='user')?.content||'';
+  if(blockedService(question,scope))return {data:{output_text:unavailableReply,output:[]},presentation:null};
   let presentation = null;
   let input = [...messages];
   const ids = Array.isArray(context.productIds) ? context.productIds.filter(id => /^[a-f0-9-]{36}$/i.test(id)).slice(0,12) : [];
   const extra = [
+    scopeInstructions(scope),
     "Sei Esmeralda, assistente ETHRASOL sulla piattaforma AvatarOne. ETHRASOL è il portale per catalogo, richieste di preventivo e gestione delle pratiche.",
     "Puoi cercare prodotti reali e mostrarli a schermo usando gli strumenti. Non dichiarare di aver aperto una scheda prima che lo strumento abbia avuto successo. Per mostrare articoli chiama SEMPRE uno strumento.",
     "Quando l'utente chiede risultati, categorie o più articoli, lascia visibile l'elenco. Non aprire automaticamente il primo articolo. Apri una scheda soltanto quando l'utente sceglie un nome, codice o numero; se ci sono più corrispondenze chiedi quale desidera vedere.",
@@ -29,7 +34,11 @@ export async function ethrasolResponse({ messages, instructions, context = {}, f
     if (!response.ok) throw new Error("Risposta AI non disponibile");
     const data = await response.json();
     const calls = (data.output || []).filter(item => item.type === "function_call");
-    if (!calls.length) return {data, presentation};
+    if (!calls.length) {
+      const reply=data.output_text||data.output?.flatMap(item=>item.content||[]).map(item=>item.text||'').join('')||'';
+      if(blockedService(reply,scope))return {data:{output_text:unavailableReply,output:[]},presentation:null};
+      return {data, presentation};
+    }
     input = [...input, ...(data.output || [])];
     for (const call of calls.slice(0,3)) {
       let result;
@@ -63,3 +72,4 @@ export async function ethrasolResponse({ messages, instructions, context = {}, f
   }
   throw new Error("Risposta non completata");
 }
+
