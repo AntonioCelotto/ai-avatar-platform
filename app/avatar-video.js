@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 
 const mediaStyle = {
   width: "100%", height: "100%", display: "block", objectFit: "cover",
@@ -107,8 +108,54 @@ function SmoothVideoLoop({ src, poster, label, active = true, style = {} }) {
   </div>;
 }
 
-export function AvatarVideo({ label = "Avatar video Mia", poster, idleSrc = "", src = "/mia-avatar-video.mp4" }) {
+export function AvatarVideo({ label = "Avatar video Mia", poster, idleSrc = "", src = "/mia-avatar-video.mp4", speechVideoRef }) {
   const [speaking, setSpeaking] = useState(false);
+  const [prepared, setPrepared] = useState(false);
+  const talkingRef = useRef(null);
+
+  useEffect(() => {
+    if (!speechVideoRef) return;
+    const video = talkingRef.current;
+    speechVideoRef.current = (signal) => new Promise((resolve) => {
+      if (!video || signal.aborted) return resolve();
+
+      let videoFrame;
+      let animationFrame;
+      const clearWait = () => {
+        clearTimeout(timeout);
+        cancelAnimationFrame(animationFrame);
+        if (videoFrame !== undefined) video.cancelVideoFrameCallback?.(videoFrame);
+        resolve();
+      };
+      const cancel = () => {
+        clearWait();
+        setPrepared(false);
+      };
+      // Keep speech available if the device can't render the video.
+      const timeout = setTimeout(clearWait, 600);
+      signal.addEventListener("abort", cancel, { once: true });
+
+      const showFrame = () => {
+        flushSync(() => setPrepared(true));
+        // Let the browser paint the visible player before starting voice playback.
+        animationFrame = requestAnimationFrame(() => {
+          animationFrame = requestAnimationFrame(clearWait);
+        });
+      };
+      if (video.requestVideoFrameCallback) {
+        videoFrame = video.requestVideoFrameCallback(showFrame);
+      } else {
+        const startTime = video.currentTime;
+        const waitForPlayback = () => {
+          if (video.readyState >= 2 && video.currentTime !== startTime) showFrame();
+          else animationFrame = requestAnimationFrame(waitForPlayback);
+        };
+        animationFrame = requestAnimationFrame(waitForPlayback);
+      }
+      video.play().catch(() => {});
+    });
+    return () => { speechVideoRef.current = null; };
+  }, [speechVideoRef, src]);
 
   useEffect(() => {
     const sync = () => setSpeaking(document.documentElement.dataset.miaAvatarState === "speaking");
@@ -122,10 +169,12 @@ export function AvatarVideo({ label = "Avatar video Mia", poster, idleSrc = "", 
     };
   }, []);
 
+  const showTalking = speaking || prepared;
+  const transition = speechVideoRef && showTalking ? "none" : "opacity 250ms ease";
   return <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden" }}>
     {idleSrc
-      ? <video src={idleSrc} poster={poster} aria-label={`${label} in attesa`} autoPlay loop muted playsInline preload="auto" style={{ ...mediaStyle, position: "absolute", inset: 0, opacity: speaking ? 0 : 1, transition: "opacity 250ms ease", pointerEvents: "none" }} />
-      : poster ? <img src={poster} alt={`${label} in attesa`} style={{ ...mediaStyle, position: "absolute", inset: 0, opacity: speaking ? 0 : 1, transition: "opacity 250ms ease" }} /> : null}
-    <video src={src} poster={poster} aria-label={label} autoPlay loop muted playsInline preload="auto" style={{ ...mediaStyle, position: "absolute", inset: 0, opacity: speaking ? 1 : 0, transition: "opacity 250ms ease", pointerEvents: "none" }} />
+      ? <video src={idleSrc} poster={poster} aria-label={`${label} in attesa`} autoPlay loop muted playsInline preload="auto" style={{ ...mediaStyle, position: "absolute", inset: 0, opacity: showTalking ? 0 : 1, transition, pointerEvents: "none" }} />
+      : poster ? <img src={poster} alt={`${label} in attesa`} style={{ ...mediaStyle, position: "absolute", inset: 0, opacity: showTalking ? 0 : 1, transition, pointerEvents: "none" }} /> : null}
+    <video ref={talkingRef} src={src} poster={poster} aria-label={label} autoPlay loop muted playsInline preload="auto" style={{ ...mediaStyle, position: "absolute", inset: 0, opacity: showTalking ? 1 : 0, transition, pointerEvents: "none" }} />
   </div>;
 }

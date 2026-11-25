@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import CupDemoPanel from "./cup-demo-panel";
 import PharmacyDemoPanel from "./pharmacy-demo-panel";
 
-export default function CustomAssistant({ tenant, immersive = false, onPresentation, catalogContext, ethrasolToken }) {
+export default function CustomAssistant({ tenant, immersive = false, onPresentation, catalogContext, ethrasolToken, speechVideoRef }) {
   const [messages, setMessages] = useState([{ role: "assistant", content: tenant.welcomeMessage }]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -18,6 +18,7 @@ export default function CustomAssistant({ tenant, immersive = false, onPresentat
   const audioRef = useRef(null);
   const audioUnlockedRef = useRef(false);
   const speechSequenceRef = useRef(0);
+  const speechVideoAbortRef = useRef(null);
   const continuousRef = useRef(false);
   const busyRef = useRef(false);
   const speakingRef = useRef(false);
@@ -39,6 +40,8 @@ export default function CustomAssistant({ tenant, immersive = false, onPresentat
     setCanUseSpeech("SpeechRecognition" in window || "webkitSpeechRecognition" in window);
     return () => {
       continuousRef.current = false;
+      speechSequenceRef.current += 1;
+      speechVideoAbortRef.current?.abort();
       clearTimeout(restartTimerRef.current);
       try { recognitionRef.current?.abort(); } catch {}
       audioRef.current?.pause();
@@ -67,6 +70,8 @@ export default function CustomAssistant({ tenant, immersive = false, onPresentat
   function stopSpeech() {
     stoppedRef.current = true;
     speechSequenceRef.current += 1;
+    speechVideoAbortRef.current?.abort();
+    speechVideoAbortRef.current = null;
     try { audioRef.current?.pause(); } catch {}
     const stopListener = stopRecognitionRef.current;
     try { stopListener?.abort(); } catch {}
@@ -102,8 +107,27 @@ export default function CustomAssistant({ tenant, immersive = false, onPresentat
     return String(text || "").replace(/\*\*|__|`|[#>~]/g, "").replace(/\s+/g, " ").trim().slice(0, 420);
   }
 
-  function speakWithBrowser(text) {
-    if (!("speechSynthesis" in window)) return;
+  async function prepareSpeechVideo() {
+    if (!speechVideoRef?.current || speechVideoAbortRef.current) return;
+    const controller = new AbortController();
+    speechVideoAbortRef.current = controller;
+    await speechVideoRef.current(controller.signal);
+  }
+
+  function resetSpeechVideo() {
+    speechVideoAbortRef.current?.abort();
+    speechVideoAbortRef.current = null;
+  }
+
+  async function speakWithBrowser(text, sequence = ++speechSequenceRef.current) {
+    if (!("speechSynthesis" in window)) {
+      resetSpeechVideo();
+      return;
+    }
+    if (speechVideoRef) {
+      await prepareSpeechVideo();
+      if (sequence !== speechSequenceRef.current || stoppedRef.current) return;
+    }
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(cleanSpeech(text));
     utterance.lang = "it-IT";
@@ -113,8 +137,16 @@ export default function CustomAssistant({ tenant, immersive = false, onPresentat
       : voices.find((item) => item.lang?.startsWith("it"));
     if (selected) utterance.voice = selected;
     utterance.onstart = () => setSpeaking(true);
-    utterance.onend = () => { speakingRef.current = false; setSpeaking(false); busyRef.current = false; restartListeningRef.current(); };
-    utterance.onerror = () => { speakingRef.current = false; setSpeaking(false); busyRef.current = false; restartListeningRef.current(); };
+    const finish = () => {
+      if (speechVideoRef && sequence !== speechSequenceRef.current) return;
+      resetSpeechVideo();
+      speakingRef.current = false;
+      setSpeaking(false);
+      busyRef.current = false;
+      restartListeningRef.current();
+    };
+    utterance.onend = finish;
+    utterance.onerror = finish;
     speakingRef.current = true;
     setSpeaking(true);
     window.speechSynthesis.speak(utterance);
@@ -140,7 +172,7 @@ export default function CustomAssistant({ tenant, immersive = false, onPresentat
     if (!clean) return;
     if (tenant.voice === "browser" || String(tenant.voice).startsWith("browser")) {
       reveal();
-      speakWithBrowser(clean);
+      await speakWithBrowser(clean, sequence);
       return;
     }
     try {
@@ -161,17 +193,46 @@ export default function CustomAssistant({ tenant, immersive = false, onPresentat
       const audio = audioRef.current || new Audio();
       audio.src = url;
       audioRef.current = audio;
-      audio.onplaying = () => { speakingRef.current = true; reveal(); setSpeaking(true); listenForStop(); };
+      audio.onplaying = () => {
+        if (sequence !== speechSequenceRef.current) return;
+        speakingRef.current = true;
+        reveal();
+        setSpeaking(true);
+        listenForStop();
+      };
       let finishPlayback;
       const playbackDone = new Promise((resolve) => { finishPlayback = resolve; });
-      audio.onended = () => { speakingRef.current = false; setSpeaking(false); URL.revokeObjectURL(url); finishPlayback(); };
-      audio.onerror = () => { speakingRef.current = false; setSpeaking(false); URL.revokeObjectURL(url); finishPlayback(); };
-      await audio.play();
-      await playbackDone;
+      audio.onended = finishPlayback;
+      audio.onerror = finishPlayback;
+      let signal;
+      try {
+        if (speechVideoRef) {
+          await prepareSpeechVideo();
+          if (sequence !== speechSequenceRef.current || stoppedRef.current) return;
+          signal = speechVideoAbortRef.current?.signal;
+          signal?.addEventListener("abort", finishPlayback, { once: true });
+        }
+        await audio.play();
+        await playbackDone;
+        if (sequence === speechSequenceRef.current) {
+          speakingRef.current = false;
+          setSpeaking(false);
+          resetSpeechVideo();
+        }
+      } finally {
+        signal?.removeEventListener("abort", finishPlayback);
+        if (audio.onended === finishPlayback) {
+          audio.onplaying = null;
+          audio.onended = null;
+          audio.onerror = null;
+        }
+        URL.revokeObjectURL(url);
+      }
     } catch {
+      if (sequence !== speechSequenceRef.current || stoppedRef.current) return;
       setSpeaking(false);
       reveal();
-      speakWithBrowser(clean);
+      await speakWithBrowser(clean, sequence);
     }
   }
 
@@ -215,7 +276,7 @@ export default function CustomAssistant({ tenant, immersive = false, onPresentat
       if (stoppedRef.current) return;
       const fallback = "Non riesco a rispondere in questo momento. Riprova tra poco.";
       setMessages((current) => [...current, { role: "assistant", content: fallback }]);
-      speakWithBrowser(fallback);
+      await speakWithBrowser(fallback);
     } finally {
       loadingRef.current = false;
       setLoading(false);

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AvatarVideo } from "../../avatar-video";
 import CustomAssistant from "./custom-assistant";
 import AvatarInstall from "./install-avatar";
@@ -10,6 +10,7 @@ const STORAGE_KEY = "avatarone:custom-avatars";
 
 export default function CustomAvatar({ slug, initialAvatar, initialImmersive = false, experienceMode = false, onPresentation, catalogContext, ethrasolToken }) {
   const [immersive, setImmersive] = useState(initialImmersive);
+  const speechVideoRef = useRef(null);
   const [avatar, setAvatar] = useState(() => initialAvatar ? {
     slug: initialAvatar.slug,
     companyName: initialAvatar.company_name,
@@ -102,6 +103,9 @@ export default function CustomAvatar({ slug, initialAvatar, initialImmersive = f
       "--signal": "#64e9f7"
     }
   };
+  const synchronizedSpeechVideo = tenant.slug === "enzo-new-digital-app" && tenant.avatarVideo
+    ? speechVideoRef
+    : undefined;
 
   return (
     <main className={`mobile-chat-shell custom-avatar-shell ${immersive ? "avatar-immersive" : ""} ${experienceMode ? "giulia-framing" : ""}`} style={tenant.theme}>
@@ -200,7 +204,7 @@ export default function CustomAvatar({ slug, initialAvatar, initialImmersive = f
         <AvatarInstall name={tenant.assistantName} />
         <div className="avatar-frame" aria-label={`Avatar ${tenant.spokenAssistantName}`}>
           {Boolean(tenant.avatarVideo || tenant.avatarIdleVideo)
-            ? <AvatarVideo label={`Avatar video ${tenant.spokenAssistantName}`} poster={tenant.avatarPoster} src={tenant.avatarVideo || tenant.avatarIdleVideo} idleSrc={tenant.avatarIdleVideo} />
+            ? <AvatarVideo label={`Avatar video ${tenant.spokenAssistantName}`} poster={tenant.avatarPoster} src={tenant.avatarVideo || tenant.avatarIdleVideo} idleSrc={tenant.avatarIdleVideo} speechVideoRef={synchronizedSpeechVideo} />
             : tenant.avatarPoster
               ? <img className="custom-avatar-image" alt={`Avatar ${tenant.spokenAssistantName}`} src={tenant.avatarPoster} />
               : <div className="custom-avatar-placeholder" aria-label="Immagine avatar non disponibile">{tenant.spokenAssistantName.slice(0, 1)}</div>}
@@ -212,7 +216,7 @@ export default function CustomAvatar({ slug, initialAvatar, initialImmersive = f
         </div>
       </section>
       <section className="assistant-workspace" aria-label={`Chat con ${tenant.assistantName}`}>
-        <CustomAssistant tenant={tenant} immersive={immersive} onPresentation={onPresentation} catalogContext={catalogContext} ethrasolToken={ethrasolToken} />
+        <CustomAssistant tenant={tenant} immersive={immersive} onPresentation={onPresentation} catalogContext={catalogContext} ethrasolToken={ethrasolToken} speechVideoRef={synchronizedSpeechVideo} />
       </section>
     </main>
   );
