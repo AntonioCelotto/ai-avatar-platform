@@ -1,5 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async rewrites() {
+    return {
+      beforeFiles: [{
+        source: "/avatar/enzo-new-digital-app",
+        missing: [{ type: "query", key: "vista", value: "assistente" }],
+        destination: "/enzo-diagnostica/index.html"
+      }]
+    };
+  },
   async headers() {
     return [{
       source: "/(.*)",

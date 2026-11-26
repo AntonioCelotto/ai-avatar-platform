@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101317">
+<link rel="manifest" href="/avatar/enzo-new-digital-app/manifest.webmanifest">
+<link rel="icon" href="/icon.svg">
+<title>Enzo × TredLab | Demo officina</title>
+<meta name="description" content="Prova da tablet di Enzo, assistente AvatarOne per la lettura di un report diagnostico simulato.">
+<style>
+:root{color-scheme:dark;--bg:#101317;--panel:#191e24;--edge:#353d47;--muted:#b8c0ca;--cream:#f8f8f7;--orange:#ffab63;--ink:#19110b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--cream);font-family:system-ui,sans-serif;min-height:100vh}
+main{width:min(1160px,100% - 40px);margin:auto;padding-bottom:32px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:23px 0;border-bottom:1px solid var(--edge)}
+.brand{font-size:1.1rem;font-weight:800;letter-spacing:.04em}.chat-link{color:var(--cream);font-size:.9rem;font-weight:700;text-decoration:none;padding:11px 12px;border:1px solid var(--edge);border-radius:8px;text-align:center}.chat-link:hover,.chat-link:focus-visible{border-color:var(--orange)}.brand span{color:var(--orange);padding:0 .3em}.label{color:var(--muted);font-size:.875rem}
+.intro{padding:34px 0 24px}.intro h1{margin:0 0 9px;font-size:clamp(2rem,5vw,3.4rem);line-height:1.05;letter-spacing:-.055em}.intro p{color:var(--muted);margin:0;line-height:1.55}
+.grid{display:grid;grid-template-columns:minmax(300px,.9fr) minmax(0,1.28fr);gap:18px;align-items:start}
+.panel{border:1px solid var(--edge);border-radius:17px;background:var(--panel);overflow:hidden}.section{padding:22px}.section h2{margin:0;font-size:1.32rem;letter-spacing:-.025em}.section p{line-height:1.55}
+.stage{height:clamp(190px,30vw,300px);position:relative;isolation:isolate;overflow:hidden;background:radial-gradient(ellipse at 50% 30%,#45454a,#242324 65%);display:grid;place-items:center}
+.stage strong{font-size:clamp(3rem,10vw,5rem);letter-spacing:.15em;color:#fff4}.stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 31%}.stage video[hidden]{display:none}
+.stage span{position:absolute;bottom:12px;left:14px;background:#12151bec;padding:5px 10px;border-radius:5px;font-weight:700;font-size:.875rem}
+.left .section{border-top:1px solid var(--edge)}.tip{color:var(--muted);margin:8px 0 17px}.status{color:var(--orange);font-size:.88rem;font-weight:750;letter-spacing:.025em;margin:0 0 8px}
+button,input{font:inherit}button{cursor:pointer;min-height:44px;border:1px solid var(--edge);border-radius:8px;padding:9px 13px;background:#232a32;color:var(--cream);font-weight:700;text-align:left}
+button:hover:not(:disabled){border-color:var(--orange)}button:disabled{opacity:.54;cursor:default}button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+.primary{background:var(--orange);color:var(--ink);border-color:var(--orange)}.buttons,.prompts{display:flex;gap:8px;flex-wrap:wrap}.prompts{margin:16px 0}.prompts button{font-size:.9rem}
+form{display:flex;gap:8px}.input{background:#11151a;border:1px solid var(--edge);border-radius:8px;min-width:0;width:100%;padding:9px 13px;color:var(--cream);min-height:46px}.input::placeholder{color:#a1acb7}
+.report{border-top:1px solid var(--edge);padding-top:15px;margin-top:17px}.report summary{cursor:pointer;font-weight:750}.report p{margin:10px 0}.report ul{padding-left:19px;margin:0;line-height:1.5}.report li+li{margin-top:6px}
+.response{border:1px solid var(--edge);border-radius:10px;background:#14181d;padding:16px;margin-top:17px;min-height:108px}.response h3{font-size:1.02rem;margin:13px 0 4px}.response h3:first-child{margin-top:0}.response p{margin:0;color:#dce1e6;white-space:pre-line}.response .empty{color:var(--muted)}
+.notice{min-height:1.5em;color:var(--muted);margin:9px 0 0;font-size:.875rem}footer{padding:20px 0 0;color:var(--muted);font-size:.875rem}
+[hidden]{display:none!important}
+@media(max-width:760px){main{width:calc(100% - 24px)}.grid{grid-template-columns:1fr}.intro{padding:24px 0 20px}.section{padding:17px}.stage{height:195px}}
+@media(print){body{background:white;color:black}.intro,header,footer,.stage,.assistant,.buttons,.tip,.status,.left h2{display:none!important}main{width:100%}.grid{display:block}.panel{background:white;border:none}.report{border:none}}
+</style>
+</head>
+<body>
+<main>
+<header><div class="brand">ENZO <span>×</span> TREDLAB</div><a class="chat-link" href="/avatar/enzo-new-digital-app?vista=assistente">Apri chat con Enzo</a></header>
+<div class="intro"><h1>Dal report alla diagnosi</h1><p>Carica il caso di prova e chiedi a Enzo come leggere i risultati della scansione.</p></div>
+<div class="grid">
+<section class="panel left" aria-label="Report diagnostico di esempio">
+<div class="stage" aria-label="Enzo, assistente tecnico">
+<strong aria-hidden="true">ENZO</strong>
+<video id="idle" muted playsinline loop autoplay preload="metadata" hidden></video>
+<video id="talk" muted playsinline loop preload="auto" hidden></video>
+<span>Enzo · Assistente d’officina</span>
+</div>
+<div class="section">
+<p id="report-status" class="status" role="status">Nessun report caricato</p>
+<h2>Report diagnostico</h2>
+<p class="tip">Scansione di esempio in stile THINKTOOL, con dati simulati.</p>
+<div class="buttons"><button id="load" class="primary" type="button">Carica report demo</button><button id="reset" type="button" hidden>Ricomincia</button></div>
+<details id="report" class="report" hidden><summary>Vedi il report caricato</summary>
+<p><strong>Veicolo</strong> · Compatta diesel 1.6, anno 2019<br><strong>Sintomo</strong> · Spia motore accesa<br><strong>Centralina</strong> · Motore</p>
+<ul>
+<li><strong>P2002</strong> · Efficienza del filtro antiparticolato sotto soglia (attuale)</li>
+<li><strong>P2453</strong> · Segnale del sensore di pressione differenziale fuori intervallo (memorizzato)</li>
+</ul>
+<p><strong>Dati mancanti</strong> · Parametri in tempo reale, condizioni di rilevamento e storico interventi.</p>
+</details>
+</div>
+</section>
+<section class="panel section assistant" aria-labelledby="assistant-title">
+<h2 id="assistant-title">Chiedi a Enzo</h2>
+<p class="tip">Scegli una domanda, scrivila o usa il microfono.</p>
+<div class="prompts" aria-label="Domande di esempio">
+<button type="button" data-question="Quali anomalie risultano?" disabled>Quali anomalie risultano?</button>
+<button type="button" data-question="Quali dati mancano?" disabled>Quali dati mancano?</button>
+<button type="button" data-question="Prepara un riepilogo per l’Expert" disabled>Riepilogo per l’Expert</button>
+</div>
+<form id="ask">
+<input id="question" class="input" type="text" placeholder="Scrivi una domanda sul report" aria-label="Domanda sul report" disabled maxlength="240">
+<button id="send" class="primary" type="submit" disabled>Invia</button>
+</form>
+<div class="buttons" style="margin-top:10px"><button id="mic" type="button" disabled>Usa microfono</button><button id="voice" type="button" disabled>Ascolta risposta</button></div>
+<p id="notice" class="notice" role="status"></p>
+<div id="answer" class="response" aria-live="polite"><p class="empty">Carica il report per iniziare.</p></div>
+</section>
+</div>
+<footer>Demo con risposte guidate e dati simulati. Collegamento ai sistemi TredLab da definire.</footer>
+</main>
+<script>
+"use strict";
+const byId = id => document.getElementById(id);
+const question = byId("question");
+const answer = byId("answer");
+const notice = byId("notice");
+const speechButton = byId("voice");
+const microphone = byId("mic");
+const idle = byId("idle");
+const talking = byId("talk");
+const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const media = "https://gwqkqbmwanbyqwhvvdup.supabase.co/storage/v1/object/public/avatar-media/enzo-new-digital-app/";
+const detected = "Il report riporta P2002 come attuale e P2453 come memorizzato. Il primo riguarda l’efficienza del filtro antiparticolato, il secondo il segnale del sensore di pressione differenziale.";
+const unknown = "Mi servono i parametri in tempo reale della pressione differenziale, le condizioni in cui sono comparsi i codici e lo storico degli interventi.";
+const hypothesis = "Il filtro e il circuito di misura della pressione sono due piste da verificare. Il report da solo lascia aperta la causa del guasto.";
+let uploaded = false;
+const responseAudio = new Audio();
+let audioId;
+let activePlayback = false;
+let recognition;
+let listening = false;
+
+idle.src = media + "idle-1795530634651-enzo-respiro-v2.mp4";
+idle.addEventListener("loadeddata", () => { idle.hidden = false; idle.play().catch(() => {}); });
+talking.src = media + "video-1795530115517-enzo-parlato-v2.mp4";
+talking.addEventListener("playing", () => { talking.hidden = !activePlayback; });
+
+function paragraph(text, className) {
+  const element = document.createElement("p");
+  element.textContent = text;
+  if (className) element.className = className;
+  return element;
+}
+function setReport(isLoaded) {
+  uploaded = isLoaded;
+  byId("report").hidden = !isLoaded;
+  byId("report-status").textContent = isLoaded ? "Report demo caricato" : "Nessun report caricato";
+  byId("report").open = isLoaded;
+  byId("load").hidden = isLoaded;
+  byId("reset").hidden = !isLoaded;
+  question.disabled = !isLoaded;
+  byId("send").disabled = !isLoaded;
+  microphone.disabled = !isLoaded || !Recognition;
+  document.querySelectorAll("[data-question]").forEach(button => { button.disabled = !isLoaded; });
+  speechButton.disabled = true;
+  audioId = undefined;
+  notice.textContent = isLoaded && !Recognition ? "Microfono non disponibile in questo browser. Puoi scrivere la domanda." : "";
+  answer.replaceChildren(paragraph(isLoaded ? "Report ricevuto. Prova a chiedermi quali anomalie risultano." : "Carica il report per iniziare.", "empty"));
+}
+function stopVoice() {
+  activePlayback = false;
+  responseAudio.pause();
+  talking.pause();
+  talking.hidden = true;
+  speechButton.textContent = "Ascolta risposta";
+}
+function speak() {
+  if (activePlayback) return stopVoice();
+  if (!audioId) return;
+  responseAudio.src = "/enzo-diagnostica/audio/" + audioId + ".mp3";
+  activePlayback = true;
+  speechButton.textContent = "Ferma voce";
+  responseAudio.play().catch(error => {
+    if (!activePlayback || error.name === "AbortError") return;
+    stopVoice();
+    notice.textContent = "Audio non disponibile. La risposta è leggibile qui sotto.";
+  });
+}
+responseAudio.addEventListener("playing", () => {
+  if (activePlayback) talking.play().catch(() => {});
+});
+responseAudio.addEventListener("ended", stopVoice);
+function reply(value) {
+  if (!uploaded || !value.trim()) return;
+  stopVoice();
+  const text = value.trim().toLocaleLowerCase("it");
+  const asksForFindings = /anomal|error|guast|codic|rilev|p2002|p2453|spia/.test(text);
+  let sections;
+  if (/expert|esperto|riepilog|ticket|assistenza/.test(text)) {
+    audioId = "expert";
+    sections = [["Scheda per l’Expert", "Compatta diesel 1.6, anno 2019. Sintomo: spia motore accesa. Scansione centralina motore: P2002 attuale, P2453 memorizzato."], ["Da allegare", unknown]];
+  } else if (!asksForFindings && /manc|serv|misur|parametr|prima|controll|verific/.test(text)) {
+    audioId = "dati";
+    sections = [["Dati da raccogliere", unknown], ["Perché servono", hypothesis]];
+  } else if (asksForFindings || /report|diagnos/.test(text)) {
+    audioId = "anomalie";
+    sections = [["Dati rilevati", detected], ["Ipotesi da verificare", hypothesis], ["Informazioni mancanti", unknown]];
+  } else {
+    audioId = "domande";
+    sections = [["Domande disponibili", "In questa demo posso riassumere le anomalie, indicare i dati mancanti o preparare una scheda per l’Expert. Prova una delle domande suggerite."]];
+  }
+  answer.replaceChildren();
+  for (const [label, body] of sections) {
+    const heading = document.createElement("h3");
+    heading.textContent = label;
+    answer.append(heading, paragraph(body));
+  }
+  speechButton.disabled = false;
+}
+byId("load").addEventListener("click", () => { setReport(true); question.focus(); });
+byId("reset").addEventListener("click", () => {
+  stopVoice();
+  recognition?.abort();
+  question.value = "";
+  setReport(false);
+  byId("load").focus();
+});
+byId("ask").addEventListener("submit", event => {
+  event.preventDefault();
+  reply(question.value);
+  question.value = "";
+});
+document.querySelectorAll("[data-question]").forEach(button => {
+  button.addEventListener("click", () => reply(button.dataset.question));
+});
+speechButton.addEventListener("click", speak);
+microphone.addEventListener("click", () => {
+  if (!Recognition || !uploaded) return;
+  if (listening) { recognition.stop(); return; }
+  stopVoice();
+  recognition = new Recognition();
+  recognition.lang = "it-IT";
+  recognition.onstart = () => {
+    listening = true;
+    microphone.textContent = "Ferma microfono";
+    notice.textContent = "Ti ascolto…";
+  };
+  recognition.onresult = event => {
+    const transcript = event.results[0][0].transcript;
+    notice.textContent = "Hai chiesto: " + transcript;
+    reply(transcript);
+    if (!speechButton.disabled) speak();
+  };
+  recognition.onerror = () => {
+    if (uploaded) notice.textContent = "Microfono non disponibile. Scrivi la domanda o usa un suggerimento.";
+  };
+  recognition.onend = () => {
+    listening = false;
+    microphone.textContent = "Usa microfono";
+    if (notice.textContent === "Ti ascolto…") notice.textContent = "";
+  };
+  try { recognition.start(); } catch {
+    notice.textContent = "Impossibile usare il microfono. Puoi scrivere la domanda.";
+  }
+});
+</script>
+</body>
+</html>
