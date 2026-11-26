@@ -4,7 +4,7 @@ const nextConfig = {
     return {
       beforeFiles: [{
         source: "/avatar/enzo-new-digital-app",
-        missing: [{ type: "query", key: "vista", value: "assistente" }],
+        has: [{ type: "query", key: "vista", value: "diagnostica" }],
         destination: "/enzo-diagnostica/index.html"
       }]
     };

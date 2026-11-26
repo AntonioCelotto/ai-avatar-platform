@@ -202,7 +202,7 @@ export default function CustomAvatar({ slug, initialAvatar, initialImmersive = f
       <section className="avatar-stage" aria-label={tenant.assistantName} style={{ position: "relative" }}>
         <button type="button" className="avatar-expand-toggle" aria-label={immersive ? "Esci dalla modalità a tutto schermo" : "Espandi avatar a tutto schermo"} aria-pressed={immersive} onClick={() => setImmersive((value) => !value)}>{immersive ? "↙ Riduci" : "⛶ Espandi"}</button>
         {tenant.slug === "enzo-new-digital-app" ? (
-          <a className="avatar-expand-toggle" href="/avatar/enzo-new-digital-app" style={{ insetInlineStart: 14, insetInlineEnd: "auto", top: 110, textDecoration: "none" }}>Demo diagnostica</a>
+          <a className="avatar-expand-toggle" href="/avatar/enzo-new-digital-app?vista=diagnostica" style={{ insetInlineStart: 14, insetInlineEnd: "auto", top: 110, textDecoration: "none" }}>Demo diagnostica</a>
         ) : null}
         <AvatarInstall name={tenant.assistantName} />
         <div className="avatar-frame" aria-label={`Avatar ${tenant.spokenAssistantName}`}>
